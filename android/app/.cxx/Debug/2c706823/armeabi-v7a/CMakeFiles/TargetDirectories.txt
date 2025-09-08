@@ -1,0 +1,2 @@
+/Users/rameshkashyap/Desktop/milkApp/milk_ledger/android/app/.cxx/Debug/2c706823/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/rameshkashyap/Desktop/milkApp/milk_ledger/android/app/.cxx/Debug/2c706823/armeabi-v7a/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,788 @@
+import 'package:digitalwalletpaytmcloneapp/Constants/colors.dart';
+import 'package:digitalwalletpaytmcloneapp/Constants/images.dart';
+import 'package:digitalwalletpaytmcloneapp/Controllers/banner_controller.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/add_customer_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/customers_list_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_bank_account_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_mobile_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_self_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/ScannerScreen/scanner_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/UserPaymentCodeScreens/user_payment_code_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
+import 'package:digitalwalletpaytmcloneapp/Utils/common_text_widget.dart';
+import 'package:digitalwalletpaytmcloneapp/Utils/lists_view.dart';
+import 'package:digitalwalletpaytmcloneapp/main.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:share_plus/share_plus.dart';
+
+class HomeScreen extends StatefulWidget {
+  HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String userName = "Loading...";
+  final BannerSliderController bannerSliderController =
+      Get.put(BannerSliderController());
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserName();
+  }
+
+  void fetchUserName() async {
+    print("Fetching user profile...");
+
+    try {
+      final response = await ApiService.get("/auth/me");
+
+      final data = response.data;
+
+      if (data["status"] == true) {
+        final user = data["user"];
+        setState(() {
+          userName = user["name"] ?? "Name User";
+        });
+      } else {
+        setState(() {
+          userName = "Guest User";
+        });
+      }
+    } catch (e) {
+      print("Error fetching user profile: $e");
+      setState(() {
+        userName = "Guest User";
+      });
+    }
+  }
+
+  Future<String?> _selectCustomerType(BuildContext context) async {
+    return await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Select Customer Type"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.green),
+              title: const Text("Seller"),
+              onTap: () => Navigator.pop(ctx, "Seller"),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.blue),
+              title: const Text("Purchaser"),
+              onTap: () => Navigator.pop(ctx, "Purchaser"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: whiteF9F,
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              /// TopContainer Widget View
+              TopContainerWidgetView(),
+
+              /// MyDigiWallet Widget View
+              BodyWidgetView(context),
+            ],
+          ),
+
+          /// TopContainer2 Widget View
+          TopContainer2WidgetView(),
+
+          /// Bottom Image Widget View
+          // BottomImageWidgetView(),
+        ],
+      ),
+    );
+  }
+
+  String getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return "Good Morning,";
+    } else if (hour < 17) {
+      return "Good Afternoon,";
+    } else {
+      return "Good Evening,";
+    }
+  }
+
+  /// TopContainer Widget View
+  Widget TopContainerWidgetView() {
+    return Container(
+      height: 190,
+      width: Get.width,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("assets/images/cow.png"),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(top: 40),
+        child: ListTile(
+          horizontalTitleGap: 0,
+          leading: InkWell(
+            onTap: () {
+              Get.to(() => UserPaymentCodeScreen());
+            },
+            child: IconButton(
+              icon: Icon(Icons.menu, color: Colors.black, size: 28),
+              onPressed: () {
+                Get.to(() => UserPaymentCodeScreen());
+              },
+            ),
+          ),
+          title: InkWell(
+            onTap: () {
+              Get.to(() => UserPaymentCodeScreen());
+            },
+            child: CommonTextWidget.InterMedium(
+              color: black171,
+              text: getGreeting(),
+              fontSize: 12,
+            ),
+          ),
+          subtitle: InkWell(
+            onTap: () {
+              Get.to(() => UserPaymentCodeScreen());
+            },
+            child: CommonTextWidget.InterBold(
+              color: black171,
+              text: "Hello $userName",
+              fontSize: 20,
+            ),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InkWell(
+                onTap: () {
+                  Share.share(
+                    'Check out DoodhBazaar! Download now: https://play.google.com/store/apps/details?id=com.example.DoodhBazaar',
+                    subject: 'DoodhBazaar App',
+                  );
+                },
+                child: Icon(
+                  Icons.share,
+                  color: Colors.black, // match your theme
+                  size: 28, // adjust size if needed
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// TopContainer2 Widget View
+  Widget TopContainer2WidgetView() {
+    return Positioned(
+      top: 145,
+      left: 20,
+      right: 20,
+      child: Container(
+        width: Get.width,
+        decoration: BoxDecoration(
+          color: white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.withOpacity(0.22),
+              blurRadius: 20,
+              offset: Offset(0, 4),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                onTap: () {
+                  Get.to(() => ScannerScreen());
+                },
+                child: Column(
+                  children: [
+                    Image.asset(
+                      "assets/images/milk-48.png",
+                      width: 40,
+                      height: 40,
+                    ),
+                    CommonTextWidget.InterSemiBold(
+                      color: black171,
+                      text: "Milk Entry",
+                      fontSize: 12,
+                    ),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  Get.to(() => ToMobileScreen());
+                },
+                child: Column(
+                  children: [
+                    Image.asset(
+                      "assets/images/pay-50.png",
+                      width: 40,
+                      height: 40,
+                    ),
+                    CommonTextWidget.InterSemiBold(
+                      color: black171,
+                      text: "Pay/Receive",
+                      fontSize: 12,
+                    ),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  Get.to(() => ToSelfScreen());
+                },
+                child: Column(
+                  children: [
+                    Image.asset(
+                      "assets/images/icons8-report-48.png",
+                      width: 40,
+                      height: 40,
+                    ),
+                    CommonTextWidget.InterSemiBold(
+                      color: black171,
+                      text: "Reports",
+                      fontSize: 12,
+                    ),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () async {
+                  final type = await _selectCustomerType(context);
+                  if (type != null) {
+                    Get.to(() => AddCustomerScreen(customerType: type));
+                  }
+                },
+                child: Column(
+                  children: [
+                    Image.asset(
+                      "assets/images/icons8-customer-80.png",
+                      width: 40,
+                      height: 40,
+                    ),
+                    CommonTextWidget.InterSemiBold(
+                      color: black171,
+                      text: "Customer",
+                      fontSize: 12,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Body Widget View
+  Widget BodyWidgetView(context) {
+    return Expanded(
+      child: ScrollConfiguration(
+        behavior: MyBehavior(),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20),
+
+              /// MyDigiWallet Widget View
+              Padding(
+                padding:
+                    EdgeInsets.only(top: 40, left: 25, right: 25, bottom: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CommonTextWidget.InterBold(
+                      color: black171,
+                      text: "My Dairy Data",
+                      fontSize: 18,
+                    ),
+                    CommonTextWidget.InterRegular(
+                      color: grey757,
+                      text: "1234567890@paytm",
+                      fontSize: 12,
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
+                  iconAsset: "assets/images/milk-48.png",
+                  title: "Milk Collection",
+                  subtitle: "Sell, Purchase",
+                  onTap: () {
+                    // navigate to milk collection screen
+                  },
+                ),
+              ),
+
+              SizedBox(height: 10),
+
+              // Outer padding once for the row
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start, // <- important
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: OutlineTile(
+                        // no margin inside this widget
+                        iconAsset: "assets/images/icons8-bill-80.png",
+                        title: "Bill",
+                        subtitle: "Customer Bills",
+                      ),
+                    ),
+                    const SizedBox(width: 8), // <- only middle gap
+                    Expanded(
+                      child: OutlineTile(
+                        // no margin here either
+                        iconAsset: "assets/images/icons8-product-48.png",
+                        title: "Products",
+                        subtitle: "Daily Products",
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 10),
+              // Outer padding once for the row
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start, // <- important
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: OutlineTile(
+                        // no margin inside this widget
+                        iconAsset: "assets/images/icons8-bill-80.png",
+                        title: "Report",
+                        subtitle: "Dairy Reports",
+                      ),
+                    ),
+                    const SizedBox(width: 8), // <- only middle gap
+                    Expanded(
+                      child: OutlineTile(
+                        // no margin here either
+                        iconAsset: "assets/images/icons8-product-48.png",
+                        title: "Pay/Receive",
+                        subtitle: "Amount Entries",
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
+                  iconAsset: "assets/images/icons8-customer-80.png",
+                  title: "All Customers",
+                  subtitle: "Seller, Purchase",
+                  onTap: () {
+                    // navigate to milk collection screen
+                    Get.to(() => const CustomersListScreen());
+                  },
+                ),
+              ),
+
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
+                  iconAsset: "assets/images/icons8-report-48.png",
+                  title: "View Transactions",
+                  subtitle: "Payments Details",
+                  onTap: () {
+                    // navigate to milk collection screen
+                  },
+                ),
+              ),
+
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
+                  iconAsset: "assets/images/icons8-buy-48.png",
+                  title: "Daily Purchase Report",
+                  subtitle: "Purchase Details",
+                  onTap: () {
+                    // navigate to milk collection screen
+                  },
+                ),
+              ),
+
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
+                  iconAsset: "assets/images/icons8-pie-chart-report-50.png",
+                  title: "Daily Sale Report",
+                  subtitle: "Sale Details",
+                  onTap: () {
+                    // navigate to milk collection screen
+                  },
+                ),
+              ),
+
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
+                  iconAsset: "assets/images/icons8-customer-64.png",
+                  title: "Customer On/Off",
+                  subtitle: "Enable or disable customer",
+                  onTap: () {
+                    // navigate to milk collection screen
+                  },
+                ),
+              ),
+
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
+                  iconAsset: "assets/images/icons8-purchase-order-80.png",
+                  title: "Payment Slips",
+                  subtitle: "Manage customer payment slips",
+                  onTap: () {
+                    // navigate to milk collection screen
+                  },
+                ),
+              ),
+
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
+                  iconAsset: "assets/images/icons8-setting-50.png",
+                  title: "Milk Rate Settings",
+                  subtitle: "Change milk rates",
+                  onTap: () {
+                    // navigate to milk collection screen
+                  },
+                ),
+              ),
+
+              SizedBox(height: 15),
+
+              /// Insurance Widget View
+              Padding(
+                padding:
+                    EdgeInsets.only(top: 20, left: 25, right: 25, bottom: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CommonTextWidget.InterBold(
+                      color: black171,
+                      text: "Quick Actions",
+                      fontSize: 18,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 1),
+
+              /// List Widget View
+              ListWidgetView(),
+              SizedBox(height: 30),
+
+              /// Bottom Widget View
+              BottomWidgetView(),
+              SizedBox(height: 60),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// List Widget View
+  Widget ListWidgetView() {
+    return ListView.builder(
+      padding: EdgeInsets.only(left: 25, right: 25, top: 20),
+      physics: NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: Lists.listViewList.length,
+      itemBuilder: (context, index) => Padding(
+        padding: EdgeInsets.only(bottom: 7),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: greyE7E, width: 1),
+            color: white,
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(15),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Lists.listViewList[index]
+                      ["icon"], // use icon instead of image
+                  color: Colors.green,
+                  size: 30,
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CommonTextWidget.InterSemiBold(
+                        color: black171,
+                        fontSize: 14,
+                        text: Lists.listViewList[index]["text1"],
+                      ),
+                      SizedBox(height: 3),
+                      CommonTextWidget.InterRegular(
+                        color: grey6A7,
+                        fontSize: 10,
+                        text: Lists.listViewList[index]["text2"],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Bottom Widget View
+  Widget BottomWidgetView() {
+    return Padding(
+      padding: EdgeInsets.only(left: 25, right: 25),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CommonTextWidget.InterBold(
+            color: black171,
+            fontSize: 15,
+            text: "Invite your friends",
+          ),
+          SizedBox(height: 10),
+          CommonTextWidget.InterRegular(
+            color: black171,
+            fontSize: 13,
+            text: "Get \$51 after each friends first payment",
+          ),
+          SizedBox(height: 25),
+          MaterialButton(
+            onPressed: () {},
+            height: 30,
+            minWidth: 65,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+            color: green21E.withOpacity(0.29),
+            child: CommonTextWidget.InterSemiBold(
+              fontSize: 16,
+              text: "Invite",
+              color: white,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  /// Bottom Image Widget View
+  Widget BottomImageWidgetView() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Image.asset(Images.homeBottomImage),
+      // Container(
+      //   height: 400,
+      //   width: Get.width,
+      //   decoration: BoxDecoration(
+      //     image: DecorationImage(
+      //       image: AssetImage(Images.homeBottomImage),
+      //       fit: BoxFit.cover,
+      //     ),
+      //   ),
+      // ),
+    );
+  }
+}
+
+class OutlineTile extends StatelessWidget {
+  final String iconAsset, title, subtitle;
+  const OutlineTile(
+      {super.key,
+      required this.iconAsset,
+      required this.title,
+      required this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    const Color greenText = Color.fromARGB(255, 248, 251, 249);
+    return Container(
+      // ❌ REMOVE margin here
+
+      padding: const EdgeInsets.all(16), // ✅ keep padding
+      decoration: BoxDecoration(
+        color: greenText,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.green, width: 0.6),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.05),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Image.asset(iconAsset, width: 28, height: 28, color: Colors.green),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700)),
+                Text(subtitle,
+                    style: TextStyle(
+                        fontSize: 13, color: Colors.black.withOpacity(.7))),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class BigFeatureTile extends StatelessWidget {
+  final String iconAsset; // e.g. assets/images/milk.png
+  final String title; // e.g. Milk Collection
+  final String subtitle; // e.g. Sell, Purchase
+  final VoidCallback? onTap;
+
+  const BigFeatureTile({
+    super.key,
+    required this.iconAsset,
+    required this.title,
+    required this.subtitle,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const Color green = Color(0xFF177A49);
+    const Color greenText = Color(0xFF0D5C37);
+    const Color chipBg = Color(0xFFF7FBF8); // very light green/white
+
+    return Material(
+      color: chipBg,
+      borderRadius: BorderRadius.circular(22),
+      elevation: 0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            border:
+                Border.all(color: green.withOpacity(.2), width: 1), // ✅ border
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(.05),
+                blurRadius: 10,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Icon chip (matches the green-outlined look)
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEAF6EF), // pale green
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Image.asset(
+                  iconAsset,
+                  width: 34,
+                  height: 34,
+                  // if you need tinting for a single-color PNG, uncomment:
+                  // color: green,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: greenText,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        height: 1.0,
+                        letterSpacing: .2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: greenText.withOpacity(.70),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
