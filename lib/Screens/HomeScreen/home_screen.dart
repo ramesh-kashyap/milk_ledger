@@ -7,6 +7,10 @@ import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_bank_account_sc
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_mobile_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_self_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/ScannerScreen/scanner_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/pay_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/daily_dairy_report.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/daily_purchase_report.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/customer_onoff.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/UserPaymentCodeScreens/user_payment_code_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 import 'package:digitalwalletpaytmcloneapp/Utils/common_text_widget.dart';
@@ -354,13 +358,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Expanded(
-                      child: OutlineTile(
-                        // no margin inside this widget
-                        iconAsset: "assets/images/icons8-bill-80.png",
-                        title: "Bill",
-                        subtitle: "Customer Bills",
-                      ),
-                    ),
+  child: GestureDetector(
+    onTap: () {
+      Get.to(() => const PayScreen());
+    },
+    child: OutlineTile(
+      iconAsset: "assets/images/icons8-bill-80.png",
+      title: "Bill",
+      subtitle: "Customer Bills",
+    ),
+  ),
+),
+
                     const SizedBox(width: 8), // <- only middle gap
                     Expanded(
                       child: OutlineTile(
@@ -436,7 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Daily Purchase Report",
                   subtitle: "Purchase Details",
                   onTap: () {
-                    // navigate to milk collection screen
+                    Get.to(() => const DailyPurchaseReportScreen());
                   },
                 ),
               ),
@@ -449,7 +458,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Daily Sale Report",
                   subtitle: "Sale Details",
                   onTap: () {
-                    // navigate to milk collection screen
+                      Get.to(() => const DairyReportScreen());
                   },
                 ),
               ),
@@ -462,7 +471,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Customer On/Off",
                   subtitle: "Enable or disable customer",
                   onTap: () {
-                    // navigate to milk collection screen
+                    Get.to(() => const CustomerOnOffScreen());
                   },
                 ),
               ),
