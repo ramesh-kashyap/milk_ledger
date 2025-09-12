@@ -19,7 +19,7 @@ class _CustomerOnOffScreenState extends State<CustomerOnOffScreen> {
     fetchCustomerDetail();
   }
 
-  /// Fetch logged-in user details
+  /// Fetch logged-in user detail
   Future<void> fetchCustomerDetail() async {
     try {
       final response = await ApiService.get('/userOn');

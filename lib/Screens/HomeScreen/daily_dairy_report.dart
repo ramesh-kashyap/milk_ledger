@@ -1,17 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
-class DairyReportScreen extends StatelessWidget {
+class DairyReportScreen extends StatefulWidget {
   const DairyReportScreen({super.key});
+
+  @override
+  State<DairyReportScreen> createState() => _DairyReportScreenState();
+}
+
+class _DairyReportScreenState extends State<DairyReportScreen> {
+  Map<String, dynamic>? reportData;
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchReport();
+  }
+
+  // Fetch API data
+  Future<void> fetchReport() async {
+    try {
+      final resp = await ApiService.get('/dairyreport'); // Your API call
+      final res = resp.data;
+      print(res);
+      setState(() {
+        reportData = res as Map<String, dynamic>;
+        loading = false;
+      });
+    } catch (e) {
+      print("Error fetching report: $e");
+      setState(() => loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     String todayDate = DateFormat('dd MMM yyyy').format(DateTime.now());
-    String monthYear = DateFormat('MMM yyyy').format(DateTime.now());
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green[300],
+        backgroundColor: Colors.green[500],
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
         title: const Text(
@@ -19,23 +49,104 @@ class DairyReportScreen extends StatelessWidget {
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
-      body: Container(
-        color: Colors.green[50],
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            children: [
-              _buildReportCard("Today ($todayDate)", Icons.calendar_today),
-              const SizedBox(height: 16),
-              _buildReportCard(monthYear, Icons.calendar_month),
-            ],
-          ),
-        ),
-      ),
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : Container(
+              color: Colors.green[10],
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // ✅ Today report
+                      if (reportData?['today'] != null)
+                        _buildReportCard(
+                          "Today ($todayDate)",
+                          Icons.calendar_today,
+                          {
+                            "purchaseLitres": double.tryParse(reportData!['today']['litres']?.toString() ?? "0") ?? 0.0,
+                            "purchaseAmount": double.tryParse(reportData!['today']['amount']?.toString() ?? "0") ?? 0.0,
+                            "saleLitres": 0.0, // backend not splitting buy/sale for today
+                            "saleAmount": 0.0,
+                          },
+                        ),
+                      const SizedBox(height: 16),
+
+                      // ✅ Monthly reports
+                      if (reportData?['months'] != null)
+                        ...(() {
+                          List<Map<String, dynamic>> months =
+                              (reportData!['months'] as List).cast<Map<String, dynamic>>();
+
+                          // Sort by year & month descending
+                          months.sort((a, b) {
+                            int yearComp = (b['year'] as int).compareTo(a['year'] as int);
+                            return yearComp != 0
+                                ? yearComp
+                                : (b['month'] as int).compareTo(a['month'] as int);
+                          });
+
+                          // Group months by year+month
+                          Map<String, Map<String, dynamic>> grouped = {};
+                          for (var m in months) {
+                            String key = "${m['year']}-${m['month']}";
+                            if (!grouped.containsKey(key)) {
+                              grouped[key] = {
+                                "year": m['year'],
+                                "month": m['month'],
+                                "month_name": m['month_name'],
+                                "purchaseLitres": 0.0,
+                                "purchaseAmount": 0.0,
+                                "saleLitres": 0.0,
+                                "saleAmount": 0.0,
+                              };
+                            }
+
+                            if (m['note'] == "Buy") {
+                              grouped[key]!["purchaseLitres"] +=
+                                  double.tryParse(m['litres'].toString()) ?? 0.0;
+                              grouped[key]!["purchaseAmount"] +=
+                                  double.tryParse(m['amount'].toString()) ?? 0.0;
+                            } else if (m['note'] == "Sale") {
+                              grouped[key]!["saleLitres"] +=
+                                  double.tryParse(m['litres'].toString()) ?? 0.0;
+                              grouped[key]!["saleAmount"] +=
+                                  double.tryParse(m['amount'].toString()) ?? 0.0;
+                            }
+                          }
+
+                          // Map to widgets
+                          return grouped.values.map((monthData) {
+                            final title =
+                                "${monthData['month_name']} ${monthData['year']}";
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: _buildReportCard(
+                                title,
+                                Icons.calendar_month,
+                                monthData,
+                              ),
+                            );
+                          }).toList();
+                        })(),
+                    ],
+                  ),
+                ),
+              ),
+            ),
     );
   }
 
-  Widget _buildReportCard(String title, IconData icon) {
+  // Build each card (Today / Month)
+  Widget _buildReportCard(String title, IconData icon, Map<String, dynamic> data) {
+    double purchaseLitres = data['purchaseLitres'] ?? 0.0;
+    double purchaseAmount = data['purchaseAmount'] ?? 0.0;
+    double saleLitres = data['saleLitres'] ?? 0.0;
+    double saleAmount = data['saleAmount'] ?? 0.0;
+
+    double totalLitres = purchaseLitres + saleLitres;
+    double totalAmount = purchaseAmount + saleAmount;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -70,9 +181,12 @@ class DairyReportScreen extends StatelessWidget {
             ],
           ),
           const Divider(),
-          _buildRow("Total Purchase", "0.00 L", "₹ 0.00"),
-          _buildRow("Total Sale", "0.00 L", "₹ 0.00"),
-          _buildRow("Total", "0.00 L", "₹ 0.00"),
+          _buildRow("Total Purchase",
+              "${purchaseLitres.toStringAsFixed(2)} L", "₹ ${purchaseAmount.toStringAsFixed(2)}"),
+          _buildRow("Total Sale",
+              "${saleLitres.toStringAsFixed(2)} L", "₹ ${saleAmount.toStringAsFixed(2)}"),
+          _buildRow("Total",
+              "${totalLitres.toStringAsFixed(2)} L", "₹ ${totalAmount.toStringAsFixed(2)}"),
         ],
       ),
     );
@@ -84,23 +198,18 @@ class DairyReportScreen extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            flex: 2,
-            child: Text(label, style: const TextStyle(fontSize: 14)),
-          ),
+              flex: 2,
+              child: Text(label, style: const TextStyle(fontSize: 14))),
           Expanded(
-            flex: 1,
-            child: Text(
-              liters,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-          ),
+              flex: 1,
+              child: Text(liters,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w500))),
           Expanded(
-            flex: 1,
-            child: Text(
-              amount,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-          ),
+              flex: 1,
+              child: Text(amount,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w500))),
         ],
       ),
     );

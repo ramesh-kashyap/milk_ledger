@@ -3,15 +3,15 @@ import 'package:intl/intl.dart';
 import 'package:dio/dio.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
-class DailyPurchaseReportScreen extends StatefulWidget {
-  const DailyPurchaseReportScreen({super.key});
+class DailySaleReportScreen extends StatefulWidget {
+  const DailySaleReportScreen({super.key});
 
   @override
-  State<DailyPurchaseReportScreen> createState() =>
-      _DailyPurchaseReportScreenState();
+  State<DailySaleReportScreen> createState() =>
+      _DailySaleReportScreenState();
 }
 
-class _DailyPurchaseReportScreenState extends State<DailyPurchaseReportScreen> {
+class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
   DateTime selectedDate = DateTime.now();
   String selectedSession = "Both";
   String selectedMilkType = "Both";
@@ -48,7 +48,6 @@ class _DailyPurchaseReportScreenState extends State<DailyPurchaseReportScreen> {
     setState(() => loading = true);
     try {
       final res = await ApiService.get('/dairypurchase'); // fetch all user entries
-     print(res);
       allEntries = res.data['entries'] ?? [];
       _applyFilters();
       setState(() => loading = false);
@@ -133,7 +132,7 @@ void _applyFilters() {
         backgroundColor: Colors.green[500],
         elevation: 0,
         title: const Text(
-          "Daily Purchase Report",
+          "Daily Sale Report",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.white),

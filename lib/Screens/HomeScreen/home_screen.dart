@@ -9,7 +9,10 @@ import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_self_screen.dar
 import 'package:digitalwalletpaytmcloneapp/Screens/ScannerScreen/scanner_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/pay_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/daily_dairy_report.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/dairy_sale_report.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/view_transection.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/daily_purchase_report.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/payment_slip_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/customer_onoff.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/UserPaymentCodeScreens/user_payment_code_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
@@ -432,7 +435,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "View Transactions",
                   subtitle: "Payments Details",
                   onTap: () {
-                    // navigate to milk collection screen
+                   Get.to(() => const TransactionPage());
                   },
                 ),
               ),
@@ -454,11 +457,23 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
+                  iconAsset: "assets/images/icons8-product-48.png",
+                  title: "Dairy Report",
+                  subtitle: "Sale Details",
+                  onTap: () {
+                      Get.to(() => const DairyReportScreen());
+                  },
+                ),
+              ),
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-pie-chart-report-50.png",
                   title: "Daily Sale Report",
                   subtitle: "Sale Details",
                   onTap: () {
-                      Get.to(() => const DairyReportScreen());
+                      Get.to(() => const DailySaleReportScreen());
                   },
                 ),
               ),
@@ -484,7 +499,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Payment Slips",
                   subtitle: "Manage customer payment slips",
                   onTap: () {
-                    // navigate to milk collection screen
+                    Get.to(() => const PaymentScreen());
                   },
                 ),
               ),
