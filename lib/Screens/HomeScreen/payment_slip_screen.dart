@@ -13,75 +13,160 @@ class PaymentSlip {
   final double due;
 
   PaymentSlip({
-    required this.name,
-    required this.code,
-    required this.startDate,
-    required this.endDate,
-    required this.item,
-    required this.sale,
-    required this.purchase,
-    required this.received,
-    required this.due,
-  });
+    this.name = "Sachin", // ✅ default
+    this.code = "SLIP123",     // ✅ default
+    DateTime? startDate,   // ✅ allow null but fallback
+    DateTime? endDate,
+    this.item = "No Item",
+    this.sale = 0.0,
+    this.purchase = 0.0,
+    this.received = 0.0,
+    this.due = 0.0,
+  })  : startDate = startDate ?? DateTime.now(),
+        endDate = endDate ?? DateTime.now();
 }
 
-class PaymentScreen extends StatelessWidget {
-  final PaymentSlip slip;
 
-  const PaymentScreen({super.key, required this.slip});
+class PaymentScreen extends StatelessWidget {
+  final PaymentSlip? slip; // ✅ made nullable
+
+  const PaymentScreen({super.key, this.slip}); // ✅ removed required
 
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd MMM yyyy');
 
+    // ✅ If no slip is passed, show empty screen message
+    if (slip == null) {
+      return Scaffold(
+        backgroundColor: Colors.grey[100],
+        appBar: AppBar(
+          backgroundColor: Colors.green[700],
+          title: const Text(
+            'Payment Slip',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        body: const Center(
+          child: Text(
+            "No payment slip available",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    // ✅ If slip is available, show the details
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Payment slip'),
+        backgroundColor: Colors.green[700],
+        title: const Text(
+          'Payment Slip',
+          style: TextStyle(color: Colors.white),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.print),
+            icon: const Icon(Icons.print, color: Colors.white),
             onPressed: () {},
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Card(
-          elevation: 3,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 4,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${slip.name} (${slip.code})',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
+                // Header
                 Text(
-                  '${dateFormat.format(slip.startDate)} to ${dateFormat.format(slip.endDate)}',
-                  style: const TextStyle(color: Colors.grey),
+                  '${slip!.name} (${slip!.code})',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Text(slip.item,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w500)),
-                Text('sale: ₹${slip.sale.toStringAsFixed(2)}'),
+                const SizedBox(height: 6),
+                Text(
+                  '${dateFormat.format(slip!.startDate)} → ${dateFormat.format(slip!.endDate)}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+
+                const Divider(height: 28, thickness: 1),
+
+                // Item
+                Text(
+                  slip!.item,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 12),
+
+                // Sale
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Purchase: ₹${slip.purchase.toStringAsFixed(2)}'),
-                    Text('Grand Total: ₹${slip.purchase.toStringAsFixed(2)}'),
+                    const Text("Sale"),
+                    Text("₹${slip!.sale.toStringAsFixed(2)}"),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
+                // Purchase + Grand total
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Received: ₹${slip.received}'),
-                    Text('Due: ₹${slip.due}'),
+                    const Text("Purchase"),
+                    Text("₹${slip!.purchase.toStringAsFixed(2)}"),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Grand Total",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      "₹${slip!.purchase.toStringAsFixed(2)}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+
+                const Divider(height: 28, thickness: 1),
+
+                // Received + Due
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Received"),
+                    Text("₹${slip!.received.toStringAsFixed(2)}"),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Due"),
+                    Text(
+                      "₹${slip!.due.toStringAsFixed(2)}",
+                      style: TextStyle(
+                        color: slip!.due > 0 ? Colors.red : Colors.green,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               ],

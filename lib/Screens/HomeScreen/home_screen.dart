@@ -13,6 +13,7 @@ import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/dairy_sale_report.
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/view_transection.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/daily_purchase_report.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/payment_slip_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/report_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/customer_onoff.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/UserPaymentCodeScreens/user_payment_code_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
@@ -500,6 +501,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   subtitle: "Manage customer payment slips",
                   onTap: () {
                     Get.to(() => const PaymentScreen());
+                  },
+                ),
+              ),
+
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
+                  iconAsset: "assets/images/icons8-purchase-order-80.png",
+                  title: "Report",
+                  subtitle: "Buyer and Seller Report",
+                  onTap: () {
+                    Get.to(() => const ReportScreen());
                   },
                 ),
               ),

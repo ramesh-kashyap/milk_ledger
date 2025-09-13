@@ -47,7 +47,8 @@ class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
   Future<void> fetchAllEntries() async {
     setState(() => loading = true);
     try {
-      final res = await ApiService.get('/dairypurchase'); // fetch all user entries
+      final res = await ApiService.get('/dairysale'); // fetch all user entries
+    //  print(res);
       allEntries = res.data['entries'] ?? [];
       _applyFilters();
       setState(() => loading = false);
@@ -106,9 +107,10 @@ void _applyFilters() {
         Expanded(
           flex: 2,
           // ✅ Fix createdAt
-          child: Text(DateFormat('hh:mm a')
+        child: Text(DateFormat('hh:mm a')
               .format(DateTime.parse(entry['createdAt']))),
         ),
+        Expanded(flex: 1, child: Text("${entry['customer_id'] ?? '0'}")),
         Expanded(flex: 1, child: Text("${entry['litres'] ?? '0'} L")),
         Expanded(flex: 1, child: Text("₹ ${entry['amount'] ?? '0'}")),
         Expanded(flex: 1, child: Text(entry['animal']?.toString().toUpperCase() ?? '')),
@@ -125,7 +127,12 @@ void _applyFilters() {
     0, (sum, entry) => sum + double.parse(entry['litres'] ?? "0"));
     final totalAmount = filteredEntries.fold<double>(
     0, (sum, entry) => sum + double.parse(entry['amount'] ?? "0"));
-
+    final totalFat = filteredEntries.fold<double>(
+    0, (sum, entry) => sum + double.parse(entry['fat'] ?? "0"));
+    final totalRate = filteredEntries.fold<double>(
+    0, (sum, entry) => sum + double.parse(entry['rate'] ?? "0"));
+    // final customerId = filteredEntries.fold<double>(
+    // 0, (sum, entry) => sum + double.parse(entry['customer_id'] ?? "0"));
 
     return Scaffold(
       appBar: AppBar(
@@ -218,15 +225,17 @@ void _applyFilters() {
                 if (index == 0) {
                   // Header row
                   return Container(
-                    color: Colors.green[100],
+                    color: Colors.green[400],
                     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                     child: Row(
                       children: const [
-                        Expanded(flex: 2, child: Text("Time", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("Litres", style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(flex: 1, child: Text("Ac No", style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(flex: 1, child: Text("Milk", style: TextStyle(fontWeight: FontWeight.bold))),
+                        // Expanded(flex: 1, child: Text("Amount", style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(flex: 1, child: Text("Fat", style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(flex: 1, child: Text("Rate", style: TextStyle(fontWeight: FontWeight.bold))),
                         Expanded(flex: 1, child: Text("Amount", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("Type", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("Session", style: TextStyle(fontWeight: FontWeight.bold))),
+                        // Expanded(flex: 1, child: Text("Session", style: TextStyle(fontWeight: FontWeight.bold))),
                       ],
                     ),
                   );
@@ -235,15 +244,18 @@ void _applyFilters() {
                 if (index == filteredEntries.length + 1) {
                   // Totals row
                   return Container(
-                    color: Colors.green[50],
+                    color: Colors.green[400],
                     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                     child: Row(
                       children: [
-                        const Expanded(flex: 2, child: Text("TOTAL", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("$totalLitres L", style: const TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("₹ $totalAmount", style: const TextStyle(fontWeight: FontWeight.bold))),
-                        const Expanded(flex: 1, child: SizedBox()),
-                        const Expanded(flex: 1, child: SizedBox()),
+                        const Expanded(flex: 1, child: Text("TOTAL", style: TextStyle(fontWeight: FontWeight.bold))),
+                        // Expanded(flex: 1, child: Text("$totalLitres L", style: const TextStyle(fontWeight: FontWeight.bold))), 
+                        Expanded(flex: 1, child: Text("$totalLitres L", style: const TextStyle(fontWeight: FontWeight.bold))),                         
+                        Expanded(flex: 1, child: Text("$totalFat L", style: const TextStyle(fontWeight: FontWeight.bold))), 
+                        Expanded(flex: 1, child: Text("$totalRate L", style: const TextStyle(fontWeight: FontWeight.bold))),                         
+                        Expanded(flex: 1, child: Text("₹ $totalAmount", style: const TextStyle(fontWeight: FontWeight.bold))),                        
+                        // const Expanded(flex: 1, child: SizedBox()),
+                        // const Expanded(flex: 1, child: SizedBox()),
                       ],
                     ),
                   );
@@ -255,14 +267,23 @@ void _applyFilters() {
                   padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
                   child: Row(
                     children: [
-                      Expanded(
-                        flex: 2,
-                        child: Text(DateFormat('hh:mm a').format(DateTime.parse(entry['createdAt']))),
-                      ),
-                      Expanded(flex: 1, child: Text("${entry['litres'] ?? '0'} L")),
+                      // Expanded(
+                      //   flex: 2,
+                      //   child: Text(DateFormat('hh:mm a').format(DateTime.parse(entry['createdAt']))),
+                      // ),
+                      // Expanded(
+                      //   flex: 1,
+                      //   child: Text(DateFormat('yyyy-MM-dd').format(DateTime.parse(entry['createdAt']))),
+                      // ),
+                      // Expanded(flex: 1, child: Text("${entry['customer_id'] ?? '0'}")),
+                      Expanded(flex: 1, child: Text("${entry['customer_id'] ?? '0'}")),
+                      Expanded(flex: 1, child: Text("${entry['litres'] ?? '0'} L")),                      
+                      Expanded(flex: 1, child: Text("${entry['fat'] ?? '0'}")),
+                      Expanded(flex: 1, child: Text("${entry['Rate'] ?? '0'}")),
                       Expanded(flex: 1, child: Text("₹ ${entry['amount'] ?? '0'}")),
-                      Expanded(flex: 1, child: Text(entry['animal']?.toString().toUpperCase() ?? '')),
-                      Expanded(flex: 1, child: Text(entry['session']?.toString() ?? '')),
+                      // Expanded(flex: 1, child: Text(entry['animal']?.toString().toUpperCase() ?? '')),
+                      // Expanded(flex: 1, child: Text(entry['session']?.toString() ?? '')),
+                      
                     ],
                   ),
                 );

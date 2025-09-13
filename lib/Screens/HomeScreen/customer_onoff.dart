@@ -10,7 +10,7 @@ class CustomerOnOffScreen extends StatefulWidget {
 }
 
 class _CustomerOnOffScreenState extends State<CustomerOnOffScreen> {
-  Map<String, dynamic>? customer; // only one user
+  List<Map<String, dynamic>> customers = []; // ✅ multiple users
   bool isLoading = true;
 
   @override
@@ -19,52 +19,59 @@ class _CustomerOnOffScreenState extends State<CustomerOnOffScreen> {
     fetchCustomerDetail();
   }
 
-  /// Fetch logged-in user detail
+  /// Fetch all customers
   Future<void> fetchCustomerDetail() async {
     try {
-      final response = await ApiService.get('/userOn');
+      final response = await ApiService.get('/userOn'); 
       final data = response.data;
 
       if (data['status'] == true && data['customer'] != null) {
-        setState(() {
-          customer = {
-            "name": data['customer']['name'],
-            "id": data['customer']['id'].toString(),
-            "active": data['customer']['active_status'] == 1,
-          };
-          isLoading = false;
-        });
-      } else {
+              setState(() {
+                customers = (data['customer'] as List).map((c) {
+                      return {
+                        "id": c['id'].toString(),
+                        "name": c['name'],
+                        "active": c['active_status'] == 1, // or set default false
+                      };
+                    }).toList();
+                isLoading = false;
+              });
+            }
+      else {
         setState(() => isLoading = false);
-        Get.snackbar("Error ❌", data['message'] ?? "User not found");
+        Get.snackbar("Error ❌", data['message'] ?? "No customers found");
       }
     } catch (e) {
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("❌ Failed to fetch user: $e")),
+        SnackBar(content: Text("❌ Failed to fetch customers: $e")),
       );
     }
   }
 
-  /// Update active/inactive status
-  Future<void> updateCustomerStatus(bool active) async {
-    if (customer == null) return;
-
-    final payload = {"active": active ? 1 : 0};
+  /// Update active/inactive status for one customer
+  Future<void> updateCustomerStatus(String id, bool active) async {
+    final payload = {"id": id, "active": active ? 1 : 0};
 
     try {
       final res = await ApiService.post('/onCustomer', payload);
 
       if (res.data['status'] == true) {
-        Get.snackbar("Success ✅", "Status updated successfully");
+        // Get.snackbar("Success ✅", "Status updated successfully");
       } else {
         // rollback UI if failed
-        setState(() => customer!["active"] = !active);
-        Get.snackbar("Update Failed ❌", res.data['message']);
+        setState(() {
+          final index = customers.indexWhere((c) => c["id"] == id);
+          if (index != -1) customers[index]["active"] = !active;
+        });
+        // Get.snackbar("Update Failed ❌", res.data['message']);
       }
     } catch (e) {
       // rollback UI on error
-      setState(() => customer!["active"] = !active);
+      setState(() {
+        final index = customers.indexWhere((c) => c["id"] == id);
+        if (index != -1) customers[index]["active"] = !active;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("❌ Error updating status: $e")),
       );
@@ -90,45 +97,50 @@ class _CustomerOnOffScreenState extends State<CustomerOnOffScreen> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.green))
-          : customer == null
-              ? const Center(child: Text("No user found"))
-              : Padding(
+          : customers.isEmpty
+              ? const Center(child: Text("No customers found"))
+              : ListView.builder(
                   padding: const EdgeInsets.all(16),
-                  child: Card(
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.green.shade700, width: 1),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.green.shade100,
-                        child: const Icon(Icons.person, color: Colors.green),
+                  itemCount: customers.length,
+                  itemBuilder: (context, index) {
+                    final customer = customers[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: Colors.green.shade700, width: 1),
                       ),
-                      title: Text(
-                        customer!["name"],
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.green.shade100,
+                          child: const Icon(Icons.person, color: Colors.green),
+                        ),
+                        title: Text(
+                          customer["name"],
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          "ID: ${customer["id"]}",
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                        trailing: Switch(
+                          activeColor: Colors.white,
+                          activeTrackColor: Colors.green,
+                          inactiveThumbColor: Colors.white,
+                          inactiveTrackColor: Colors.grey,
+                          value: customer["active"],
+                          onChanged: (val) {
+                            setState(() => customer["active"] = val);
+                            updateCustomerStatus(customer["id"], val);
+                          },
                         ),
                       ),
-                      subtitle: Text(
-                        "ID: ${customer!["id"]}",
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                      trailing: Switch(
-                        activeColor: Colors.white,
-                        activeTrackColor: Colors.green,
-                        inactiveThumbColor: Colors.white,
-                        inactiveTrackColor: Colors.grey,
-                        value: customer!["active"],
-                        onChanged: (val) {
-                          setState(() => customer!["active"] = val);
-                          updateCustomerStatus(val);
-                        },
-                      ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
     );
   }
