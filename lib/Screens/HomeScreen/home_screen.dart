@@ -3,10 +3,10 @@ import 'package:digitalwalletpaytmcloneapp/Constants/images.dart';
 import 'package:digitalwalletpaytmcloneapp/Controllers/banner_controller.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/add_customer_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/customers_list_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_bank_account_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/milk_entry_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/milk_rate_settings_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_mobile_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_self_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/ScannerScreen/scanner_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/UserPaymentCodeScreens/user_payment_code_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 import 'package:digitalwalletpaytmcloneapp/Utils/common_text_widget.dart';
@@ -217,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               InkWell(
                 onTap: () {
-                  Get.to(() => ScannerScreen());
+                  Get.to(() => MilkEntryScreen());
                 },
                 child: Column(
                   children: [
@@ -340,6 +340,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   subtitle: "Sell, Purchase",
                   onTap: () {
                     // navigate to milk collection screen
+
+                    Get.to(() => const MilkEntryScreen());
                   },
                 ),
               ),
@@ -489,6 +491,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   subtitle: "Change milk rates",
                   onTap: () {
                     // navigate to milk collection screen
+                    Get.to(() => const MilkRateSettingsScreen());
                   },
                 ),
               ),
