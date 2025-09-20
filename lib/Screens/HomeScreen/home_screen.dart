@@ -341,7 +341,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () {
                     // navigate to milk collection screen
 
-                    Get.to(() => const MilkEntryScreen());
+                    Get.to(() =>  MilkEntryScreen());
                   },
                 ),
               ),
@@ -358,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
   child: GestureDetector(
     onTap: () {
-      Get.to(() => const PayScreen());
+      Get.to(() =>  PayScreen());
     },
     child: OutlineTile(
       iconAsset: "assets/images/icons8-bill-80.png",
@@ -417,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   subtitle: "Seller, Purchase",
                   onTap: () {
                     // navigate to milk collection screen
-                    Get.to(() => const CustomersListScreen());
+                    Get.to(() =>  CustomersListScreen());
                   },
                 ),
               ),
@@ -430,7 +430,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "View Transactions",
                   subtitle: "Payments Details",
                   onTap: () {
-                   Get.to(() => const TransactionPage());
+                   Get.to(() =>  TransactionPage());
                   },
                 ),
               ),
@@ -443,7 +443,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Daily Purchase Report",
                   subtitle: "Purchase Details",
                   onTap: () {
-                    Get.to(() => const DailyPurchaseReportScreen());
+                    Get.to(() =>  DailyPurchaseReportScreen());
                   },
                 ),
               ),
@@ -456,7 +456,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Dairy Report",
                   subtitle: "Sale Details",
                   onTap: () {
-                      Get.to(() => const DairyReportScreen());
+                      Get.to(() =>  DairyReportScreen());
                   },
                 ),
               ),
@@ -468,7 +468,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Daily Sale Report",
                   subtitle: "Sale Details",
                   onTap: () {
-                      Get.to(() => const DailySaleReportScreen());
+                      Get.to(() =>  DailySaleReportScreen());
                   },
                 ),
               ),
@@ -482,7 +482,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Dairy Products",
                   subtitle: "Ghee Dahi Lassi etc.",
                   onTap: () {
-                    Get.to(() => const DairyProductsScreen());
+                    Get.to(() =>  DairyProductsScreen());
                   },
                 ),
               ),
@@ -495,7 +495,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Customer On/Off",
                   subtitle: "Enable or disable customer",
                   onTap: () {
-                    Get.to(() => const CustomerOnOffScreen());
+                    Get.to(() =>  CustomerOnOffScreen());
                   },
                 ),
               ),
@@ -508,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Payment Slips",
                   subtitle: "Manage customer payment slips",
                   onTap: () {
-                    Get.to(() => const PaymentScreen());
+                    Get.to(() =>  PaymentScreen());
                   },
                 ),
               ),
@@ -521,7 +521,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Report",
                   subtitle: "Buyer and Seller Report",
                   onTap: () {
-                    Get.to(() => const ReportScreen());
+                    Get.to(() =>  ReportScreen());
                   },
                 ),
               ),
@@ -535,7 +535,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   subtitle: "Change milk rates",
                   onTap: () {
                     // navigate to milk collection screen
-                    Get.to(() => const MilkRateSettingsScreen());
+                    Get.to(() =>  MilkRateSettingsScreen());
                   },
                 ),
               ),
