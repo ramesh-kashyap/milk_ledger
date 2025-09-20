@@ -15,6 +15,9 @@ import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/daily_purchase_rep
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/payment_slip_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/report_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/customer_onoff.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/add_Product_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/dairy_product_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/setting_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/UserPaymentCodeScreens/user_payment_code_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 import 'package:digitalwalletpaytmcloneapp/Utils/common_text_widget.dart';
@@ -479,6 +482,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
+               SizedBox(height: 10),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
+                  iconAsset: "assets/images/icons8-buy-48.png",
+                  title: "Dairy Products",
+                  subtitle: "Ghee Dahi Lassi etc.",
+                  onTap: () {
+                    Get.to(() => const DairyProductsScreen());
+                  },
+                ),
+              ),
+
               SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -526,7 +543,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Milk Rate Settings",
                   subtitle: "Change milk rates",
                   onTap: () {
-                    // navigate to milk collection screen
+                    // Get.to(()=> const SettingsPage());
+                  },
+                ),
+              ),
+
+              SizedBox(height: 15),
+
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BigFeatureTile(
+                  iconAsset: "assets/images/icons8-setting-50.png",
+                  title: "Settings",
+                  subtitle: "Language, Bill duration",
+                  onTap: () {
+                    Get.to(()=> const SettingsPage());
                   },
                 ),
               ),
