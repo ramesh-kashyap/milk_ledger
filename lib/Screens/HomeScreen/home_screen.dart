@@ -3,21 +3,10 @@ import 'package:digitalwalletpaytmcloneapp/Constants/images.dart';
 import 'package:digitalwalletpaytmcloneapp/Controllers/banner_controller.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/add_customer_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/customers_list_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_bank_account_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/milk_entry_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/milk_rate_settings_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_mobile_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_self_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/ScannerScreen/scanner_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/pay_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/daily_dairy_report.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/dairy_sale_report.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/view_transection.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/daily_purchase_report.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/payment_slip_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/report_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/customer_onoff.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/add_Product_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/dairy_product_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/setting_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/UserPaymentCodeScreens/user_payment_code_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 import 'package:digitalwalletpaytmcloneapp/Utils/common_text_widget.dart';
@@ -228,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               InkWell(
                 onTap: () {
-                  Get.to(() => ScannerScreen());
+                  Get.to(() => MilkEntryScreen());
                 },
                 child: Column(
                   children: [
@@ -351,6 +340,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   subtitle: "Sell, Purchase",
                   onTap: () {
                     // navigate to milk collection screen
+
+                    Get.to(() => const MilkEntryScreen());
                   },
                 ),
               ),
@@ -543,22 +534,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "Milk Rate Settings",
                   subtitle: "Change milk rates",
                   onTap: () {
-                    // Get.to(()=> const SettingsPage());
-                  },
-                ),
-              ),
-
-              SizedBox(height: 15),
-
-              SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: BigFeatureTile(
-                  iconAsset: "assets/images/icons8-setting-50.png",
-                  title: "Settings",
-                  subtitle: "Language, Bill duration",
-                  onTap: () {
-                    Get.to(()=> const SettingsPage());
+                    // navigate to milk collection screen
+                    Get.to(() => const MilkRateSettingsScreen());
                   },
                 ),
               ),
