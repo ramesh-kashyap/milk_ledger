@@ -3,10 +3,24 @@ import 'package:digitalwalletpaytmcloneapp/Constants/images.dart';
 import 'package:digitalwalletpaytmcloneapp/Controllers/banner_controller.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/add_customer_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/customers_list_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/milk_entry_screen.dart';
-import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/milk_rate_settings_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_bank_account_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_mobile_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/to_self_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/ScannerScreen/scanner_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/pay_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/daily_dairy_report.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/dairy_sale_report.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/view_transection.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/daily_purchase_report.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/payment_slip_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/report_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/customer_onoff.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/add_Product_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/dairy_product_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/setting_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/milk_rate_settings_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/milk_entry_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/pay_receive_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/UserPaymentCodeScreens/user_payment_code_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 import 'package:digitalwalletpaytmcloneapp/Utils/common_text_widget.dart';
@@ -15,6 +29,7 @@ import 'package:digitalwalletpaytmcloneapp/main.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
+
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key? key}) : super(key: key);
@@ -236,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               InkWell(
                 onTap: () {
-                  Get.to(() => ToMobileScreen());
+                  Get.to(() => PayReceiveScreen());
                 },
                 child: Column(
                   children: [
