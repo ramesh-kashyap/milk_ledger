@@ -75,18 +75,18 @@ class _HomeScreenState extends State<HomeScreen> {
     return await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Select Customer Type"),
+        title: Text("select_customer_type".tr),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.person, color: Colors.green),
-              title: const Text("Seller"),
+              title: Text("seller".tr),
               onTap: () => Navigator.pop(ctx, "Seller"),
             ),
             ListTile(
               leading: const Icon(Icons.person, color: Colors.blue),
-              title: const Text("Purchaser"),
+             title: Text("purchaser".tr),
               onTap: () => Navigator.pop(ctx, "Purchaser"),
             ),
           ],
@@ -122,15 +122,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) {
-      return "Good Morning,";
-    } else if (hour < 17) {
-      return "Good Afternoon,";
-    } else {
-      return "Good Evening,";
-    }
+  final hour = DateTime.now().hour;
+  if (hour < 12) {
+    return "good_morning".tr;      // ✅ use translation keys
+  } else if (hour < 17) {
+    return "good_afternoon".tr;
+  } else {
+    return "good_evening".tr;
   }
+}
+
 
   /// TopContainer Widget View
   Widget TopContainerWidgetView() {
@@ -174,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             child: CommonTextWidget.InterBold(
               color: black171,
-              text: "Hello $userName",
+              text: "hello_user".trParams({"name": userName}),
               fontSize: 20,
             ),
           ),
@@ -239,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     CommonTextWidget.InterSemiBold(
                       color: black171,
-                      text: "Milk Entry",
+                      text: "milk_entry".tr,
                       fontSize: 12,
                     ),
                   ],
@@ -258,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     CommonTextWidget.InterSemiBold(
                       color: black171,
-                      text: "Pay/Receive",
+                      text: "pay_receive".tr,
                       fontSize: 12,
                     ),
                   ],
@@ -277,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     CommonTextWidget.InterSemiBold(
                       color: black171,
-                      text: "Reports",
+                      text: "reports".tr,
                       fontSize: 12,
                     ),
                   ],
@@ -299,7 +300,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     CommonTextWidget.InterSemiBold(
                       color: black171,
-                      text: "Customer",
+                      text: "customer".tr,
                       fontSize: 12,
                     ),
                   ],
@@ -332,7 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     CommonTextWidget.InterBold(
                       color: black171,
-                      text: "My Dairy Data",
+                      text: "my_dairy_data".tr,
                       fontSize: 18,
                     ),
                     CommonTextWidget.InterRegular(
@@ -347,8 +348,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/milk-48.png",
-                  title: "Milk Collection",
-                  subtitle: "Sell, Purchase",
+                  title: "milk_collection".tr,
+                  subtitle: "sell_purchase".tr,
                   onTap: () {
                     // navigate to milk collection screen
                   },
@@ -371,8 +372,8 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     child: OutlineTile(
       iconAsset: "assets/images/icons8-bill-80.png",
-      title: "Bill",
-      subtitle: "Customer Bills",
+      title: "bill".tr,
+      subtitle: "customer_bills".tr,
     ),
   ),
 ),
@@ -382,8 +383,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: OutlineTile(
                         // no margin here either
                         iconAsset: "assets/images/icons8-product-48.png",
-                        title: "Products",
-                        subtitle: "Daily Products",
+                        title: "products".tr,
+                        subtitle: "daily_products".tr,
                       ),
                     ),
                   ],
@@ -401,8 +402,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: OutlineTile(
                         // no margin inside this widget
                         iconAsset: "assets/images/icons8-bill-80.png",
-                        title: "Report",
-                        subtitle: "Dairy Reports",
+                        title: "report".tr,
+                        subtitle: "dairy_reports".tr,
                       ),
                     ),
                     const SizedBox(width: 8), // <- only middle gap
@@ -410,8 +411,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: OutlineTile(
                         // no margin here either
                         iconAsset: "assets/images/icons8-product-48.png",
-                        title: "Pay/Receive",
-                        subtitle: "Amount Entries",
+                        title: "pay/receive".tr,
+                        subtitle: "amount_entries".tr,
                       ),
                     ),
                   ],
@@ -422,8 +423,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-customer-80.png",
-                  title: "All Customers",
-                  subtitle: "Seller, Purchase",
+                  title: "all_customers".tr,
+                  subtitle: "seller_purchase".tr,
                   onTap: () {
                     // navigate to milk collection screen
                     Get.to(() => const CustomersListScreen());
@@ -436,8 +437,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-report-48.png",
-                  title: "View Transactions",
-                  subtitle: "Payments Details",
+                  title: "view_transactions".tr,
+                  subtitle: "payment_details".tr,
                   onTap: () {
                    Get.to(() => const TransactionPage());
                   },
@@ -449,8 +450,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-buy-48.png",
-                  title: "Daily Purchase Report",
-                  subtitle: "Purchase Details",
+                  title: "daily_purchase_report".tr,
+                  subtitle: "purchase_details".tr,
                   onTap: () {
                     Get.to(() => const DailyPurchaseReportScreen());
                   },
@@ -462,8 +463,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-product-48.png",
-                  title: "Dairy Report",
-                  subtitle: "Sale Details",
+                  title: "dairy_report".tr,
+                  subtitle: "sale_details".tr,
                   onTap: () {
                       Get.to(() => const DairyReportScreen());
                   },
@@ -474,8 +475,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-pie-chart-report-50.png",
-                  title: "Daily Sale Report",
-                  subtitle: "Sale Details",
+                  title: "daily_sale_report".tr,
+                  subtitle: "sale_details".tr,
                   onTap: () {
                       Get.to(() => const DailySaleReportScreen());
                   },
@@ -488,8 +489,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-buy-48.png",
-                  title: "Dairy Products",
-                  subtitle: "Ghee Dahi Lassi etc.",
+                  title: "dairy_products".tr,
+                  subtitle: "ghee_dahi_lassi".tr,
                   onTap: () {
                     Get.to(() => const DairyProductsScreen());
                   },
@@ -501,8 +502,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-customer-64.png",
-                  title: "Customer On/Off",
-                  subtitle: "Enable or disable customer",
+                  title: "customer_on_off".tr,
+                  subtitle: "enable_disable_customer".tr,
                   onTap: () {
                     Get.to(() => const CustomerOnOffScreen());
                   },
@@ -514,8 +515,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-purchase-order-80.png",
-                  title: "Payment Slips",
-                  subtitle: "Manage customer payment slips",
+                  title: "payment_slips".tr,
+                  subtitle: "manage_payment_slips".tr,
                   onTap: () {
                     Get.to(() => const PaymentScreen());
                   },
@@ -527,8 +528,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-purchase-order-80.png",
-                  title: "Report",
-                  subtitle: "Buyer and Seller Report",
+                  title: "report".tr,
+                  subtitle: "buyer_seller_report".tr,
                   onTap: () {
                     Get.to(() => const ReportScreen());
                   },
@@ -540,8 +541,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-setting-50.png",
-                  title: "Milk Rate Settings",
-                  subtitle: "Change milk rates",
+                  title: "milk_rate_settings".tr,
+                  subtitle: "change_milk_rates".tr,
                   onTap: () {
                     // Get.to(()=> const SettingsPage());
                   },
@@ -555,8 +556,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: BigFeatureTile(
                   iconAsset: "assets/images/icons8-setting-50.png",
-                  title: "Settings",
-                  subtitle: "Language, Bill duration",
+                  title: "settings".tr,
+                  subtitle: "language_bill_duration".tr,
                   onTap: () {
                     Get.to(()=> const SettingsPage());
                   },
@@ -574,7 +575,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     CommonTextWidget.InterBold(
                       color: black171,
-                      text: "Quick Actions",
+                      text: "quick_actions".tr,
                       fontSize: 18,
                     ),
                   ],
@@ -659,13 +660,13 @@ class _HomeScreenState extends State<HomeScreen> {
           CommonTextWidget.InterBold(
             color: black171,
             fontSize: 15,
-            text: "Invite your friends",
+            text: "invite_friends".tr,
           ),
           SizedBox(height: 10),
           CommonTextWidget.InterRegular(
             color: black171,
             fontSize: 13,
-            text: "Get \$51 after each friends first payment",
+            text: "invite_reward",
           ),
           SizedBox(height: 25),
           MaterialButton(
@@ -678,7 +679,7 @@ class _HomeScreenState extends State<HomeScreen> {
             color: green21E.withOpacity(0.29),
             child: CommonTextWidget.InterSemiBold(
               fontSize: 16,
-              text: "Invite",
+              text: "invite".tr,
               color: white,
             ),
           )
