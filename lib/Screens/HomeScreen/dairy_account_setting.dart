@@ -24,7 +24,6 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
     try {
       final response = await ApiService.get('/userDetails');
       final data = response.data;
-
       if (data['success'] == true && data['data'] != null) {
         setState(() {
           userDetails = data['data']; // single object
