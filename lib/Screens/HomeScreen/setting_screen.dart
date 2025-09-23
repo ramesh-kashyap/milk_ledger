@@ -25,8 +25,8 @@ class _SettingsPageState extends State<SettingsPage> {
             groupValue: selectedLang,
             onChanged: (val) {
               setState(() => selectedLang = val!);
+              Get.updateLocale(const Locale('en', 'US')); // ✅ change locale
               Get.back();
-              Get.snackbar("✅ Language Changed", "Now using $val");
             },
             title: const Text("English"),
           ),
@@ -35,8 +35,9 @@ class _SettingsPageState extends State<SettingsPage> {
             groupValue: selectedLang,
             onChanged: (val) {
               setState(() => selectedLang = val!);
+              Get.updateLocale(const Locale('hi', 'IN')); // ✅ change locale
+              print("✅ Locale changed to: ${Get.locale}");
               Get.back();
-              Get.snackbar("✅ भाषा बदली गई", "अब $val का उपयोग कर रहे हैं");
             },
             title: const Text("हिंदी"),
           ),
@@ -45,11 +46,12 @@ class _SettingsPageState extends State<SettingsPage> {
             groupValue: selectedLang,
             onChanged: (val) {
               setState(() => selectedLang = val!);
+              Get.updateLocale(const Locale('pa', 'IN')); // ✅ change locale
               Get.back();
-              Get.snackbar("✅ Language Changed", "Now using $val");
             },
             title: const Text("ਪੰਜਾਬੀ"),
           ),
+
         ],
       ),
       radius: 12,
@@ -60,50 +62,55 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Settings",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text("settings".tr,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
         ),
+      ),
+
+
         backgroundColor: Colors.green[600],
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildSectionHeader("General"),
+          _buildSectionHeader("general".tr),
           _buildSettingTile(
             icon: Icons.language,
-            title: "Language",
-            subtitle: selectedLang, // show current language
-            onTap: _showLanguageDialog, // open popup
+            title: "language".tr,     // ✅ translated
+            subtitle: selectedLang, 
+            onTap: _showLanguageDialog,
           ),
+
           _buildSettingTile(
             icon: Icons.calendar_today,
-            title: "Duration",
-            subtitle: "Every Month",
+            title: "duration".tr,
+            subtitle: "every_month".tr,
             onTap: () {},
           ),
 
           const SizedBox(height: 20),
 
-          _buildSectionHeader("Account"),
+          _buildSectionHeader("account".tr),
           _buildSettingTile(
             icon: Icons.account_circle,
-            title: "Dairy Account Settings",
-            subtitle: "Dairy Name • Address",
+            title: "dairy_account_settings".tr,
+            subtitle: "dairy_name_address".tr,
             onTap: () {
               Get.to(() => const DairyAccountSettings());
             },
           ),
           _buildSettingTile(
             icon: Icons.delete,
-            title: "Delete Account",
+            title: "delete_account".tr,
             iconColor: Colors.red,
             onTap: () {},
           ),
           _buildSettingTile(
             icon: Icons.logout,
-            title: "Sign Out",
+            title: "sign_out".tr,
             onTap: () {},
           ),
 
@@ -111,12 +118,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
           _buildSectionHeader("Preferences"),
           _buildSwitchTile(
-            title: "Send Receipt",
+            title: "send_receipt".tr,
             value: sendReceipt,
             onChanged: (val) => setState(() => sendReceipt = val),
           ),
           _buildSwitchTile(
-            title: "Print Slip",
+            title: "print_slip".tr,
             value: printSlip,
             onChanged: (val) => setState(() => printSlip = val),
           ),
@@ -126,9 +133,9 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 10),
           Center(
             child: Column(
-              children: const [
+              children: [
                 Text(
-                  "Version",
+                  "version".tr,
                   style: TextStyle(color: Colors.grey),
                 ),
                 Text(

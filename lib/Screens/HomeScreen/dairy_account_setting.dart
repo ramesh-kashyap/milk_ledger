@@ -24,7 +24,6 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
     try {
       final response = await ApiService.get('/userDetails');
       final data = response.data;
-
       if (data['success'] == true && data['data'] != null) {
         setState(() {
           userDetails = data['data']; // single object
@@ -40,6 +39,63 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
         SnackBar(content: Text("❌ Failed to fetch user details: $e")),
       );
     }
+  }
+
+  /// Update field API call
+  Future<void> updateField(String field, String newValue) async {
+    try {
+      final response = await ApiService.post('/updateUserDetail', {
+        field: newValue,
+      });
+
+      if (response.data['success'] == true) {
+        setState(() {
+          userDetails?[field] = newValue;
+        });
+        Get.snackbar("✅ Success", "$field updated successfully");
+      } else {
+        Get.snackbar("❌ Error", response.data['message'] ?? "Update failed");
+      }
+    } catch (e) {
+      Get.snackbar("❌ Error", "Failed to update $field: $e");
+    }
+  }
+
+  /// Show edit dialog
+  void _showEditDialog(String field, String currentValue) {
+    final controller = TextEditingController(text: currentValue);
+
+    Get.defaultDialog(
+        title: "Edit $field",
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: "Enter new $field",
+            border: OutlineInputBorder(),
+          ),
+        ),
+        cancel: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red, // Cancel button color
+          ),
+          onPressed: () => Get.back(),
+          child: const Text("Cancel", style: TextStyle(color: Colors.white)),
+        ),
+        confirm: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green, // Save button color
+          ),
+          onPressed: () {
+            if (controller.text.trim().isNotEmpty) {
+              updateField(field, controller.text.trim());
+            }
+            Get.back();
+          },
+          child: const Text("Save", style: TextStyle(color: Colors.white)),
+        ),
+      );
+
+
   }
 
   @override
@@ -64,18 +120,21 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
                     _buildInfoCard(
                       icon: Icons.apartment,
                       title: "YOUR DAIRY NAME",
+                      fieldKey: "name",
                       value: userDetails?['name'] ?? "N/A",
                     ),
                     const SizedBox(height: 16),
                     _buildInfoCard(
                       icon: Icons.phone,
                       title: "Contact Number",
+                      fieldKey: "phone",
                       value: userDetails?['phone'] ?? "N/A",
                     ),
                     const SizedBox(height: 16),
                     _buildInfoCard(
                       icon: Icons.location_on,
                       title: "Address",
+                      fieldKey: "address",
                       value: userDetails?['address'] ?? "N/A",
                     ),
                   ],
@@ -88,6 +147,7 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
     required IconData icon,
     required String title,
     required String value,
+    required String fieldKey,
   }) {
     return Card(
       elevation: 3,
@@ -128,7 +188,10 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
                 ],
               ),
             ),
-            Icon(Icons.edit, color: Colors.grey[400], size: 20), // edit hint
+            IconButton(
+              icon: Icon(Icons.edit, color: Colors.green[600], size: 20),
+              onPressed: () => _showEditDialog(fieldKey, value),
+            ),
           ],
         ),
       ),

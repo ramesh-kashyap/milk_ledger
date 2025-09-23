@@ -19,14 +19,18 @@ int? selectedCustomerId;
   DateTime _billDate = DateTime.now();
   String? _mode;
 final TextEditingController _nameCtrl = TextEditingController();
+bool _isFormValid = false;
 
 @override
 void initState() {
   super.initState();
-_fetchDetailsByAcNo();
-  // Listen for changes in Code field
- 
+  _fetchDetailsByAcNo();
+
+  // Listen for changes
+  _codeCtrl.addListener(_checkFormValid);
+  _amountCtrl.addListener(_checkFormValid);
 }
+
   // Colors
   final Color background = const Color(0xFFF7F8FA);
   final Color primaryBlue = const Color(0xFF0A5CA8);
@@ -39,7 +43,7 @@ void _onSave() async {
 
   // Prepare payload
   final payload = {
-    'ac_no':  _nameCtrl.text.trim(),
+    'ac_no':  selectedCustomerId,
     'code': _codeCtrl.text.trim(),
     'amount': _amountCtrl.text.trim(),
     'bill_date': DateFormat('yyyy-MM-dd').format(_billDate),
@@ -47,6 +51,7 @@ void _onSave() async {
     'remark': _remarkCtrl.text.trim(),
  
   };
+ 
 
   try {
     final response = await ApiService.post('/transactions', payload);
@@ -62,7 +67,7 @@ void _onSave() async {
             TextButton(
               onPressed: () {
                 Navigator.pop(context); // close dialog
-                Navigator.pop(context); // go back or reset screen
+               
               },
               child: const Text('OK'),
             ),
@@ -92,6 +97,15 @@ void _onSave() async {
     );
   }
 }
+void _checkFormValid() {
+  setState(() {
+    _isFormValid = 
+        selectedCustomerId != null &&
+        _codeCtrl.text.trim().isNotEmpty &&
+        _amountCtrl.text.trim().isNotEmpty &&
+        num.tryParse(_amountCtrl.text.trim()) != null;
+});
+}
 
 
   Future<void> _fetchDetailsByAcNo() async {
@@ -101,9 +115,18 @@ print('Response: ${response}');
 
     try {
    if ( response.data['success'] == true) {
-    setState(() {
-      customers = List<Map<String, dynamic>>.from(response.data['data']);
-    });
+   final fetchedCustomers = List<Map<String, dynamic>>.from(response.data['data']);
+
+      setState(() {
+        customers = fetchedCustomers;
+
+        // Set first customer as default
+        if (customers.isNotEmpty) {
+          selectedCustomerId = customers[0]['id'];
+          _codeCtrl.text = customers[0]['code'] ?? '';
+          _nameCtrl.text = '${customers[0]['name']} (${customers[0]['code']})';
+        }
+      });
   } else {
     setState(() {
       _codeCtrl.text = '';
@@ -215,17 +238,17 @@ print('Response: ${response}');
         child: SizedBox(
           height: 52,
           child: ElevatedButton(
-            onPressed: _onSave,
+            onPressed: _isFormValid ? _onSave : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: accentGreen,
+               backgroundColor: _isFormValid ? accentGreen : accentGreen.withOpacity(0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
               elevation: 2,
             ),
-            child: const Text(
+            child: Text(
               'SAVE',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,  color: _isFormValid ? Colors.white : Colors.green[200],),
             ),
           ),
         ),
@@ -265,7 +288,10 @@ print('Response: ${response}');
     items: customers.map((customer) {
       return DropdownMenuItem<int>(
         value: customer['id'], // use unique id
-        child: Text(customer['name']), // show name
+        child: Text(
+          '${customer['name']} (${customer['code']})', // show name + code
+        ),
+ // show name
       );
     }).toList(),
     onChanged: (value) {
@@ -273,7 +299,7 @@ print('Response: ${response}');
         selectedCustomerId = value;
         final selectedCustomer = customers.firstWhere((c) => c['id'] == value);
         _codeCtrl.text = selectedCustomer['code'] ?? '';
-          _nameCtrl.text = selectedCustomer['name'] ?? '';
+          _nameCtrl.text = '${selectedCustomer['name']} (${selectedCustomer['code']})';
       });
     },
     validator: (v) => (v == null) ? 'Select Name' : null,
@@ -299,7 +325,7 @@ print('Response: ${response}');
         setState(() {
 
           selectedCustomerId = match['id'];
-           _nameCtrl.text = match['name']; 
+          _nameCtrl.text = '${match['name']} (${match['code']})';
         });
       }else {
         // If code not found, clear selection

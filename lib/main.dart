@@ -2,6 +2,7 @@ import 'package:digitalwalletpaytmcloneapp/Constants/colors.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/SplashScreen/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'translations.dart';
 import 'package:get/get.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
@@ -9,25 +10,30 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   ApiService.init();
 
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    statusBarBrightness: Brightness.dark,
-  ));
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarBrightness: Brightness.dark,
+    ),
+  );
   SystemChrome.setPreferredOrientations(
-          [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown])
-      .then((value) => runApp(DigiWalletPaytmCloneApp()));
+    [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown],
+  ).then((value) => runApp(const DigiWalletPaytmCloneApp()));
 }
 
 class DigiWalletPaytmCloneApp extends StatelessWidget {
-  DigiWalletPaytmCloneApp({Key? key}) : super(key: key);
+  const DigiWalletPaytmCloneApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      translations: AppTranslations(),  // ✅ translations added here
+      locale: const Locale('en', 'US'), // ✅ default language
+      fallbackLocale: const Locale('en', 'US'),
+      home: SplashScreen(),             // ✅ your splash screen
       theme: ThemeData(
-        colorScheme: ColorScheme.light(primary: Colors.green),
-        buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+        colorScheme: const ColorScheme.light(primary: Colors.green),
+        buttonTheme: const ButtonThemeData(textTheme: ButtonTextTheme.primary),
       ),
     );
   }
@@ -36,7 +42,10 @@ class DigiWalletPaytmCloneApp extends StatelessWidget {
 class MyBehavior extends ScrollBehavior {
   @override
   Widget buildOverscrollIndicator(
-      BuildContext context, Widget child, ScrollableDetails details) {
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
     return child;
   }
 }
