@@ -6,9 +6,9 @@ class PayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.green[100],
+        backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           "Bill",
@@ -29,17 +29,15 @@ class PayScreen extends StatelessWidget {
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
+           decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    border: Border.all(
+      color: Colors.grey.shade300,  // light grey border color
+      width: 1.5,                   // border thickness
+    ),
+    // Remove boxShadow since you want a border instead
+  ),
             child: Row(
               children: const [
                 Icon(Icons.person, color: Colors.green, size: 28),
@@ -57,7 +55,7 @@ class PayScreen extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.green[100],
+              color: Colors.grey[200],
               borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
@@ -75,17 +73,15 @@ class PayScreen extends StatelessWidget {
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
+               decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    border: Border.all(
+      color: Colors.grey.shade300,  // light grey border color
+      width: 1.5,                   // border thickness
+    ),
+    // Remove boxShadow since you want a border instead
+  ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
@@ -111,11 +107,15 @@ SafeArea(
   child: Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.green[100],
+      color: Colors.white,
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(24),
         topRight: Radius.circular(24),
       ),
+       border: Border.all(
+      color: Colors.grey.shade300,  // light grey border color
+      width: 1.5,                   // border thickness
+    ),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -147,7 +147,11 @@ SafeArea(
             padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: BoxDecoration(
               color: Colors.green,
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(15),
+               border: Border.all(
+      color: Colors.grey.shade300,  // light grey border color
+      width: 1.5,                   // border thickness
+    ),
             ),
             alignment: Alignment.center,
             child: const Text(
