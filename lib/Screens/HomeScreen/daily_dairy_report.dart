@@ -43,10 +43,10 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
       appBar: AppBar(
         backgroundColor: Colors.green[500],
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           "Dairy Report",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: loading

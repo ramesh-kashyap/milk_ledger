@@ -124,10 +124,14 @@ class _TransactionPageState extends State<TransactionPage> {
                       );
                     }).toList(),
                     onChanged: (value) {
-                      setState(() => selectedCustomerCode = value);
+                    setState(() {
+                      selectedCustomerCode = value;
+                      _codeController.text = value ?? ""; // update the Code input box
+                    });
 
-                      _fetchCustProList(code: value);
-                    },
+                    _fetchCustProList(code: value);
+                  },
+
                   ),
 
                   ),
