@@ -48,7 +48,6 @@ class MyApp extends StatelessWidget {
 
 class DairyProductsScreen extends StatefulWidget {
   const DairyProductsScreen({super.key});
-
   @override
   State<DairyProductsScreen> createState() => _DairyProductsScreenState();
 }
@@ -61,7 +60,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
 
   List<String> customerList = [];
   List<Map<String, dynamic>> productList = [];
-
+   bool _isQuantityValid = true;
   double availableStock = 0.0;
 
   final TextEditingController _quantityController = TextEditingController();
@@ -99,10 +98,12 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
     if (mounted) {
       setState(() {
         _amountController.text = amount.toStringAsFixed(2);
+
+        _isQuantityValid = quantity <= availableStock;
       });
     }
   }
-
+  
   Future<void> _fetchCustProList({String? customerId}) async {
   try {
     final body = {
@@ -111,7 +112,6 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
     if (customerId != null) body["customerId"] = customerId;
 
     final response = await ApiService.post("/custprolist", body);
-     print(response);
     final data = response.data;    
     if (data["success"] == true) {
       final customersRaw = (data["customers"] as List?) ?? [];
@@ -335,7 +335,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
                                   child: TextFormField(
                                     controller: _quantityController,
                                     keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(labelText: "Quantity"),
+                                    decoration: InputDecoration(labelText: "Quantity",errorText: !_isQuantityValid ? "Exceeds stock ($availableStock)" : null,),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -396,7 +396,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
                             child: SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: _submitTransaction,
+                                onPressed: _isQuantityValid ? _submitTransaction : null,
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
