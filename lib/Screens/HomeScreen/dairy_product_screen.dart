@@ -54,13 +54,13 @@ class DairyProductsScreen extends StatefulWidget {
 
 class _DairyProductsScreenState extends State<DairyProductsScreen> {
   DateTime selectedDate = DateTime.now();
-  Map<String, dynamic>? selectedCustomer; // ✅ now a Map, not String
+  String? selectedCustomer; // "Name (code)" string as before
   Map<String, dynamic>? selectedProduct;
   String transactionType = "Sale";
 
-  List<Map<String, dynamic>> customerList = [];
+  List<String> customerList = [];
   List<Map<String, dynamic>> productList = [];
-  bool _isQuantityValid = true;
+   bool _isQuantityValid = true;
   double availableStock = 0.0;
 
   final TextEditingController _quantityController = TextEditingController();
@@ -94,58 +94,71 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
     final quantity = double.tryParse(_quantityController.text) ?? 0.0;
     final price = double.tryParse(_priceController.text) ?? 0.0;
     final amount = quantity * price;
+    // avoid setState on every small typed char if not mounted, but this is fine here:
     if (mounted) {
       setState(() {
         _amountController.text = amount.toStringAsFixed(2);
+
         _isQuantityValid = quantity <= availableStock;
       });
     }
   }
-
+  
   Future<void> _fetchCustProList({String? customerId}) async {
-    try {
-      final body = {"transactionType": transactionType};
-      if (customerId != null) body["customerId"] = customerId;
+  try {
+    final body = {
+      "transactionType": transactionType,
+    };
+    if (customerId != null) body["customerId"] = customerId;
 
-      final response = await ApiService.post("/custprolist", body);
-      final data = response.data;
-      if (data["success"] == true) {
-        final customersRaw = (data["customers"] as List?) ?? [];
-        final productsRaw = (data["products"] as List?) ?? [];
-        print(customersRaw);
+    final response = await ApiService.post("/custprolist", body);
+    final data = response.data;
+    if (data["success"] == true) {
+      final customersRaw = (data["customers"] as List?) ?? [];
+      final productsRaw = (data["products"] as List?) ?? [];
+       print(customersRaw);
+      setState(() {
+        // ✅ Always map to string "Name (code)"
+        customerList = customersRaw.map((c) {
+          final name = c["name"] ?? "Unknown";
+          final code = c["code"] ?? "";
+          final customerType = c["customerType"] ?? "";
+          return "$name ($code) - $customerType";
+        }).toList();
 
-        setState(() {
-          customerList = customersRaw.cast<Map<String, dynamic>>();
-          if (customerList.isNotEmpty && selectedCustomer == null) {
-            selectedCustomer = customerList.first;
-          }
+        productList = productsRaw.cast<Map<String, dynamic>>();
 
-          productList = productsRaw.cast<Map<String, dynamic>>();
-          if (productList.isNotEmpty) {
-            selectedProduct = productList.first;
-            availableStock =
-                (productList.first["stock"] as num? ?? 0).toDouble();
-            _priceController.text =
-                (productList.first["product_price"] ?? _priceController.text)
-                    .toString();
-          }
-        });
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data["message"] ?? "Failed to load")),
-          );
+        if (productList.isNotEmpty) {
+          selectedProduct = productList.first;
+          availableStock =
+              (productList.first["stock"] as num? ?? 0).toDouble();
+          _priceController.text =
+              (productList.first["product_price"] ?? _priceController.text)
+                  .toString();
         }
-      }
-    } catch (e, st) {
-      debugPrint("Error fetching customer/products: $e\n$st");
+
+        // reset dropdown to first item if null
+        if (customerList.isNotEmpty && selectedCustomer == null) {
+          selectedCustomer = customerList.first;
+        }
+      });
+    } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to load customers/products")),
+          SnackBar(content: Text(data["message"] ?? "Failed to load")),
         );
       }
     }
+  } catch (e, st) {
+    debugPrint("Error fetching customer/products: $e\n$st");
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to load customers/products")),
+      );
+    }
   }
+}
+
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -187,14 +200,13 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
-        padding: padding ?? const EdgeInsets.all(12),
-        child: child,
-      ),
+          padding: padding ?? const EdgeInsets.all(12), child: child),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Keep the exact layout but make it compact & responsive
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green[500],
@@ -210,232 +222,246 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
       body: SafeArea(
         child: customerList.isEmpty || productList.isEmpty
             ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Date
-                    _buildCard(
-                      Row(
+            : LayoutBuilder(builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 700;
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight - 24),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => _selectDate(context),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.calendar_today,
-                                      color: Colors.green),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    DateFormat("dd MMM yyyy")
-                                        .format(selectedDate),
-                                    style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600),
+                          // Date Row - compact
+                          _buildCard(
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => _selectDate(context),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.calendar_today, color: Colors.green),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          DateFormat("dd MMM yyyy").format(selectedDate),
+                                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.edit_calendar, color: Colors.green),
+                                  onPressed: () => _selectDate(context),
+                                ),
+                              ],
                             ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.edit_calendar,
-                                color: Colors.green),
-                            onPressed: () => _selectDate(context),
-                          ),
-                        ],
-                      ),
-                    ),
 
-                    // Customer
-                    _buildCard(
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionTitle("Customer", Icons.person),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: DropdownButtonFormField<
-                                    Map<String, dynamic>>(
-                                  value: selectedCustomer,
-                                  decoration: const InputDecoration(isDense: true),
-                                  items: customerList.map((c) {
-                                    final nameWithCode =
-                                        "${c["name"]} (${c["code"]})";
-                                    final type = c["customerType"] ?? "";
+                          // Customer + Add button
+                          _buildCard(
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildSectionTitle("Customer", Icons.person),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child:
+                                       DropdownButtonFormField<String>(
+                                        value: selectedCustomer,
+                                        decoration: const InputDecoration(
+                                          isDense: true,
+                                          contentPadding:
+                                              EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                        ),
+                                        items: customerList.map((e) {
+                                          // Extract parts (format: "Name (code) - type")
+                                          final parts = e.split(" - ");
+                                          final nameWithCode = parts.first;
+                                          final customerType = parts.length > 1 ? parts.last : "";
 
-                                    IconData icon;
-                                    Color color;
-                                    if (type.toLowerCase() == "seller") {
-                                      icon = Icons.storefront;
-                                      color = Colors.green;
-                                    } else if (type.toLowerCase() ==
-                                        "purchaser") {
-                                      icon = Icons.shopping_cart;
-                                      color = Colors.blue;
-                                    } else {
-                                      icon = Icons.person;
-                                      color = Colors.grey;
-                                    }
+                                          // Pick icon based on type
+                                          IconData typeIcon;
+                                          Color iconColor;
+                                          if (customerType.toLowerCase().contains("seller")) {
+                                            typeIcon = Icons.storefront;
+                                            iconColor = Colors.green;
+                                          } else if (customerType.toLowerCase().contains("purchaser")) {
+                                            typeIcon = Icons.shopping_cart;
+                                            iconColor = Colors.blue;
+                                          } else {
+                                            typeIcon = Icons.person;
+                                            iconColor = Colors.grey;
+                                          }
 
-                                    return DropdownMenuItem<
-                                        Map<String, dynamic>>(
-                                      value: c,
-                                      child: Row(
-                                        children: [
-                                          Icon(icon, color: color, size: 18),
-                                          const SizedBox(width: 8),
-                                          Text(nameWithCode),
-                                          const SizedBox(width: 6),
-                                          Text(type,
-                                              style: TextStyle(
-                                                  fontSize: 12, color: color)),
-                                        ],
+                                          return DropdownMenuItem<String>(
+                                            value: e,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(typeIcon, color: iconColor, size: 18),
+                                                const SizedBox(width: 8),
+                                                Flexible(
+                                                  child: Text(
+                                                    nameWithCode,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(fontSize: 14),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Text(
+                                                  customerType,
+                                                  style: TextStyle(fontSize: 12, color: iconColor),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+
+                                        onChanged: (value) {
+                                          setState(() => selectedCustomer = value);
+                                          // If Purchase, reload products for this customer
+                                          if (transactionType == "Purchase" && value != null) {
+                                            String customerId = value.split("(").last.split(")").first;
+                                            _fetchCustProList(customerId: customerId);
+                                          }
+                                        },
                                       ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    setState(() => selectedCustomer = value);
-                                    if (transactionType == "Purchase" &&
-                                        value != null) {
-                                      _fetchCustProList(
-                                          customerId: value["id"].toString());
-                                    }
-                                  },
+                                    ),
+                                    const SizedBox(width: 8),
+                                    InkWell(
+                                      onTap: () => Get.to(() => const ProductManagementScreen()),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green[50],
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Icon(Icons.add_circle, color: Colors.green, size: 32),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              InkWell(
-                                onTap: () =>
-                                    Get.to(() => const ProductManagementScreen()),
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green[50],
-                                    borderRadius: BorderRadius.circular(8),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(12),
+                          ),
+
+                          // Transaction Type & Product side-by-side (responsive)
+                          isWide
+                              ? Row(
+                                  children: [
+                                    Expanded(child: _buildSmallDropdownCardTransactionType()),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: _buildSmallDropdownCardProduct()),
+                                  ],
+                                )
+                              : Column(
+                                  children: [
+                                    _buildSmallDropdownCardTransactionType(),
+                                    _buildSmallDropdownCardProduct(),
+                                  ],
+                                ),
+
+                          // Quantity / Price / Amount in one compact row
+                          _buildCard(
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _quantityController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(labelText: "Quantity",errorText: !_isQuantityValid ? "Exceeds stock ($availableStock)" : null,),
                                   ),
-                                  child: const Icon(Icons.add_circle,
-                                      color: Colors.green, size: 32),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _priceController,
+                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    decoration: const InputDecoration(labelText: "Price"),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _amountController,
+                                    readOnly: true,
+                                    decoration: const InputDecoration(labelText: "Amount"),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          ),
+
+                          // Stock small tile
+                          _buildCard(
+                            Row(
+                              children: [
+                                const Icon(Icons.inventory_2, color: Colors.green),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    "Available Stock",
+                                    style: TextStyle(color: Colors.green[800], fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                Text(
+                                  "$availableStock L",
+                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          ),
+
+                          // Remark
+                          _buildCard(
+                            TextFormField(
+                              controller: _remarkController,
+                              maxLines: 2,
+                              decoration: const InputDecoration(hintText: "Enter remark"),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          ),
+
+                          // Action Button (full width)
+                          const SizedBox(height: 6),
+                          SafeArea(
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _isQuantityValid ? _submitTransaction : null,
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  backgroundColor: Colors.green,
+                                  elevation: 3,
+                                ),
+                                child: Text(
+                                  transactionType.toUpperCase(),
+                                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                                 ),
                               ),
-                            ],
+                            ),
                           ),
+                          const SizedBox(height: 6),
                         ],
                       ),
                     ),
-
-                    // Transaction + Product
-                    Row(
-                      children: [
-                        Expanded(child: _buildSmallDropdownCardTransactionType()),
-                        const SizedBox(width: 12),
-                        Expanded(child: _buildSmallDropdownCardProduct()),
-                      ],
-                    ),
-
-                    // Quantity / Price / Amount
-                    _buildCard(
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _quantityController,
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                labelText: "Quantity",
-                                errorText: !_isQuantityValid
-                                    ? "Exceeds stock ($availableStock)"
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _priceController,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                      decimal: true),
-                              decoration:
-                                  const InputDecoration(labelText: "Price"),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _amountController,
-                              readOnly: true,
-                              decoration:
-                                  const InputDecoration(labelText: "Amount"),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Stock
-                    _buildCard(
-                      Row(
-                        children: [
-                          const Icon(Icons.inventory_2, color: Colors.green),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text("Available Stock",
-                                style: TextStyle(
-                                    color: Colors.green[800],
-                                    fontWeight: FontWeight.w600)),
-                          ),
-                          Text("$availableStock L",
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green)),
-                        ],
-                      ),
-                    ),
-
-                    // Remark
-                    _buildCard(
-                      TextFormField(
-                        controller: _remarkController,
-                        maxLines: 2,
-                        decoration: const InputDecoration(
-                            hintText: "Enter remark"),
-                      ),
-                    ),
-
-                    const SizedBox(height: 6),
-                    SafeArea(
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _isQuantityValid ? _submitTransaction : null,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            backgroundColor: Colors.green,
-                            elevation: 3,
-                          ),
-                          child: Text(
-                            transactionType.toUpperCase(),
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              }),
       ),
     );
   }
 
+  // small helper widgets to avoid repeating verbose code in build()
   Widget _buildSmallDropdownCardProduct() {
     return _buildCard(
       Column(
@@ -444,11 +470,11 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
           _buildSectionTitle("Product", Icons.local_grocery_store),
           DropdownButtonFormField<Map<String, dynamic>>(
             value: selectedProduct,
-            decoration: const InputDecoration(isDense: true),
+            decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
             items: productList.map((p) {
               return DropdownMenuItem<Map<String, dynamic>>(
                 value: p,
-                child: Text("${p['product_name']} (${p['product_unit']})"),
+                child: Text("${p['product_name']} (${p['product_unit']})", overflow: TextOverflow.ellipsis),
               );
             }).toList(),
             onChanged: (value) {
@@ -456,15 +482,14 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
                 setState(() {
                   selectedProduct = value;
                   availableStock = (value["stock"] as num? ?? 0).toDouble();
-                  _priceController.text =
-                      (value["product_price"] ?? _priceController.text)
-                          .toString();
+                  _priceController.text = (value["product_price"] ?? _priceController.text).toString();
                 });
               }
             },
           ),
         ],
       ),
+      padding: const EdgeInsets.all(12),
     );
   }
 
@@ -476,17 +501,17 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
           _buildSectionTitle("Transaction Type", Icons.swap_horiz),
           DropdownButtonFormField<String>(
             value: transactionType,
-            decoration: const InputDecoration(isDense: true),
+            decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
             items: ["Sale", "Purchase"]
-                .map((e) => DropdownMenuItem<String>(
-                    value: e, child: Text(e)))
+                .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
                 .toList(),
             onChanged: (value) {
               if (value != null) {
                 setState(() => transactionType = value);
+                // If Purchase, pass selected customer id
                 String? customerId;
                 if (value == "Purchase" && selectedCustomer != null) {
-                  customerId = selectedCustomer?["id"].toString();
+                  customerId = selectedCustomer!.split("(").last.split(")").first;
                 }
                 _fetchCustProList(customerId: customerId);
               }
@@ -494,19 +519,24 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
           ),
         ],
       ),
+      padding: const EdgeInsets.all(12),
     );
   }
 
   Future<void> _submitTransaction() async {
     try {
+      final customerId = selectedCustomer?.split("(").last.split(")").first;
+      final productName = selectedProduct?["product_name"];
+      final productId = selectedProduct?["id"];
+      final productUnit = selectedProduct?["product_unit"];
+
       final body = {
         "bill": DateFormat("yyyy-MM-dd").format(selectedDate),
         "note": _remarkController.text,
-        "customer_id": selectedCustomer?["id"], // ✅ send ID
-        "code": selectedCustomer?["code"],
-        "customer": selectedCustomer?["name"],
-        "product_id": selectedProduct?["id"],
-        "product_name": selectedProduct?["product_name"],
+        "code": customerId,
+        "customer": selectedCustomer,
+        "product_id": productId,
+        "product_name": productName,
         "price": _priceController.text,
         "quantity": _quantityController.text,
         "amount": _amountController.text,
@@ -522,6 +552,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
             const SnackBar(content: Text("Transaction saved successfully")),
           );
         }
+        // optional: refresh list / clear inputs
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
