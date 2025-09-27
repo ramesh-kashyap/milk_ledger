@@ -13,10 +13,12 @@ class _PayScreenState extends State<PayScreen> {
   // String startDate = "11 Sep 2025";
   // String endDate = "20 Sep 2025";
 
+
  String accountNo = "";
 String name = "";
   double previousBalance = 5446.82;
-  
+  String customerType = "";
+    String type = "";
 @override
 void initState() {
   super.initState();
@@ -31,7 +33,9 @@ void initState() {
   final TextEditingController _acNoCtrl = TextEditingController();
   final TextEditingController _codeCtrl = TextEditingController();
   final TextEditingController _amountCtrl = TextEditingController();
+   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _remarkCtrl = TextEditingController();
+  List<Map<String, dynamic>> payments = [];
 int? selectedCustomerId;
   DateTime _billDate = DateTime.now();
   String? _mode;
@@ -56,7 +60,7 @@ print('Response: ${response}');
         if (customers.isNotEmpty) {
           accountNo = customers[0]['code'] ?? '';
           name = customers[0]['name'] ?? '';
-         
+         customerType = customers[0]['customerType'] ?? '';
           selectedCustomerId = customers[0]['id'];
           _codeCtrl.text = customers[0]['code'] ?? '';
           _nameCtrl.text = '${customers[0]['name']} (${customers[0]['code']})';
@@ -86,6 +90,52 @@ String _formatSessionDate(String dateStr, String session) {
   }
 }
 
+Future<void> _createPayment(String type) async {
+  if (selectedCustomerId == null || _amountController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Select a customer and enter an amount")),
+    );
+    return;
+  }
+  print('Creating payment of type: $type for customer ID: $selectedCustomerId');
+
+  final double? amount = double.tryParse(_amountController.text);
+  if (amount == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Enter a valid amount")),
+    );
+    return;
+  }
+
+  try {
+    final response = await ApiService.post('/create-payment', {
+      'amount': amount,
+      'type': type, // use the determined type
+      'customerId': selectedCustomerId,
+    });
+
+    if (response.data['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Payment recorded successfully")),
+      );
+
+      // Clear input after success
+      _amountController.clear();
+
+      // Refresh milk data if needed
+      await _fetchMilkData(selectedCustomerId);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.data['message'] ?? "Payment failed")),
+      );
+    }
+  } catch (e) {
+    print('Error creating payment: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Server Error")),
+    );
+  }
+}
 
 
 
@@ -131,7 +181,6 @@ void _pickEndDate(BuildContext context) async {
   }
 }
 
-
 Future<void> _fetchMilkData(int? customerId) async {
   final response = await ApiService.get('/milk-entries?customer_id=$customerId');
   print('Response: ${response}');
@@ -140,9 +189,12 @@ Future<void> _fetchMilkData(int? customerId) async {
     if (response.data['success'] == true) {
       final List<dynamic> data = response.data['data'];
       final List<dynamic>  customers = response.data['customer'];
-      print('Fetched Milk Data: $customers');
+      payments = List<Map<String, dynamic>>.from(response.data['payment'] ?? []);
+      productTransactions = List<Map<String, dynamic>>.from(response.data['productTransactions'] ?? []);
+      print('Fetched product Data: $productTransactions');
        accountNo = customers[0]['code'] ?? '';
        name = customers[0]['name'] ?? '';
+        customerType = customers[0]['customerType'] ?? '';
       final filtered = data
           .where((entry) =>
               entry['customer_id'] == customerId &&
@@ -154,23 +206,46 @@ Future<void> _fetchMilkData(int? customerId) async {
                 "fat": double.tryParse(entry['fat'] ?? '0') ?? 0.0,
                 "rate": double.tryParse(entry['rate'] ?? '0') ?? 0.0,
                 "amount": double.tryParse(entry['amount'] ?? '0') ?? 0.0,
+                "status": entry['status']?.toString() ?? 'inactive',
               })
           .toList();
 
+          final filteredProducts = productTransactions
+    .where((entry) =>
+        entry['customer_id'] == customerId &&
+        DateTime.parse(entry['bill']).isAfter(_startDate.subtract(const Duration(days: 1))) &&
+        DateTime.parse(entry['bill']).isBefore(_endDate.add(const Duration(days: 1))))
+    .map((entry) => {
+          "date": _formatSessionDate(entry['bill'], ''), // no session for products
+          "product": entry['product_name']?.toString() ?? '',
+          "quantity": double.tryParse(entry['quantity']?.toString() ?? '0') ?? 0.0,
+          "amount": double.tryParse(entry['amount']?.toString() ?? '0') ?? 0.0,
+          "status": entry['status']?.toString() ?? 'inactive',
+          "t_type": entry['t_type']?.toString() ?? 'inactive',
+        })
+    .toList();
+
       setState(() {
         milkData = filtered;
+        productTransactions = filteredProducts;
+         payments = List<Map<String, dynamic>>.from(response.data['payment'] ?? []);
       });
+      
 
       print('Filtered Milk Data: $milkData');
     } else {
       setState(() {
         milkData = [];
+        productTransactions = [];
+        payments = [];
       });
     }
   } catch (e) {
     print('Error fetching milk data: $e');
     setState(() {
       milkData = [];
+      productTransactions = [];
+      payments = [];
     });
   }
 }
@@ -184,13 +259,104 @@ Future<void> _fetchMilkData(int? customerId) async {
 
 
  List<Map<String, dynamic>> milkData = [];
-
+ List<Map<String, dynamic>> productTransactions = [];
   List<Map<String, dynamic>> billDetail = [
     {"date": "31Aug", "detail": "Previous balance 0.00", "created": "02Sep", "total": 0.00},
   ];
 
   double get totalBalance =>
       milkData.fold(0.0, (sum, item) => sum + item["amount"]);
+
+double get totalProduct =>
+    productTransactions.fold(0.0, (sum, item) {
+      // make sure we are always working with a double
+      final amount = double.tryParse(item['amount'].toString()) ?? 0.0;
+      print('Processing item: $item with amount: $amount');
+      // normalize the type (fix capital letters / spaces)
+      final type = (item['t_type'] ?? '')
+          .toString()
+          .trim()               // remove spaces before/after
+          .toLowerCase();       // convert to lower case
+        print('Normalized type: $type');
+      if (type == 'sale') {
+        print('Subtracting for sale: $amount');
+        return sum - amount;      // subtract for sale
+      } else if (type == 'purchase') {
+        print('Adding for purchase: $amount');
+        return sum + amount;      // add for purchase
+      } else {
+        return sum;               // ignore unknown
+      }
+    });
+
+
+
+double get totalSBalance {
+  if (customerType == 'Seller') {
+    return milkData.fold(0.0, (sum, item) => sum + (item["amount"] ?? 0.0));
+  }
+  return 0.0; // fallback if not Seller
+}
+
+double get totalPBalance {
+  if (customerType != 'Seller') {
+    return milkData.fold(0.0, (sum, item) => sum - (item["amount"] ?? 0.0));
+  }
+  return 0.0; // fallback if Seller
+}
+
+double get totalReceive {
+  // sum of payments received (type: receive)
+  return payments.fold(0.0, (sum, item) {
+    if (item['type'] == 'receive') {
+      return sum + (double.tryParse(item['amount'].toString()) ?? 0.0);
+    }
+    return sum;
+  });
+}
+
+double get totalPay {
+  // sum of payments made (type: pay)
+  return payments.fold(0.0, (sum, item) {
+    if (item['type'] == 'pay') {
+      return sum + (double.tryParse(item['amount'].toString()) ?? 0.0);
+    }
+    return sum;
+  });
+}
+
+double get balanceAmount {
+  // total milk amount minus payments received
+  return totalBalance - totalReceive;
+}
+
+
+double get balanceProduct {
+  // total product amount minus payments received
+  print("Total Product: $totalProduct");
+  return totalProduct ;
+}
+
+double get balanceProMilk {
+  double totalDue = totalProduct + totalBalance;
+  double net = (totalReceive - totalPay) - totalDue;
+
+  if (net < 0) {
+    type = "receive"; // Customer still owes
+  } else {
+    type = "pay";     // You owe customer
+  }
+  return net;  // Return net as is (can be positive or negative)
+}
+
+
+double get balanceGrantTotal {
+  // total milk amount minus payments received
+  print("Total Grant Total: $balanceProMilk");
+
+  return   balanceProMilk;
+}
+
 
   double get totalMilk =>
       milkData.fold(0.0, (sum, item) => sum + item["milk"]);
@@ -200,6 +366,9 @@ Future<void> _fetchMilkData(int? customerId) async {
 
   double get avgRate =>
       milkData.isEmpty ? 0.0 : milkData.fold(0.0, (s, i) => s + i["rate"]) / milkData.length;
+
+  double get totalQuantity =>
+      productTransactions.isEmpty ? 0.0 : productTransactions.fold(0.0, (s, i) => s + i["quantity"]);
 
   @override
   Widget build(BuildContext context) {
@@ -323,7 +492,7 @@ Future<void> _fetchMilkData(int? customerId) async {
                     const SizedBox(height: 8),
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                       Text("Account No. $accountNo"),
-                      const Text("Seller"),
+                      Text(customerType),
                     ]),
                     Text("Name $name"),
                   Row(
@@ -335,7 +504,7 @@ Future<void> _fetchMilkData(int? customerId) async {
         Text(DateFormat('dd MMM yyyy').format(_endDate)),
       ],
     ),
-                    Text("Previous balance   $previousBalance", style: const TextStyle(color: Colors.red)),
+                    // Text("Previous balance   $previousBalance", style: const TextStyle(color: Colors.red)),
                   ],
                 ),
               ),
@@ -347,13 +516,17 @@ Future<void> _fetchMilkData(int? customerId) async {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               children: [
+              if (milkData.any((row) => row["status"] == "active")) 
                 buildMilkTable(),
+                // buildBillDetail(),
+              
+                 if (productTransactions.any((row) => row["status"] == "active"))
+                buildProductTable(),
                 const SizedBox(height: 12),
-                buildBillDetail(),
-                const SizedBox(height: 12),
+                // const SizedBox(height: 12),
                 buildGrantTotal(),
                 const SizedBox(height: 20),
-                const Center(child: Text("abhi milk dairy", style: TextStyle(color: Colors.green))),
+                // const Center(child: Text("abhi milk dairy", style: TextStyle(color: Colors.green))),
               ],
             ),
           ),
@@ -364,16 +537,42 @@ Future<void> _fetchMilkData(int? customerId) async {
             padding: const EdgeInsets.all(8),
             child: Column(
               children: [
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  const Text("Balance Amount:", style: TextStyle(color: Colors.black, fontSize: 16)),
-                  Text("₹ ${totalBalance.toStringAsFixed(2)}",
-                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
-                ]),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,   children: [
+    const Text(
+      "Balance Amount:",
+      style: TextStyle(color: Colors.black, fontSize: 16),
+    ),
+    Text(
+      (balanceGrantTotal < 0 ? "- ₹ " : "₹ ") + balanceGrantTotal.abs().toStringAsFixed(2),
+      style: TextStyle(
+        color: balanceGrantTotal < 0 ? Colors.red : Colors.black,
+        fontWeight: FontWeight.bold,
+        fontSize: 16,
+      ),
+    ),
+  ],),
                 const SizedBox(height: 10),
-                const Text("0.0", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black)),
-                const SizedBox(height: 15),
+  TextField(
+        controller: _amountController,
+        textAlign: TextAlign.center, // center like your "0.0"
+        keyboardType: TextInputType.number,
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
+        decoration: const InputDecoration(
+          hintText: "0.0",
+          hintStyle: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
+          border: InputBorder.none, // no box border → same as your design
+        ),
+      ),
                 GestureDetector(
-                
+                  onTap: () => _createPayment(type),
                   child: Container(
                     decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(15)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -413,9 +612,15 @@ Future<void> _fetchMilkData(int? customerId) async {
         ),
 
         // Rows
-        ...milkData.map((row) => tableRow(
-              row["date"], row["milk"].toString(), row["fat"].toString(),
-              row["rate"].toString(), row["amount"].toString())),
+       ...milkData
+    .where((row) => row["status"] == "active") // only active rows
+    .map((row) => tableRow(
+          row["date"],
+          row["milk"].toString(),
+          row["fat"].toString(),
+          row["rate"].toString(),
+          row["amount"].toString(),
+        )),
 
         // Footer
         Container(
@@ -429,7 +634,57 @@ Future<void> _fetchMilkData(int? customerId) async {
             Expanded(child: Center(child: Text(totalMilk.toStringAsFixed(2), style: whiteBold))),
             Expanded(child: Center(child: Text(avgFat.toStringAsFixed(2), style: whiteBold))),
             Expanded(child: Center(child: Text(avgRate.toStringAsFixed(2), style: whiteBold))),
-            Expanded(child: Center(child: Text("+${totalBalance.toStringAsFixed(1)}", style: whiteBold))),
+            Expanded(child: Center(child: Text("${customerType == 'Seller' ? '-' : '+'}${balanceAmount.toStringAsFixed(1)}", style: whiteBold))),
+          ]),
+        ),
+      ]),
+    );
+  }
+
+   Widget buildProductTable() {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Column(children: [
+        // Header
+        Container(
+          decoration: const BoxDecoration(
+            color: Colors.green,
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: const Row(children: [
+            Expanded(child: Center(child: Text("Date", style: headerStyle))),
+            Expanded(child: Center(child: Text("Product", style: headerStyle))),
+            Expanded(child: Center(child: Text("Quantity", style: headerStyle))),
+            Expanded(child: Center(child: Text("Amount", style: headerStyle))),
+          ]),
+        ),
+
+        // Rows
+       ...productTransactions
+    .where((row) => row["status"] == "active") // only active rows
+    .map((row) => productTableRow(
+          row["date"],
+          row["product"].toString(),
+          row["quantity"].toString(),
+          
+        
+          row["amount"].toString(),
+        )),
+
+        // Footer
+        Container(
+          decoration: const BoxDecoration(
+            color: Colors.green,
+            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(children: [
+            Expanded(child: Center(child: Text("Total Product Detail(${productTransactions.length})", style: whiteBold))),
+          
+           
+            Expanded(child: Center(child: Text(totalQuantity.toStringAsFixed(2), style: whiteBold))),
+            Expanded(child: Center(child: Text("${balanceProduct.toStringAsFixed(1)}", style: whiteBold))),
           ]),
         ),
       ]),
@@ -500,10 +755,10 @@ Future<void> _fetchMilkData(int? customerId) async {
         Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(children: [
-            Expanded(child: Center(child: Text(totalBalance.toStringAsFixed(2)))),
-            const Expanded(child: Center(child: Text("0.00"))),
-            const Expanded(child: Center(child: Text("-0.36"))),
-            Expanded(child: Center(child: Text(totalBalance.toStringAsFixed(2)))),
+            Expanded(child: Center(child: Text(totalSBalance.toStringAsFixed(2)))),
+            Expanded(child: Center(child: Text(totalPBalance.toStringAsFixed(2)))),
+            Expanded(child: Center(child: Text(totalReceive.toStringAsFixed(2)))),
+            Expanded(child: Center(child: Text("${balanceGrantTotal.toStringAsFixed(2)}"))),
           ]),
         ),
       ]),
@@ -534,6 +789,18 @@ Future<void> _fetchMilkData(int? customerId) async {
       ]),
     );
   }
+  Widget productTableRow(String date, String product, String quantity, String amount) {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black12))),
+    child: Row(children: [
+      Expanded(child: Center(child: Text(date))),
+      Expanded(child: Center(child: Text(product))),
+      Expanded(child: Center(child: Text(quantity))),
+      Expanded(child: Center(child: Text(amount))),
+    ]),
+  );
+}
 }
 
 const headerStyle = TextStyle(color: Colors.white, fontWeight: FontWeight.bold);
