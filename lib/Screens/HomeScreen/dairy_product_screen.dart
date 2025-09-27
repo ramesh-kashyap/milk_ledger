@@ -112,7 +112,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
     if (customerId != null) body["customerId"] = customerId;
 
     final response = await ApiService.post("/custprolist", body);
-    final data = response.data;    
+    final data = response.data; 
     if (data["success"] == true) {
       final customersRaw = (data["customers"] as List?) ?? [];
       final productsRaw = (data["products"] as List?) ?? [];
@@ -122,7 +122,8 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
         customerList = customersRaw.map((c) {
           final name = c["name"] ?? "Unknown";
           final code = c["code"] ?? "";
-          return "$name ($code)";
+          final customerType = c["customerType"] ?? "";
+          return "$name ($code) - $customerType";
         }).toList();
 
         productList = productsRaw.cast<Map<String, dynamic>>();
@@ -269,19 +270,58 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: DropdownButtonFormField<String>(
+                                      child:
+                                       DropdownButtonFormField<String>(
                                         value: selectedCustomer,
                                         decoration: const InputDecoration(
                                           isDense: true,
                                           contentPadding:
                                               EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                         ),
-                                        items: customerList
-                                            .map((e) => DropdownMenuItem<String>(
-                                                  value: e,
-                                                  child: Text(e, overflow: TextOverflow.ellipsis),
-                                                ))
-                                            .toList(),
+                                        items: customerList.map((e) {
+                                          // Extract parts (format: "Name (code) - type")
+                                          final parts = e.split(" - ");
+                                          final nameWithCode = parts.first;
+                                          final customerType = parts.length > 1 ? parts.last : "";
+
+                                          // Pick icon based on type
+                                          IconData typeIcon;
+                                          Color iconColor;
+                                          if (customerType.toLowerCase().contains("seller")) {
+                                            typeIcon = Icons.storefront;
+                                            iconColor = Colors.orange;
+                                          } else if (customerType.toLowerCase().contains("purchaser")) {
+                                            typeIcon = Icons.shopping_cart;
+                                            iconColor = Colors.blue;
+                                          } else {
+                                            typeIcon = Icons.person;
+                                            iconColor = Colors.grey;
+                                          }
+
+                                          return DropdownMenuItem<String>(
+                                            value: e,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(typeIcon, color: iconColor, size: 18),
+                                                const SizedBox(width: 8),
+                                                Flexible(
+                                                  child: Text(
+                                                    nameWithCode,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(fontSize: 14),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Text(
+                                                  customerType,
+                                                  style: TextStyle(fontSize: 12, color: iconColor),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+
                                         onChanged: (value) {
                                           setState(() => selectedCustomer = value);
                                           // If Purchase, reload products for this customer

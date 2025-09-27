@@ -135,12 +135,10 @@ void _pickEndDate(BuildContext context) async {
 Future<void> _fetchMilkData(int? customerId) async {
   final response = await ApiService.get('/milk-entries?customer_id=$customerId');
   print('Response: ${response}');
-
   try {
     if (response.data['success'] == true) {
       final List<dynamic> data = response.data['data'];
       final List<dynamic>  customers = response.data['customer'];
-      print('Fetched Milk Data: $customers');
        accountNo = customers[0]['code'] ?? '';
        name = customers[0]['name'] ?? '';
       final filtered = data

@@ -1,10 +1,78 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
-class ReportScreen extends StatelessWidget {
+class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
 
   @override
+  State<ReportScreen> createState() => _ReportScreenState();
+}
+
+class _ReportScreenState extends State<ReportScreen> {
+  DateTimeRange? selectedRange;
+
+  List<Map<String, dynamic>> transactions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchBillReport(); // load all by default
+  }
+
+  Future<void> _fetchBillReport() async {
+    try {
+      final body = <String, dynamic>{};
+
+      if (selectedRange != null) {
+        body["from"] = DateFormat("yyyy-MM-dd").format(selectedRange!.start);
+        body["to"] = DateFormat("yyyy-MM-dd").format(selectedRange!.end);
+      }
+
+      final response = await ApiService.post("/billreport", body);
+      final data = response.data;
+
+      if (data["success"] == true) {
+        setState(() {
+          transactions = (data["data"] as List).cast<Map<String, dynamic>>();
+        });
+      }
+    } catch (e) {
+      print("Error fetching bill report: $e");
+    }
+  }
+
+  Future<void> _selectDateRange(BuildContext context) async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2035),
+      initialDateRange: selectedRange,
+    );
+    if (picked != null) {
+      setState(() {
+        selectedRange = picked;
+      });
+      _fetchBillReport();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final rangeText = selectedRange == null
+        ? "Select Date Range"
+        : "${DateFormat("dd MMM").format(selectedRange!.start)} - ${DateFormat("dd MMM").format(selectedRange!.end)}";
+
+    // Sellers: only pay rows
+    final sellers = transactions
+        .where((t) => t["type"] == "pay")
+        .toList();
+
+    // Purchasers: only receive rows
+    final purchasers = transactions
+        .where((t) => t["type"] == "receive")
+        .toList();
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -14,6 +82,10 @@ class ReportScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.date_range, color: Colors.white),
+            onPressed: () => _selectDateRange(context),
+          ),
           IconButton(
             icon: const Icon(Icons.print, color: Colors.white),
             onPressed: () {},
@@ -26,25 +98,20 @@ class ReportScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Date Range Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Icon(Icons.arrow_back_ios, color: Colors.green),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Text(
-                    "1-31 Aug",
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
+            Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                const Icon(Icons.arrow_forward_ios, color: Colors.green),
-              ],
+                child: Text(
+                  rangeText,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
             const SizedBox(height: 10),
 
@@ -52,15 +119,17 @@ class ReportScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(4),
               color: Colors.green[100],
-              child: const Text(
-                "Fri 2025 Sep 12 15:27:49",
-                style: TextStyle(fontSize: 12, color: Colors.black87),
+              child: Text(
+                DateFormat("EEE yyyy MMM dd HH:mm:ss").format(DateTime.now()),
+                style: const TextStyle(fontSize: 12, color: Colors.black87),
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              "01 Aug 2025 to 31 Aug 2025",
-              style: TextStyle(fontSize: 13, color: Colors.black87),
+            Text(
+              selectedRange == null
+                  ? "No date range selected"
+                  : "${DateFormat("dd MMM yyyy").format(selectedRange!.start)} to ${DateFormat("dd MMM yyyy").format(selectedRange!.end)}",
+              style: const TextStyle(fontSize: 13, color: Colors.black87),
               textAlign: TextAlign.center,
             ),
 
@@ -68,26 +137,51 @@ class ReportScreen extends StatelessWidget {
 
             // Sellers Table
             buildTableHeader("Sellers"),
-            buildTableRow(["Ac No", "Payments", "Due", "Sale/\nPurchase", "Total"],
+            buildTableRow(
+                ["Ac No", "Name", "Send"],
                 isHeader: true),
-            buildTableRow(["Total(0)", "0.00", "0.00", "0.00", "0.00"]),
+            ...sellers.map((t) => buildTableRow([
+                  t["Customer.code"] ?? "",
+                  t["Customer.name"] ?? "",
+                  (t["totalAmount"] ?? "0").toString(),
+                ])),
+            buildTableRow([
+              "Total(${sellers.length})",
+              "",
+              sellers.fold<double>(
+                      0,
+                      (sum, t) =>
+                          sum + double.parse(t["totalAmount"].toString()))
+                  .toStringAsFixed(2),
+            ]),
 
             const SizedBox(height: 20),
 
             // Purchasers Table
             buildTableHeader("Purchasers"),
-            buildTableRow(["Ac No", "Payments", "Due", "Sale/\nPurchase", "Total"],
+            buildTableRow(
+                ["Ac No", "Name", "Receive"],
                 isHeader: true),
-            buildTableRow(["080\nSachin", "0.00", "0.00", "0.00", "0.00"],
-                highlight: true),
-            buildTableRow(["Total(1)", "0.00", "0.00", "0.00", "0.00"]),
+            ...purchasers.map((t) => buildTableRow([
+                  t["Customer.code"] ?? "",
+                  t["Customer.name"] ?? "",
+                  (t["totalAmount"] ?? "0").toString(),
+                ])),
+            buildTableRow([
+              "Total(${purchasers.length})",
+              "",
+              purchasers.fold<double>(
+                      0,
+                      (sum, t) =>
+                          sum + double.parse(t["totalAmount"].toString()))
+                  .toStringAsFixed(2),
+            ]),
 
             const SizedBox(height: 20),
 
-            // Footer
             const Center(
               child: Text(
-                "Santosh Lassi Vila",
+                "DoodhBazzar",
                 style: TextStyle(
                   color: Colors.green,
                   fontWeight: FontWeight.w500,
@@ -100,7 +194,6 @@ class ReportScreen extends StatelessWidget {
     );
   }
 
-  // Table header widget
   Widget buildTableHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
@@ -113,7 +206,6 @@ class ReportScreen extends StatelessWidget {
     );
   }
 
-  // Table row widget
   Widget buildTableRow(List<String> values,
       {bool isHeader = false, bool highlight = false}) {
     return Container(
@@ -133,7 +225,7 @@ class ReportScreen extends StatelessWidget {
                   child: Text(
                     v,
                     style: TextStyle(
-                      fontSize: isHeader ? 13 : 13,
+                      fontSize: 13,
                       fontWeight:
                           isHeader ? FontWeight.bold : FontWeight.normal,
                       color: Colors.black,
