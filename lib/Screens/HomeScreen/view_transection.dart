@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
 class TransactionPage extends StatefulWidget {
@@ -25,7 +26,6 @@ class _TransactionPageState extends State<TransactionPage> {
             "code": code,             // optional filter by code
           },
         );
-
         final data = response.data;
         if (data["success"] == true) {
           setState(() {
@@ -124,10 +124,14 @@ class _TransactionPageState extends State<TransactionPage> {
                       );
                     }).toList(),
                     onChanged: (value) {
-                      setState(() => selectedCustomerCode = value);
+                    setState(() {
+                      selectedCustomerCode = value;
+                      _codeController.text = value ?? ""; // update the Code input box
+                    });
 
-                      _fetchCustProList(code: value);
-                    },
+                    _fetchCustProList(code: value);
+                  },
+
                   ),
 
                   ),
@@ -152,18 +156,31 @@ class _TransactionPageState extends State<TransactionPage> {
             ),
 
             const SizedBox(height: 4),
-            if (selectedCustomer.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Name: ${selectedCustomer["name"]}"),
-                    Text("Code: ${selectedCustomer["code"]}"),
-                    Text("Phone: ${selectedCustomer["phone"]}"),
-                  ],
+              if (selectedCustomer.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Left side → Name, Code, Phone
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Name: ${selectedCustomer["name"]}"),
+                          Text("Code: ${selectedCustomer["code"]}"),
+                          Text("Phone: ${selectedCustomer["phone"]}"),
+                        ],
+                      ),
+
+                      // Right side → Type
+                      Text(
+                        "Type: ${selectedCustomer["customerType"]}",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+
 
             // Transactions Table Header
             Container(
@@ -189,7 +206,15 @@ class _TransactionPageState extends State<TransactionPage> {
                 ),
                 child: Row(
                   children: [
-                    Expanded(flex: 2, child: Text(tx["bill_date"] ?? "")),
+                    Expanded(
+  flex: 2,
+  child: Text(
+    tx["bill_date"] != null
+        ? DateFormat("dd MMM yy").format(DateTime.parse(tx["bill_date"]))
+        : "",
+  ),
+),
+
                     Expanded(flex: 2, child: Text(tx["remark"] ?? "")),
                     Expanded(flex: 2, child: Text(tx["amount"] ?? "")),
                     Expanded(flex: 2, child: Text(tx["code"] ?? "")),
