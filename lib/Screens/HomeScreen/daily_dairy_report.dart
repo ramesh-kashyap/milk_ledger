@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
-
+import 'package:get/get.dart';
 class DairyReportScreen extends StatefulWidget {
   const DairyReportScreen({super.key});
 
@@ -44,8 +44,8 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
         backgroundColor: Colors.green[500],
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          "Dairy Report",
+        title: Text(
+          "dairy_report".tr,
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
@@ -61,7 +61,7 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
                       // ✅ Today report
                       if (reportData?['today'] != null)
                         _buildReportCard(
-                          "Today ($todayDate)",
+                          "${'today'.tr} ($todayDate)",
                           Icons.calendar_today,
                           {
                             "purchaseLitres": double.tryParse(reportData!['today']['litres']?.toString() ?? "0") ?? 0.0,
@@ -181,11 +181,11 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
             ],
           ),
           const Divider(),
-          _buildRow("Total Purchase",
+          _buildRow("total_purchase".tr,
               "${purchaseLitres.toStringAsFixed(2)} L", "₹ ${purchaseAmount.toStringAsFixed(2)}"),
-          _buildRow("Total Sale",
+          _buildRow("total_sale".tr,
               "${saleLitres.toStringAsFixed(2)} L", "₹ ${saleAmount.toStringAsFixed(2)}"),
-          _buildRow("Total",
+          _buildRow("total".tr,
               "${totalLitres.toStringAsFixed(2)} L", "₹ ${totalAmount.toStringAsFixed(2)}"),
         ],
       ),

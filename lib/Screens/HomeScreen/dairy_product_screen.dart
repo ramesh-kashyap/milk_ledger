@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dairy Products',
+      title: "dairy_products".tr,
       theme: ThemeData(
         primaryColor: Colors.green,
         scaffoldBackgroundColor: Colors.grey.shade100,
@@ -116,7 +116,6 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
     if (data["success"] == true) {
       final customersRaw = (data["customers"] as List?) ?? [];
       final productsRaw = (data["products"] as List?) ?? [];
-       print(customersRaw);
       setState(() {
         // ✅ Always map to string "Name (code)"
         customerList = customersRaw.map((c) {
@@ -266,7 +265,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildSectionTitle("Customer", Icons.person),
+                                _buildSectionTitle("customer".tr, Icons.person),
                                 Row(
                                   children: [
                                     Expanded(
@@ -375,7 +374,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
                                   child: TextFormField(
                                     controller: _quantityController,
                                     keyboardType: TextInputType.number,
-                                    decoration: InputDecoration(labelText: "Quantity",errorText: !_isQuantityValid ? "Exceeds stock ($availableStock)" : null,),
+                                    decoration: InputDecoration(labelText: "quantity".tr,errorText: !_isQuantityValid ? "${'exceeds_stock'.tr} ($availableStock)" : null,),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -383,7 +382,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
                                   child: TextFormField(
                                     controller: _priceController,
                                     keyboardType: TextInputType.numberWithOptions(decimal: true),
-                                    decoration: const InputDecoration(labelText: "Price"),
+                                    decoration:  InputDecoration(labelText: "price".tr),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -391,7 +390,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
                                   child: TextFormField(
                                     controller: _amountController,
                                     readOnly: true,
-                                    decoration: const InputDecoration(labelText: "Amount"),
+                                    decoration: InputDecoration(labelText: "amount".tr),
                                   ),
                                 ),
                               ],
@@ -407,7 +406,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    "Available Stock",
+                                    "available_stock".tr,
                                     style: TextStyle(color: Colors.green[800], fontWeight: FontWeight.w600),
                                   ),
                                 ),
@@ -425,7 +424,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
                             TextFormField(
                               controller: _remarkController,
                               maxLines: 2,
-                              decoration: const InputDecoration(hintText: "Enter remark"),
+                              decoration: InputDecoration(hintText: "enter_remark".tr),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
@@ -467,7 +466,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle("Product", Icons.local_grocery_store),
+          _buildSectionTitle("product".tr, Icons.local_grocery_store),
           DropdownButtonFormField<Map<String, dynamic>>(
             value: selectedProduct,
             decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
@@ -498,12 +497,12 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle("Transaction Type", Icons.swap_horiz),
+          _buildSectionTitle("transaction_type".tr, Icons.swap_horiz),
           DropdownButtonFormField<String>(
             value: transactionType,
             decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
             items: ["Sale", "Purchase"]
-                .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
+                .map((e) => DropdownMenuItem<String>(value: e, child: Text(e.tr)))
                 .toList(),
             onChanged: (value) {
               if (value != null) {
@@ -549,14 +548,14 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
       if (response.data["success"] == true) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Transaction saved successfully")),
+            SnackBar(content: Text("transaction_success".tr)),
           );
         }
         // optional: refresh list / clear inputs
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.data["message"] ?? "Failed")),
+            SnackBar(content: Text(response.data["message"] ?? "failed".tr)),
           );
         }
       }
@@ -564,7 +563,7 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
       debugPrint("Submit error: $e\n$st");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Something went wrong")),
+           SnackBar(content: Text("something_wrong".tr)),
         );
       }
     }

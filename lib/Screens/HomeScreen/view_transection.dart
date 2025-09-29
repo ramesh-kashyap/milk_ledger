@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
-
+import 'package:get/get.dart';
 class TransactionPage extends StatefulWidget {
   const TransactionPage({super.key});
 
@@ -75,7 +75,7 @@ class _TransactionPageState extends State<TransactionPage> {
       appBar: AppBar(
         backgroundColor: Colors.green[500],
         foregroundColor: Colors.white,
-        title: const Text("View transaction", style: TextStyle(color: Colors.white),),
+        title: Text("view_transactions".tr, style: TextStyle(color: Colors.white),),
         centerTitle: true,
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.print, color: Colors.white)),
@@ -98,7 +98,7 @@ class _TransactionPageState extends State<TransactionPage> {
                         });
                         _fetchCustProList(); // fetch all entries
                       },
-                      child: const Text("All Entries"),
+                      child: Text("all_entries".tr),
                     ),
                   ),
                 ],
@@ -116,7 +116,7 @@ class _TransactionPageState extends State<TransactionPage> {
                     child: 
                     DropdownButtonFormField<String>(
                     value: selectedCustomerCode,
-                    hint: const Text("Select Customer"),
+                    hint: Text("select_customer".tr),
                     items: customers.map<DropdownMenuItem<String>>((c) {
                       return DropdownMenuItem<String>(
                         value: c["code"].toString(),
@@ -139,8 +139,8 @@ class _TransactionPageState extends State<TransactionPage> {
                   Expanded(
                     child: TextField(
                       controller: _codeController,
-                      decoration: const InputDecoration(
-                        labelText: "Code",
+                      decoration: InputDecoration(
+                        labelText: "code".tr,
                         border: OutlineInputBorder(),
                         isDense: true,
                       ),
@@ -166,15 +166,15 @@ class _TransactionPageState extends State<TransactionPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Name: ${selectedCustomer["name"]}"),
-                          Text("Code: ${selectedCustomer["code"]}"),
-                          Text("Phone: ${selectedCustomer["phone"]}"),
+                          Text("name_val: ${selectedCustomer["name"]}"),
+                          Text("code_val: ${selectedCustomer["code"]}"),
+                          Text("phone_val: ${selectedCustomer["phone"]}"),
                         ],
                       ),
 
                       // Right side → Type
                       Text(
-                        "Type: ${selectedCustomer["customerType"]}",
+                        "type_val: ${selectedCustomer["customerType"]}",
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -186,13 +186,13 @@ class _TransactionPageState extends State<TransactionPage> {
             Container(
               color: Colors.green,
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-              child: const Row(
+              child: Row(
                 children: [
-                  Expanded(flex: 2, child: Text("Bill date", style: TextStyle(color: Colors.white))),
-                  Expanded(flex: 2, child: Text("Detail", style: TextStyle(color: Colors.white))),
-                  Expanded(flex: 2, child: Text("Amount", style: TextStyle(color: Colors.white))),
-                  Expanded(flex: 2, child: Text("Code", style: TextStyle(color: Colors.white))),
-                  Expanded(flex: 2, child: Text("Created Date", style: TextStyle(color: Colors.white))),                  
+                  Expanded(flex: 2, child: Text("bill_date".tr, style: TextStyle(color: Colors.white))),
+                  Expanded(flex: 2, child: Text("detail".tr, style: TextStyle(color: Colors.white))),
+                  Expanded(flex: 2, child: Text("amount".tr, style: TextStyle(color: Colors.white))),
+                  Expanded(flex: 2, child: Text("code".tr, style: TextStyle(color: Colors.white))),
+                  Expanded(flex: 2, child: Text("created_date".tr, style: TextStyle(color: Colors.white))),                  
                 ],
               ),
             ),
