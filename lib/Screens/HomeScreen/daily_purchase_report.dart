@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart'; 
 import 'package:dio/dio.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
@@ -138,12 +139,29 @@ void _applyFilters() {
       appBar: AppBar(
         backgroundColor: Colors.green[500],
         elevation: 0,
-        title: const Text(
-          "Daily Purchase Report",
+        title: Text(
+           "daily_purchase_report".tr,
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          PopupMenuButton<String>(        // 💚 Language switcher
+            onSelected: (value) {
+              if (value == 'en') {
+                Get.updateLocale(const Locale('en', 'US'));
+              } else if (value == 'hi') {
+                Get.updateLocale(const Locale('hi', 'IN'));
+              } else if (value == 'pa') {
+                Get.updateLocale(const Locale('pa', 'IN'));
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: 'en', child: Text("English")),
+              const PopupMenuItem(value: 'hi', child: Text("हिंदी")),
+              const PopupMenuItem(value: 'pa', child: Text("ਪੰਜਾਬੀ")),
+            ],
+            icon: const Icon(Icons.language, color: Colors.white),
+          ),
           IconButton(
             onPressed: fetchAllEntries,
             icon: const Icon(Icons.refresh, color: Colors.white),
@@ -183,7 +201,7 @@ void _applyFilters() {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: selectedSession,
-                    decoration: const InputDecoration(labelText: "Session"),
+                    decoration: InputDecoration(labelText: "session".tr),
                     items: sessionOptions
                         .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                         .toList(),
@@ -199,9 +217,9 @@ void _applyFilters() {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: selectedMilkType,
-                    decoration: const InputDecoration(labelText: "Milk Type"),
+                    decoration: InputDecoration(labelText: "milk_type".tr),
                     items: milkTypeOptions
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e.tr)))
                         .toList(),
                     onChanged: (value) {
                       setState(() {
@@ -218,7 +236,7 @@ void _applyFilters() {
   child: loading
       ? const Center(child: CircularProgressIndicator())
       : filteredEntries.isEmpty
-          ? const Center(child: Text("No entries found for selected filters"))
+          ? Center(child: Text("no_entries_found".tr))
           : ListView.builder(
               itemCount: filteredEntries.length + 2, // +1 for header +1 for totals
               itemBuilder: (context, index) {

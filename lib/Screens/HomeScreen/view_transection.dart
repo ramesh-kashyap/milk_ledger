@@ -37,13 +37,44 @@ class _TransactionPageState extends State<TransactionPage> {
         print("Error fetching data: $e");
       }
     }
+    
 
+          /// fetch only first customer's transactions
+      Future<void> _fetchFirstCustomer() async {
+        try {
+          final response = await ApiService.post(
+            "/transection",
+            {
+              "transactionType": transactionType,
+            },
+          );
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchCustProList(); // load all entries by default
-  }
+          final data = response.data;
+          if (data["success"] == true) {
+            final custs = (data["customers"] as List).cast<Map<String, dynamic>>();
+
+            if (custs.isNotEmpty) {
+              final firstCustomer = custs.first;
+
+              setState(() {
+                customers = custs;
+                selectedCustomerCode = firstCustomer["code"].toString();
+              });
+
+              // now fetch transactions for only first customer
+              _fetchCustProList(code: firstCustomer["code"].toString());
+            }
+          }
+        } catch (e) {
+          print("Error fetching first customer: $e");
+        }
+      }
+
+      @override
+      void initState() {
+        super.initState();
+        _fetchFirstCustomer();
+      }
 
        void _filterByCode(String code) {
         final match = customers.firstWhere(
@@ -60,7 +91,7 @@ class _TransactionPageState extends State<TransactionPage> {
           _fetchCustProList(); // fallback to all
         }
       }
-
+      
 
 
   @override
@@ -207,18 +238,19 @@ class _TransactionPageState extends State<TransactionPage> {
                 child: Row(
                   children: [
                     Expanded(
-  flex: 2,
-  child: Text(
-    tx["bill_date"] != null
-        ? DateFormat("dd MMM yy").format(DateTime.parse(tx["bill_date"]))
-        : "",
-  ),
-),
+                        flex: 2,
+                        child: Text(
+                          tx["bill_date"] != null
+                              ? DateFormat("dd MMM yy").format(DateTime.parse(tx["bill_date"]))
+                              : "",
+                        ),
+                      ),
 
                     Expanded(flex: 2, child: Text(tx["remark"] ?? "")),
                     Expanded(flex: 2, child: Text(tx["amount"] ?? "")),
                     Expanded(flex: 2, child: Text(tx["code"] ?? "")),
-                    Expanded(flex: 2, child: Text(tx["createdAt"] ?? "")),                    
+                    Expanded(flex: 2, child: Text(tx["createdAt"] != null ? DateFormat("dd MMM").format(DateTime.parse(tx["createdAt"])) : "",),
+                    ),               
                   ],
                 ),
               );

@@ -31,12 +31,12 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
         });
       } else {
         setState(() => isLoading = false);
-        Get.snackbar("Error ❌", data['message'] ?? "No user details found");
+        Get.snackbar("error".tr, data['message'] ?? "no_user_details".tr);
       }
     } catch (e) {
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("❌ Failed to fetch user details: $e")),
+        SnackBar(content: Text("error_fetch_user".trParams({'error': e.toString()}))),
       );
     }
   }
@@ -52,12 +52,12 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
         setState(() {
           userDetails?[field] = newValue;
         });
-        Get.snackbar("✅ Success", "$field updated successfully");
+        Get.snackbar("success".tr, "$field ${'update_success'.tr}");
       } else {
-        Get.snackbar("❌ Error", response.data['message'] ?? "Update failed");
+        Get.snackbar("error".tr, response.data['message'] ?? "update_failed".tr);
       }
     } catch (e) {
-      Get.snackbar("❌ Error", "Failed to update $field: $e");
+      Get.snackbar("error".tr, "update_failed_field".trParams({'field': field, 'error': e.toString()}));
     }
   }
 
@@ -66,11 +66,11 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
     final controller = TextEditingController(text: currentValue);
 
     Get.defaultDialog(
-        title: "Edit $field",
+        title: "${'edit'.tr} $field",
         content: TextField(
           controller: controller,
           decoration: InputDecoration(
-            hintText: "Enter new $field",
+            hintText: "${'enter_new'.tr} $field",
             border: OutlineInputBorder(),
           ),
         ),
@@ -79,7 +79,7 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
             backgroundColor: Colors.red, // Cancel button color
           ),
           onPressed: () => Get.back(),
-          child: const Text("Cancel", style: TextStyle(color: Colors.white)),
+          child: Text("cancel".tr, style: const TextStyle(color: Colors.white)),
         ),
         confirm: ElevatedButton(
           style: ElevatedButton.styleFrom(
@@ -91,7 +91,7 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
             }
             Get.back();
           },
-          child: const Text("Save", style: TextStyle(color: Colors.white)),
+          child: Text("save".tr, style: const TextStyle(color: Colors.white)),
         ),
       );
 
@@ -102,8 +102,8 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Dairy Account Settings",
+        title: Text(
+          "dairy_account_settings".tr,
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.green[600],
@@ -113,27 +113,27 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : userDetails == null
-              ? const Center(child: Text("No user details available"))
+              ? Center(child: Text("no_user_details".tr))
               : ListView(
                   padding: const EdgeInsets.all(16.0),
                   children: [
                     _buildInfoCard(
                       icon: Icons.apartment,
-                      title: "YOUR DAIRY NAME",
+                      title: "your_dairy_name".tr,
                       fieldKey: "name",
                       value: userDetails?['name'] ?? "N/A",
                     ),
                     const SizedBox(height: 16),
                     _buildInfoCard(
                       icon: Icons.phone,
-                      title: "Contact Number",
+                      title: "contact_number".tr,
                       fieldKey: "phone",
                       value: userDetails?['phone'] ?? "N/A",
                     ),
                     const SizedBox(height: 16),
                     _buildInfoCard(
                       icon: Icons.location_on,
-                      title: "Address",
+                      title: "address".tr,
                       fieldKey: "address",
                       value: userDetails?['address'] ?? "N/A",
                     ),

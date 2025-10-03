@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:dio/dio.dart';
+import 'package:get/get.dart'; 
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
 class DailySaleReportScreen extends StatefulWidget {
@@ -138,8 +139,8 @@ void _applyFilters() {
       appBar: AppBar(
         backgroundColor: Colors.green[500],
         elevation: 0,
-        title: const Text(
-          "Daily Sale Report",
+        title: Text(
+          "daily_sale_report".tr, 
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -183,9 +184,9 @@ void _applyFilters() {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: selectedSession,
-                    decoration: const InputDecoration(labelText: "Session"),
+                    decoration: InputDecoration(labelText: "session".tr),
                     items: sessionOptions
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e.tr)))
                         .toList(),
                     onChanged: (value) {
                       setState(() {
@@ -199,9 +200,9 @@ void _applyFilters() {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: selectedMilkType,
-                    decoration: const InputDecoration(labelText: "Milk Type"),
+                    decoration: InputDecoration(labelText: "milk_type".tr),
                     items: milkTypeOptions
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e.tr)))
                         .toList(),
                     onChanged: (value) {
                       setState(() {
@@ -218,7 +219,7 @@ void _applyFilters() {
   child: loading
       ? const Center(child: CircularProgressIndicator())
       : filteredEntries.isEmpty
-          ? const Center(child: Text("No entries found for selected filters"))
+          ? Center(child: Text("no_entries".tr))
           : ListView.builder(
               itemCount: filteredEntries.length + 2, // +1 for header +1 for totals
               itemBuilder: (context, index) {
@@ -228,13 +229,13 @@ void _applyFilters() {
                     color: Colors.green[400],
                     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                     child: Row(
-                      children: const [
-                        Expanded(flex: 1, child: Text("Ac No", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("Milk", style: TextStyle(fontWeight: FontWeight.bold))),
+                      children: [
+                        Expanded(flex: 1, child: Text("ac_no".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(flex: 1, child: Text("milk".tr, style: TextStyle(fontWeight: FontWeight.bold))),
                         // Expanded(flex: 1, child: Text("Amount", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("Fat", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("Rate", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("Amount", style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(flex: 1, child: Text("fat".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(flex: 1, child: Text("rate".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(flex: 1, child: Text("amount".tr, style: TextStyle(fontWeight: FontWeight.bold))),
                         // Expanded(flex: 1, child: Text("Session", style: TextStyle(fontWeight: FontWeight.bold))),
                       ],
                     ),
@@ -248,7 +249,7 @@ void _applyFilters() {
                     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                     child: Row(
                       children: [
-                        const Expanded(flex: 1, child: Text("TOTAL", style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(flex: 1, child: Text("total".tr, style: const TextStyle(fontWeight: FontWeight.bold))),
                         // Expanded(flex: 1, child: Text("$totalLitres L", style: const TextStyle(fontWeight: FontWeight.bold))), 
                         Expanded(flex: 1, child: Text("$totalLitres L", style: const TextStyle(fontWeight: FontWeight.bold))),                         
                         Expanded(flex: 1, child: Text("$totalFat L", style: const TextStyle(fontWeight: FontWeight.bold))), 

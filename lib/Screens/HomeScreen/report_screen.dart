@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
 class ReportScreen extends StatefulWidget {
@@ -60,7 +61,7 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   Widget build(BuildContext context) {
     final rangeText = selectedRange == null
-        ? "Select Date Range"
+        ? "select_date_range".tr
         : "${DateFormat("dd MMM").format(selectedRange!.start)} - ${DateFormat("dd MMM").format(selectedRange!.end)}";
 
     // Sellers: only pay rows
@@ -77,8 +78,8 @@ class _ReportScreenState extends State<ReportScreen> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.green[500],
-        title: const Text(
-          "Report",
+        title: Text(
+          "report".tr, 
           style: TextStyle(color: Colors.white),
         ),
         actions: [
@@ -127,7 +128,7 @@ class _ReportScreenState extends State<ReportScreen> {
             const SizedBox(height: 4),
             Text(
               selectedRange == null
-                  ? "No date range selected"
+                  ? "no_date_range_selected".tr
                   : "${DateFormat("dd MMM yyyy").format(selectedRange!.start)} to ${DateFormat("dd MMM yyyy").format(selectedRange!.end)}",
               style: const TextStyle(fontSize: 13, color: Colors.black87),
               textAlign: TextAlign.center,
@@ -136,9 +137,9 @@ class _ReportScreenState extends State<ReportScreen> {
             const SizedBox(height: 16),
 
             // Sellers Table
-            buildTableHeader("Sellers"),
+            buildTableHeader("seller".tr),
             buildTableRow(
-                ["Ac No", "Name", "Send"],
+                 ["ac_no".tr, "name".tr, "send".tr], 
                 isHeader: true),
             ...sellers.map((t) => buildTableRow([
                   t["Customer.code"] ?? "",
@@ -146,7 +147,7 @@ class _ReportScreenState extends State<ReportScreen> {
                   (t["totalAmount"] ?? "0").toString(),
                 ])),
             buildTableRow([
-              "Total(${sellers.length})",
+               "total".tr + "(${sellers.length})",
               "",
               sellers.fold<double>(
                       0,
@@ -158,9 +159,9 @@ class _ReportScreenState extends State<ReportScreen> {
             const SizedBox(height: 20),
 
             // Purchasers Table
-            buildTableHeader("Purchasers"),
+            buildTableHeader("purchaser".tr), 
             buildTableRow(
-                ["Ac No", "Name", "Receive"],
+                ["ac_no".tr, "name".tr, "receive".tr], 
                 isHeader: true),
             ...purchasers.map((t) => buildTableRow([
                   t["Customer.code"] ?? "",
@@ -168,7 +169,7 @@ class _ReportScreenState extends State<ReportScreen> {
                   (t["totalAmount"] ?? "0").toString(),
                 ])),
             buildTableRow([
-              "Total(${purchasers.length})",
+              "total".tr + "(${purchasers.length})",
               "",
               purchasers.fold<double>(
                       0,
@@ -179,9 +180,9 @@ class _ReportScreenState extends State<ReportScreen> {
 
             const SizedBox(height: 20),
 
-            const Center(
+             Center(
               child: Text(
-                "DoodhBazzar",
+                "doodhbazzar".tr,
                 style: TextStyle(
                   color: Colors.green,
                   fontWeight: FontWeight.w500,

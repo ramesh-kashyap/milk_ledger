@@ -83,8 +83,8 @@ class _CustomerOnOffScreenState extends State<CustomerOnOffScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green[700],
-        title: const Text(
-          "Customer On/Off",
+        title: Text(
+          "customer_on_off".tr,
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.white),

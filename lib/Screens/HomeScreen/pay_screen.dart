@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
-
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 class PayScreen extends StatefulWidget {
   const PayScreen({super.key});
@@ -400,7 +400,7 @@ double get balanceGrantTotal {
     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
     children: [
      dateBox(DateFormat('dd MMM yyyy').format(_startDate), () => _pickStartDate(context)),
-      const Text("to", style: TextStyle(fontSize: 16)),
+      Text("to".tr, style: TextStyle(fontSize: 16)),
       dateBox(DateFormat('dd MMM yyyy').format(_endDate), () => _pickEndDate(context)),
     ],
   ),
@@ -476,7 +476,7 @@ double get balanceGrantTotal {
        await _fetchMilkData(selectedCustomerId);
     },
         decoration: InputDecoration(
-          hintText: "Enter Code",
+          hintText: "enter_code".tr,
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
           border: OutlineInputBorder(
@@ -490,19 +490,19 @@ double get balanceGrantTotal {
 
                     const SizedBox(height: 8),
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Text("Account No. $accountNo"),
+                      Text("account_no".tr + " $accountNo"),
                       Text(customerType),
                     ]),
-                    Text("Name $name"),
+                    Text("name".tr + " $name"),
                   Row(
-      children: [
-        Text(DateFormat('dd MMM yyyy').format(_startDate)),
-        const SizedBox(width: 8),
-        const Text("to", style: TextStyle(fontSize: 16)),
-        const SizedBox(width: 8),
-        Text(DateFormat('dd MMM yyyy').format(_endDate)),
-      ],
-    ),
+                      children: [
+                        Text(DateFormat('dd MMM yyyy').format(_startDate)),
+                        const SizedBox(width: 8),
+                        Text("to".tr, style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Text(DateFormat('dd MMM yyyy').format(_endDate)),
+                      ],
+                    ),
                     // Text("Previous balance   $previousBalance", style: const TextStyle(color: Colors.red)),
                   ],
                 ),
@@ -537,8 +537,7 @@ double get balanceGrantTotal {
             child: Column(
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,   children: [
-    const Text(
-      "Balance Amount:",
+    Text("balance_amount".tr,
       style: TextStyle(color: Colors.black, fontSize: 16),
     ),
     Text(
@@ -576,7 +575,7 @@ double get balanceGrantTotal {
                     decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(15)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     alignment: Alignment.center,
-                    child: const Text("Pay Bill",
+                    child: Text("pay_bill".tr,
                         style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 )
@@ -601,12 +600,12 @@ double get balanceGrantTotal {
             borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
           ),
           padding: const EdgeInsets.symmetric(vertical: 10),
-          child: const Row(children: [
-            Expanded(child: Center(child: Text("Date", style: headerStyle))),
-            Expanded(child: Center(child: Text("Milk", style: headerStyle))),
-            Expanded(child: Center(child: Text("Fat", style: headerStyle))),
-            Expanded(child: Center(child: Text("Rate", style: headerStyle))),
-            Expanded(child: Center(child: Text("Amount", style: headerStyle))),
+          child: Row(children: [
+            Expanded(child: Center(child: Text("date".tr, style: headerStyle))),
+            Expanded(child: Center(child: Text("milk".tr, style: headerStyle))),
+            Expanded(child: Center(child: Text("fat".tr, style: headerStyle))),
+            Expanded(child: Center(child: Text("rate".tr, style: headerStyle))),
+            Expanded(child: Center(child: Text("amount".tr, style: headerStyle))),
           ]),
         ),
 
@@ -700,7 +699,7 @@ double get balanceGrantTotal {
             borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
           ),
           padding: const EdgeInsets.all(8),
-          child: const Center(child: Text("Bill Detail", style: whiteBold)),
+          child: Center(child:  Text("bill".tr, style: whiteBold)),
         ),
         Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
