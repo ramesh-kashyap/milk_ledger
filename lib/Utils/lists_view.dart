@@ -27,6 +27,9 @@ import 'package:digitalwalletpaytmcloneapp/Screens/PaymentSettingScreen/UpiAndLi
 import 'package:digitalwalletpaytmcloneapp/Screens/PaymentSettingScreen/payment_setting_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/PersonalLoanScreen/personal_loan_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/ProfileScreen/profile_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/contact_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/about_us_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/privacy_policy_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/ReferAndEarnScreen/refer_and_earn_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/TermsConditionsAndPrivacyPolicyScreens/Policies_screen.dart';
 import 'package:flutter/material.dart';
@@ -335,32 +338,34 @@ class Lists {
   ];
 
   static List<Map> listViewList = [
-    {
-      "icon": Icons.help_outline,
-      "text1": "FAQ",
-      "text2": "Get answers to frequently asked questions",
-    },
-    {
-      "icon": Icons.play_circle_fill,
-      "text1": "Show Videos",
-      "text2": "Watch helpful video tutorials",
-    },
-    {
-      "icon": Icons.phone_in_talk,
-      "text1": "Contact Us",
-      "text2": "Reach out for support & queries",
-    },
-    {
-      "icon": Icons.subscriptions,
-      "text1": "Subscription",
-      "text2": "Manage your subscription & payments",
-    },
-    {
-      "icon": Icons.print,
-      "text1": "Purchase Printer",
-      "text2": "Buy printers & accessories",
-    },
-  ];
+  {
+    "icon": Icons.help_outline,
+    "text1": "faq",        // store key only
+    "text2": "faq_desc",
+  },
+  {
+    "icon": Icons.play_circle_fill,
+    "text1": "show_videos",
+    "text2": "show_videos_desc",
+  },
+  {
+    "icon": Icons.phone_in_talk,
+    "text1": "contact_us",
+    "text2": "contact_us_desc",
+  },
+  {
+    "icon": Icons.subscriptions,
+    "text1": "subscription",
+    "text2": "subscription_desc",
+  },
+  {
+    "icon": Icons.print,
+    "text1": "purchase_printer",
+    "text2": "purchase_printer_desc",
+  },
+];
+
+
 
   static List<Map> enterContactList = [
     {
@@ -476,69 +481,70 @@ class Lists {
   static List<Map> userQrCodeList = [
     {
       "icon": Icons.bar_chart, // Report
-      "text1": "Report",
-      "text2": "View your reports and analytics",
+      "text1": "report".tr,
+      "text2": "report_desc".tr,
       "onTap": () {
         Get.to(() => ProfileScreen());
       },
     },
     {
       "icon": Icons.delete, // Delete Client
-      "text1": "Delete Client",
-      "text2": "Remove a client permanently from your account",
+      "text1": "delete_client".tr,
+      "text2": "delete_client_desc".tr,
       "onTap": () {
         Get.to(() => ProfileScreen());
       },
     },
     {
       "icon": Icons.account_balance, // All Account
-      "text1": "All Account",
-      "text2": "Manage and view all linked accounts",
+      "text1": "all_account".tr,
+      "text2": "all_account_desc".tr,
       "onTap": () {
         Get.to(() => ProfileScreen());
       },
     },
     {
       "icon": Icons.privacy_tip, // Privacy Policy
-      "text1": "Privacy Policy",
-      "text2": "Read our policies about your privacy and data",
+      "text1": "privacy_policy".tr,
+      "text2": "privacy_policy_desc".tr,
       "onTap": () {
-        Get.to(() => ProfileScreen());
+        Get.to(() => PrivacyPolicyPage());
       },
     },
     {
       "icon": Icons.phone, // Contact Us
-      "text1": "Contact Us",
-      "text2": "Get in touch with our support team",
+      "text1": "contact_us".tr,
+      "text2": "contact_us_desc".tr,
       "onTap": () {
-        Get.to(() => ProfileScreen());
+        Get.to(() => ContactUsPage());
       },
     },
     {
       "icon": Icons.info, // About Us
-      "text1": "About Us",
-      "text2": "Know more about our company and services",
+      "text1": "about_us".tr,
+      "text2": "about_us_desc".tr,
       "onTap": () {
-        Get.to(() => ProfileScreen());
+        Get.to(() => AboutUsPage());
       },
     },
     {
       "icon": Icons.person_remove, // Delete Account
-      "text1": "Delete Account",
-      "text2": "Close and delete your account permanently",
+      "text1": "delete_account".tr,
+      "text2": "delete_account_desc".tr,
       "onTap": () {
         Get.to(() => ProfileScreen());
       },
     },
     {
       "icon": Icons.system_update, // Check Update
-      "text1": "Check Update",
-      "text2": "Verify if the latest version is installed",
+      "text1": "check_update".tr,
+      "text2": "check_update_desc".tr,
       "onTap": () {
         Get.to(() => ProfileScreen());
       },
     },
   ];
+
 
   static List<Map> helpList = [
     {

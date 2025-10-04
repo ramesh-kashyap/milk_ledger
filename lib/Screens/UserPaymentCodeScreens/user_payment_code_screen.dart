@@ -31,7 +31,6 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
   void fetchUserProfile() async {
     try {
       final response = await ApiService.get("/auth/me");
-      print("Response: $response");
       final data = response.data;
       if (data["status"] == true) {
         final user = data["user"]; // yaha user ka object aayega
@@ -68,7 +67,6 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
       if (response.data['status'] == true) {
         // Clear local token/session
         // await LocalStorage.clearToken();
-
         // Navigate to login page
         Get.offAll(() => LogInScreen());
       } else {
@@ -112,13 +110,13 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
                     SizedBox(height: 4),
                     CommonTextWidget.InterRegular(
                       color: black171,
-                      text: "Mobile No: $userPhone",
+                      text: "${'mobile_no'.tr}: $userPhone",
                       fontSize: 12,
                     ),
                     SizedBox(height: 6),
                     CommonTextWidget.InterRegular(
                       color: black171,
-                      text: "Address: $userAddress",
+                      text: "${'address'.tr}: $userAddress",
                       fontSize: 12,
                     ),
                   ],
@@ -218,7 +216,7 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
                         await logout();
                       },
                       icon: const Icon(Icons.logout, color: Colors.white),
-                      label: const Text("Logout",
+                      label: Text("logout".tr,
                           style: TextStyle(color: Colors.white)),
                     ),
                   ),
@@ -229,7 +227,7 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
                       alignment: Alignment.bottomCenter,
                       child: CommonTextWidget.InterRegular(
                         color: greyA6A,
-                        text: "V 1.1.0",
+                         text: "V 1.1.0",
                         fontSize: 16,
                       ),
                     ),

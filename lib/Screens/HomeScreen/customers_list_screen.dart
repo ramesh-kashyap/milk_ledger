@@ -68,18 +68,18 @@ class _CustomersListScreenState extends State<CustomersListScreen>
     return await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Select Customer Type'),
+        title: Text('select_customer_type'.tr),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.person, color: Colors.green),
-              title: const Text('Seller'),
+              title:  Text('seller'.tr),
               onTap: () => Navigator.pop(ctx, 'Seller'),
             ),
             ListTile(
               leading: const Icon(Icons.person, color: Colors.blue),
-              title: const Text('Purchaser'),
+              title: Text('purchaser'.tr),
               onTap: () => Navigator.pop(ctx, 'Purchaser'),
             ),
           ],
@@ -95,15 +95,15 @@ class _CustomersListScreenState extends State<CustomersListScreen>
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete customer'),
-        content: Text('Delete "${c['name'] ?? ''}"? This cannot be undone.'),
+        title: Text('delete_customer'.tr),
+        content: Text('Delete "${c['name'] ?? ''}"? ${'cannot_undo'.tr}'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text('cancel'.tr)),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('delete'.tr, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -161,7 +161,7 @@ class _CustomersListScreenState extends State<CustomersListScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('All customers'),
+        title: Text('all_customers'.tr),
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _load),
           IconButton(icon: const Icon(Icons.print), onPressed: () {}),
@@ -170,7 +170,7 @@ class _CustomersListScreenState extends State<CustomersListScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addCustomerFlow,
         icon: const Icon(Icons.add),
-        label: const Text('Add'),
+        label: Text('add'.tr),
       ),
       body: SafeArea(
         child: Column(
@@ -214,11 +214,9 @@ class _CustomersListScreenState extends State<CustomersListScreen>
                   unselectedLabelColor:
                       Theme.of(context).colorScheme.onSurfaceVariant,
                   tabs: [
-                    _TabWithBadge.tab(label: 'All', count: _all.length),
-                    _TabWithBadge.tab(label: 'Sellers', count: _sellers.length),
-                    _TabWithBadge.tab(
-                        label: 'Buyers',
-                        count: _purchasers.length), // ← renamed
+                    _TabWithBadge.tab(label: 'all'.tr, count: _all.length),
+                    _TabWithBadge.tab(label: 'sellers'.tr, count: _sellers.length),
+                    _TabWithBadge.tab(label: 'buyers'.tr, count: _purchasers.length), // ← renamed
                   ],
                 ),
               ),
@@ -228,7 +226,7 @@ class _CustomersListScreenState extends State<CustomersListScreen>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Text(
-                'Sellers: Those who sell milk to you. Buyers: Those to whom you sell milk.',
+                'sellers_info'.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: cs.onSurfaceVariant),
               ),
@@ -241,7 +239,7 @@ class _CustomersListScreenState extends State<CustomersListScreen>
                 onChanged: (v) => setState(() => _q = v),
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  hintText: 'Search name, phone, or code',
+                  hintText: 'search_hint'.tr,
                   prefixIcon: const Icon(Icons.search),
                   isDense: true, // compact height
                   contentPadding:
@@ -342,10 +340,10 @@ class _ListTab extends StatelessWidget {
             Icon(Icons.contacts_outlined,
                 size: 56, color: Colors.grey.shade500),
             const SizedBox(height: 12),
-            const Text('No records',
+             Text('no_records'.tr,
                 style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
-            Text('Tap the + button to add a customer.',
+            Text('tap_to_add_customer'.tr,
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ]),
@@ -403,7 +401,7 @@ class _ListTab extends StatelessWidget {
                       fontSize: 16, fontWeight: FontWeight.w600)),
               subtitle: Text(
                 (phone != null && phone.toString().trim().isNotEmpty)
-                    ? phone
+                    ? phone   
                     : 'Code: $code',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -413,8 +411,8 @@ class _ListTab extends StatelessWidget {
                 onSelected: (v) async {
                   if (v == 'delete' && onDelete != null) await onDelete!(c);
                 },
-                itemBuilder: (ctx) => const [
-                  PopupMenuItem(value: 'delete', child: Text('Delete')),
+                itemBuilder: (ctx) => [
+                  PopupMenuItem(value: 'delete', child: Text('delete'.tr)),
                 ],
                 icon: const Icon(Icons.more_vert),
               ),

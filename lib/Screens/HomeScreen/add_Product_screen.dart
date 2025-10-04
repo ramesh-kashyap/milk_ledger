@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
-
+import 'package:get/get.dart';
 class ProductManagementScreen extends StatefulWidget {
   const ProductManagementScreen({super.key});
 
@@ -28,7 +28,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   /// ✅ Fetch products
   Future<void> _fetchProducts() async {
     try {
-      Response response = await ApiService.get("/fetchProducts");
+      dio.Response response = await ApiService.get("/fetchProducts");
       final data = response.data;
 
       if (data["status"] == true) {
@@ -37,7 +37,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "Failed to load products")),
+          SnackBar(content: Text(data["message"] ?? "failed_load".tr)),
         );
       }
     } catch (e) {
@@ -55,13 +55,13 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
 
     if (name.isEmpty || price.isEmpty || stock.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
+        SnackBar(content: Text("fill_all_fields".tr)),
       );
       return;
     }
 
     try {
-      Response response = await ApiService.post("/dairyProducts", {
+      dio.Response response = await ApiService.post("/dairyProducts", {
         "id": editingProductId, // null → insert, not null → update
         "productName": name,
         "productUnit": selectedUnit,
@@ -73,13 +73,13 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
 
       if (data["status"] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "Saved successfully")),
+          SnackBar(content: Text(data["message"] ?? "saved_success".tr)),
         );
         _clearInputs();
         _fetchProducts();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "Failed to save product")),
+          SnackBar(content: Text(data["message"] ?? "failed_save".tr)),
         );
       }
     } catch (e) {
@@ -92,18 +92,18 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   /// ✅ Delete product
   Future<void> _deleteProduct(int id) async {
     try {
-      Response response = await ApiService.post("/dairyProducts/$id", {});
+      dio.Response response = await ApiService.post("/dairyProducts/$id", {});
       final data = response.data;
 
       if (data["status"] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "Deleted successfully")),
+          SnackBar(content: Text(data["message"] ?? "deleted_success".tr)),
         );
         _clearInputs();
         _fetchProducts();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "Failed to delete")),
+          SnackBar(content: Text(data["message"] ?? "failed_delete".tr)),
         );
       }
     } catch (e) {
@@ -137,8 +137,8 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text(
-          "Product Management",
+        title: Text(
+          "product_management".tr,
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.green[500],
@@ -155,14 +155,14 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
             /// Product Name
             Row(
               children: [
-                const Text("Product Name",
+                Text("product_name".tr,
                     style: TextStyle(color: Colors.green, fontSize: 16)),
                 const SizedBox(width: 16),
                 Expanded(
                   child: TextField(
                     controller: _productNameController,
                     decoration: InputDecoration(
-                      hintText: "Enter product name",
+                      hintText: "enter_product_name".tr,
                       focusedBorder: const UnderlineInputBorder(
                         borderSide: BorderSide(color: Colors.green, width: 2),
                       ),
@@ -178,13 +178,13 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
             /// Product Unit
             Row(
               children: [
-                const Text("Product Unit",
+                 Text("product_unit".tr,
                     style: TextStyle(color: Colors.green, fontSize: 16)),
                 const SizedBox(width: 16),
                 Expanded(
                   child: InputDecorator(
                     decoration: InputDecoration(
-                      hintText: "Select unit",
+                      hintText: "select_unit".tr,
                       focusedBorder: const UnderlineInputBorder(
                         borderSide: BorderSide(color: Colors.green, width: 2),
                       ),
@@ -227,8 +227,8 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                   child: TextField(
                     controller: _priceController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      hintText: "Enter price",
+                    decoration:  InputDecoration(
+                      hintText: "enter_price".tr,
                       border: UnderlineInputBorder(),
                     ),
                   ),
@@ -246,8 +246,8 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                 Expanded(
                   child: TextField(
                     controller: _stockController,
-                    decoration: const InputDecoration(
-                      hintText: "Enter stock (e.g. Unlimited or 50)",
+                    decoration: InputDecoration(
+                      hintText: "enter_stock".tr,
                       border: UnderlineInputBorder(),
                     ),
                   ),
@@ -268,7 +268,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                     onPressed: editingProductId == null
                         ? null
                         : () => _deleteProduct(editingProductId!),
-                    child: const Text("DELETE",
+                    child: Text("delete".tr,
                         style: TextStyle(color: Colors.white)),
                   ),
                 ),
@@ -295,9 +295,9 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
               width: double.infinity,
               color: Colors.green.shade700,
               padding: const EdgeInsets.all(10),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  "All Products",
+                  "all_products".tr,
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -308,16 +308,16 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
             Container(
               color: Colors.green.shade200,
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-              child: const Row(
+              child:  Row(
                 children: [
                   Expanded(
-                      child: Text("Product Name",
+                      child: Text("product_name".tr,
                           style: TextStyle(fontWeight: FontWeight.bold))),
                   Expanded(
-                      child: Text("Product Unit",
+                      child: Text("product_unit".tr,
                           style: TextStyle(fontWeight: FontWeight.bold))),
                   Expanded(
-                      child: Text("Stock",
+                      child: Text("stock".tr,
                           style: TextStyle(fontWeight: FontWeight.bold))),
                 ],
               ),

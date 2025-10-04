@@ -729,7 +729,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
                               print("Error updating customer: $e");
                             }
                           },
-                          child: const Text('Save changes'),
+                          child: Text('save'.tr),
                         ),
                       ),
                     ],
@@ -750,13 +750,13 @@ void _fillFatSnfRatesForAnimal(String animal) {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Milk Collection'),
+        title: Text('milk_collection'.tr),
         centerTitle: false,
         actions: [
           if (seller != null)
             IconButton(
               icon: const Icon(Icons.edit),
-              tooltip: 'Edit customer',
+              tooltip: 'edit_customer'.tr, 
               onPressed: _openEditCustomerSheet,
             ),
         ],
@@ -775,8 +775,8 @@ void _fillFatSnfRatesForAnimal(String animal) {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: const Text(
-            'Save',
+          child: Text(
+            'save'.tr,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
@@ -795,11 +795,11 @@ void _fillFatSnfRatesForAnimal(String animal) {
             ),
             child: Row(
               children: [
-                Text('Amount ', style: TextStyle(color: Colors.green.shade700)),
+                Text('amount'.tr, style: TextStyle(color: Colors.green.shade700)),
                 Text(zero ? '0.00' : amount.toStringAsFixed(2),
                     style: const TextStyle(fontWeight: FontWeight.w600)),
                 const Spacer(),
-                Text('Per litre ',
+                Text('per_litre'.tr,
                     style: TextStyle(color: Colors.green.shade700)),
                 Text(rate.toStringAsFixed(2),
                     style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -819,9 +819,9 @@ void _fillFatSnfRatesForAnimal(String animal) {
               const SizedBox(width: 12),
               Expanded(
                 child: SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(value: 'AM', label: Text('AM')),
-                    ButtonSegment(value: 'PM', label: Text('PM')),
+                  segments: [
+                    ButtonSegment(value: 'AM', label: Text('am'.tr)),
+                    ButtonSegment(value: 'PM', label: Text('pm'.tr)),
                   ],
                   selected: {session},
                   onSelectionChanged: (s) => setState(() => session = s.first),
@@ -852,11 +852,11 @@ void _fillFatSnfRatesForAnimal(String animal) {
                 ),
                 child: const Icon(Icons.person_search, color: Colors.green),
               ),
-              title: Text(seller?['name'] ?? 'Select customer',
+              title: Text(seller?['name'] ?? 'select_customer'.tr,
                   style: theme.textTheme.titleMedium),
               subtitle: seller == null
-                  ? const Text('Tap to search by name or code')
-                  : Text('Code: ${seller!['code']}',
+                  ? Text('tap_to_search'.tr)
+                  : Text('${'code'.tr}: ${seller!['code']}',
                       style: theme.textTheme.bodySmall),
               trailing: const Icon(Icons.chevron_right),
             ),
@@ -871,7 +871,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
                 children: [
                   Expanded(
                     child: _AnimalTile(
-                      label: 'Cow',
+                      label: 'cow'.tr,
                       asset: 'assets/images/cow-icon.png',
                       selected: animal == 'cow',
                       disabled: !cowEnabled,
@@ -881,7 +881,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
                   const SizedBox(width: 10),
                   Expanded(
                     child: _AnimalTile(
-                      label: 'Buffalo',
+                      label: 'buffalo'.tr,
                       asset: 'assets/images/buffalo.png',
                       selected: animal == 'buffalo',
                       disabled: !buffaloEnabled,
@@ -903,28 +903,28 @@ void _fillFatSnfRatesForAnimal(String animal) {
                 child: Column(
                   children: [
                     _NumField(
-                      label: 'Milk (litres)',
+                      label: 'milk_litres'.tr,
                       controller: litresCtrl,
                       enabled: !zero,
                       onChanged: (_) => _recompute(),
                       validator: (v) {
                         if (zero) return null;
                         final n = num.tryParse(v ?? '');
-                        if (n == null || n <= 0) return 'Enter litres';
+                        if (n == null || n <= 0) return 'enter_litres'.tr;
                         return null;
                       },
                     ),
                     const SizedBox(height: 10),
                     if (showRate) ...[
                       _NumField(
-                        label: 'Rate / litre',
+                        label: 'rate_per_litre'.tr,
                         controller: rateCtrl,
                         enabled: !zero,
                         onChanged: (_) => _recompute(),
                         validator: (v) {
                           if (zero) return null;
                           final n = num.tryParse(v ?? '');
-                          if (n == null || n <= 0) return 'Enter rate';
+                          if (n == null || n <= 0) return 'enter_rate'.tr;
                           return null;
                         },
                       ),
@@ -932,7 +932,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
                     ],
                     if (showFat) ...[
                       _NumFieldFat(
-                        label: 'Fat',
+                        label: 'fat'.tr,
                         controller: fatCtrl,
                         enabled: !zero,
                         isFat: true, // 👈 tells it to use fatAutoDotFormatter
@@ -940,7 +940,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
                         validator: (v) {
                           if (zero) return null;
                           if (showFat && (v == null || v.trim().isEmpty)) {
-                            return 'Enter fat';
+                             return 'enter_fat'.tr;
                           }
                           return null;
                         },
@@ -950,7 +950,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
                     if (showSnf) ...[
                       // 👈 NEW
                       _NumFieldFat(
-                        label: 'SNF',
+                        label: 'snf'.tr,
                         controller: snfCtrl,
                         enabled: !zero,
                         isFat:
@@ -959,21 +959,21 @@ void _fillFatSnfRatesForAnimal(String animal) {
                         validator: (v) {
                           if (zero) return null;
                           if (showSnf && (v == null || v.trim().isEmpty))
-                            return 'Enter SNF';
+                            return 'enter_snf'.tr;
                           return null;
                         },
                       ),
                       const SizedBox(height: 10),
                     ],
                     _ReadOnlyField(
-                      label: 'Amount',
+                      label: 'amount'.tr,
                       value: zero ? '0.00' : amount.toStringAsFixed(2),
                     ),
                     const SizedBox(height: 6),
                     SwitchListTile(
                       value: zero,
                       onChanged: onZeroChanged,
-                      title: const Text('Zero'),
+                      title: Text('zero'.tr),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ],
@@ -1298,8 +1298,8 @@ class _SellerPickerState extends State<_SellerPicker> {
             const SizedBox(height: 12),
             TextField(
               controller: searchCtrl,
-              decoration: const InputDecoration(
-                hintText: 'Search customer by name or code',
+              decoration: InputDecoration(
+                 hintText: 'search_customer'.tr,
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
@@ -1319,7 +1319,7 @@ class _SellerPickerState extends State<_SellerPicker> {
                       child: const Icon(Icons.person, color: Colors.green),
                     ),
                     title: Text(it['name'] ?? ''),
-                    subtitle: Text('Code: ${it['code'] ?? '-'}'),
+                    subtitle: Text('${'code'.tr}: ${it['code'] ?? '-'}'),
                     onTap: () => Navigator.pop(context, it),
                   );
                 },

@@ -4,11 +4,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'translations.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init();
   ApiService.init();
+
+  final box = GetStorage();
+  final savedLang = box.read('language') ?? 'en_US';
+
+    Locale initialLocale;
+  if (savedLang == 'hi_IN') {
+    initialLocale = const Locale('hi', 'IN');
+  } else if (savedLang == 'pa_IN') {
+    initialLocale = const Locale('pa', 'IN');
+  } else {
+    initialLocale = const Locale('en', 'US');
+  }
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -17,18 +31,20 @@ Future<void> main() async {
   );
   SystemChrome.setPreferredOrientations(
     [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown],
-  ).then((value) => runApp(const DigiWalletPaytmCloneApp()));
+  ).then((value) => runApp(DigiWalletPaytmCloneApp(initialLocale)));
 }
 
 class DigiWalletPaytmCloneApp extends StatelessWidget {
-  const DigiWalletPaytmCloneApp({Key? key}) : super(key: key);
+  final Locale initialLocale;
+  const DigiWalletPaytmCloneApp(this.initialLocale,{Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       translations: AppTranslations(),  // ✅ translations added here
-      locale: const Locale('en', 'US'), // ✅ default language
+      locale: initialLocale,
+      // locale: const Locale('en', 'US'), // ✅ default language
       fallbackLocale: const Locale('en', 'US'),
       home: SplashScreen(),             // ✅ your splash screen
       theme: ThemeData(

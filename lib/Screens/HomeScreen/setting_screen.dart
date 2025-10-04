@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/dairy_account_setting.dart';
+import 'package:digitalwalletpaytmcloneapp/main.dart';
+import 'package:get_storage/get_storage.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -13,6 +15,22 @@ class _SettingsPageState extends State<SettingsPage> {
   bool sendReceipt = true;
   bool printSlip = true;
   String selectedLang = "English"; // default language
+   final box = GetStorage();
+   @override
+  void initState() {
+    super.initState();
+
+    // 👇 check what is the current active locale
+    final currentLocale = Get.locale;
+
+    if (currentLocale?.languageCode == 'hi') {
+      selectedLang = "Hindi";
+    } else if (currentLocale?.languageCode == 'pa') {
+      selectedLang = "Punjabi";
+    } else {
+      selectedLang = "English";
+    }
+  }
 
   void _showLanguageDialog() {
     Get.defaultDialog(
@@ -26,6 +44,7 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: (val) {
               setState(() => selectedLang = val!);
               Get.updateLocale(const Locale('en', 'US')); // ✅ change locale
+              box.write('language', 'en_US'); 
               Get.back();
             },
             title: const Text("English"),
@@ -36,6 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: (val) {
               setState(() => selectedLang = val!);
               Get.updateLocale(const Locale('hi', 'IN')); // ✅ change locale
+              box.write('language', 'hi_IN');
               print("✅ Locale changed to: ${Get.locale}");
               Get.back();
             },
@@ -47,6 +67,7 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: (val) {
               setState(() => selectedLang = val!);
               Get.updateLocale(const Locale('pa', 'IN')); // ✅ change locale
+              box.write('language', 'pa_IN');
               Get.back();
             },
             title: const Text("ਪੰਜਾਬੀ"),

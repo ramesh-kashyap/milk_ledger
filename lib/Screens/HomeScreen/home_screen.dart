@@ -36,7 +36,7 @@ class HomeScreen extends StatefulWidget {
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
-}
+   }
 
 class _HomeScreenState extends State<HomeScreen> {
   String userName = "Loading...";
@@ -270,9 +270,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               InkWell(
-                onTap: () {
-                  Get.to(() => ToSelfScreen());
-                },
+                 onTap: () {
+                      Get.to(() =>  DairyReportScreen());
+                  },
                 child: Column(
                   children: [
                     Image.asset(
@@ -604,57 +604,57 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// List Widget View
-  Widget ListWidgetView() {
-    return ListView.builder(
-      padding: EdgeInsets.only(left: 25, right: 25, top: 20),
-      physics: NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      itemCount: Lists.listViewList.length,
-      itemBuilder: (context, index) => Padding(
-        padding: EdgeInsets.only(bottom: 7),
-        child: Container(
+Widget ListWidgetView() {
+  return ListView.builder(
+    padding: const EdgeInsets.only(left: 25, right: 25, top: 20),
+    physics: const NeverScrollableScrollPhysics(),
+    shrinkWrap: true,
+    itemCount: Lists.listViewList.length,
+    itemBuilder: (context, index) => Padding(
+      padding: const EdgeInsets.only(bottom: 7),
+      child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: greyE7E, width: 1),
-            color: white,
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(15),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Lists.listViewList[index]
-                      ["icon"], // use icon instead of image
-                  color: Colors.green,
-                  size: 30,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: greyE7E, width: 1),
+          color: white,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Lists.listViewList[index]["icon"],
+                color: Colors.green,
+                size: 30,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CommonTextWidget.InterSemiBold(
+                      color: black171,
+                      fontSize: 14,
+                      text: Lists.listViewList[index]["text1"].toString().tr, // ✅ translate here
+                    ),
+                    const SizedBox(height: 3),
+                    CommonTextWidget.InterRegular(
+                      color: grey6A7,
+                      fontSize: 10,
+                      text: Lists.listViewList[index]["text2"].toString().tr, // ✅ translate here
+                    ),
+                  ],
                 ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CommonTextWidget.InterSemiBold(
-                        color: black171,
-                        fontSize: 14,
-                        text: Lists.listViewList[index]["text1"],
-                      ),
-                      SizedBox(height: 3),
-                      CommonTextWidget.InterRegular(
-                        color: grey6A7,
-                        fontSize: 10,
-                        text: Lists.listViewList[index]["text2"],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   /// Bottom Widget View
   Widget BottomWidgetView() {
@@ -672,7 +672,7 @@ class _HomeScreenState extends State<HomeScreen> {
           CommonTextWidget.InterRegular(
             color: black171,
             fontSize: 13,
-            text: "invite_reward",
+            text: "invite_reward".tr,
           ),
           SizedBox(height: 25),
           MaterialButton(

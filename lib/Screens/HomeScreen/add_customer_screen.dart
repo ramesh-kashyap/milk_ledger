@@ -323,10 +323,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: Text('Add ${widget.customerType}',
-            style: const TextStyle(
-                color: Colors.black87, fontWeight: FontWeight.w600)),
-        iconTheme: const IconThemeData(color: Colors.black87),
+        title: Text(
+          'add_customer'.trParams({'type': widget.customerType}), // 👈 dynamic param
+          style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
+        ),
+
       ),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -336,7 +337,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               child: OutlinedButton.icon(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.close),
-                label: const Text('Cancel'),
+                label: Text('cancel'.tr),
               ),
             ),
             const SizedBox(width: 12),
@@ -344,7 +345,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               child: ElevatedButton.icon(
                 onPressed: _save,
                 icon: const Icon(Icons.save_outlined),
-                label: const Text('Save'),
+                label: Text('save'.tr),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
@@ -363,28 +364,28 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 children: [
                   // Customer Details
                   _sectionCard(
-                    title: 'Customer Details',
+                    title: 'customer_details'.tr,
                     child: Column(
                       children: [
                         TextFormField(
                           controller: codeCtrl,
-                          decoration: _decor('Code'),
+                          decoration: _decor('code'.tr),
                           validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Code is required'
+                              ? 'code_required'.tr
                               : null,
                         ),
                         spacer,
                         TextFormField(
                           controller: nameCtrl,
-                          decoration: _decor('Name'),
+                          decoration: _decor('name'.tr),
                           validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Name is required'
+                              ? 'name_required'.tr
                               : null,
                         ),
                         spacer,
                         TextFormField(
                           controller: phoneCtrl,
-                          decoration: _decor('Phone (Optional)'),
+                          decoration: _decor('phone_optional'.tr),
                           keyboardType: TextInputType.phone,
                         ),
                       ],
@@ -393,12 +394,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
                   // Basis
                   _sectionCard(
-                    title: 'On basis of',
+                    title: 'on_basis_of'.tr, 
                     child: Wrap(
                       spacing: 14,
                       children: [
                         ChoiceChip(
-                          label: const Text('Fat'),
+                          label:  Text('fat'.tr),
                           selected: _basis == PricingBasis.fat,
                           onSelected: (_) => _onBasisChanged(PricingBasis.fat),
                         ),
@@ -419,7 +420,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
                   // Buffalo Milk
                   _sectionCard(
-                    title: 'Buffalo Milk',
+                    title: 'buffalo_milk',
                     child: Row(
                       children: [
                         Expanded(
@@ -448,7 +449,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
                   // Cow Milk
                   _sectionCard(
-                    title: 'Cow Milk',
+                    title: 'cow_milk',
                     child: Row(
                       children: [
                         Expanded(

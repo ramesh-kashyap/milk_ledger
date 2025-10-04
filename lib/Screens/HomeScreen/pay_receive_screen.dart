@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 class PayReceiveScreen extends StatefulWidget {
   const PayReceiveScreen({Key? key}) : super(key: key);
@@ -57,19 +58,17 @@ void _onSave() async {
     final response = await ApiService.post('/transactions', payload);
         print('Response: ${response}');
     if (response.data['success'] == true) {
-      // Success dialog
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Success'),
-          content: Text(response.data['message'] ?? 'Transaction saved successfully'),
+          title: Text('success'.tr), 
+          content: Text(response.data['message'] ?? 'transaction_saved'.tr), 
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // close dialog
-               
+                Navigator.pop(context);  
               },
-              child: const Text('OK'),
+              child: Text('ok'.tr),
             ),
           ],
         ),
@@ -227,8 +226,8 @@ print('Response: ${response}');
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Pay/Receive',
+        title: Text(
+          'pay_receive'.tr,
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
         ),
       ),
@@ -247,7 +246,7 @@ print('Response: ${response}');
               elevation: 2,
             ),
             child: Text(
-              'SAVE',
+              'save'.tr,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,  color: _isFormValid ? Colors.white : Colors.green[200],),
             ),
           ),
@@ -284,7 +283,7 @@ print('Response: ${response}');
   flex: 3,
   child: DropdownButtonFormField<int>(
     value: selectedCustomerId,
-    decoration: _inputDec(label: 'Select Name'),
+    decoration: _inputDec(label: 'select_name'.tr),
     items: customers.map((customer) {
       return DropdownMenuItem<int>(
         value: customer['id'], // use unique id
@@ -302,7 +301,7 @@ print('Response: ${response}');
           _nameCtrl.text = '${selectedCustomer['name']} (${selectedCustomer['code']})';
       });
     },
-    validator: (v) => (v == null) ? 'Select Name' : null,
+    validator: (v) => (v == null) ? 'select_name'.tr : null,
   ),
 ),
 
@@ -313,7 +312,7 @@ print('Response: ${response}');
   child: TextFormField(
     controller: _codeCtrl,
     textAlign: TextAlign.center,
-    decoration: _inputDec(label: 'Code'),
+    decoration: _inputDec(label: 'code'.tr), 
     keyboardType: TextInputType.number,
     onChanged: (value) {
       final match = customers.firstWhere(
@@ -348,11 +347,11 @@ print('Response: ${response}');
                 TextFormField(
                   controller: _amountCtrl,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _inputDec(label: 'Amount'),
+                  decoration: _inputDec(label: 'amount'.tr),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Enter amount';
+                    if (v == null || v.trim().isEmpty) return 'enter_amount'.tr;
                     final n = num.tryParse(v);
-                    if (n == null) return 'Invalid amount';
+                    if (n == null) return 'invalid_amount'.tr;
                     return null;
                   },
                 ),
@@ -369,7 +368,7 @@ print('Response: ${response}');
                         text: DateFormat('dd MMM yyyy').format(_billDate),
                       ),
                       decoration: _inputDec(
-                        label: 'Bill Date',
+                        label: 'bill_date'.tr,
                         suffix: Icon(Icons.calendar_today_outlined, color: borderBlack),
                       ),
                     ),
@@ -379,10 +378,10 @@ print('Response: ${response}');
                 const SizedBox(height: 18),
 
                 // Mode Select
-                const Align(
+                Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Mode Select',
+                    'mode_select'.tr,
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -408,7 +407,7 @@ print('Response: ${response}');
                 TextFormField(
                   controller: _remarkCtrl,
                   maxLines: 4,
-                  decoration: _inputDec(label: 'Remark'),
+                  decoration: _inputDec(label: 'remark'.tr),
                 ),
               ],
             ),

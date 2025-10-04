@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
 class PaymentSlip {
@@ -11,12 +12,12 @@ class PaymentSlip {
   final double purchase;
 
   PaymentSlip({
-    required this.name,
-    required this.code,
-    this.date,
-    this.item,
-    this.sale = 0.0,
-    this.purchase = 0.0,
+  required this.name,
+  required this.code,
+  this.date,
+  this.item,
+  this.sale = 0.0,
+  this.purchase = 0.0,
   });
 
   factory PaymentSlip.fromJson(Map<String, dynamic> json) {
@@ -146,8 +147,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
           totalPages = data['totalPages'] ?? 1;
           currentPage = data['currentPage'] ?? page;
 
-          if (grouped.isNotEmpty && selectedUser == null && !showAll) {
+           // 👇 Default to first customer instead of all
+          if (grouped.isNotEmpty && selectedUser == null) {
             selectedUser = grouped.keys.first;
+            showAll = false; // default: only first user’s data
           }
 
           loading = false;
@@ -199,9 +202,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFF62C370),
-        title: const Text(
-          "Payment Slip",
+        backgroundColor: Color(0xFF62C370),
+        title: Text(
+          "payment_slips".tr,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -231,7 +234,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   child: DropdownButton<String>(
                     isExpanded: true,
                     value: selectedUser,
-                    hint: const Text("Select Customer"),
+                    hint: Text("select_customer".tr),
                     underline: const SizedBox(),
                     icon: const Icon(Icons.arrow_drop_down,
                         color: Color(0xFF62C370)),
@@ -251,7 +254,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                const Text("All",
+                Text("all".tr,
                     style: TextStyle(fontWeight: FontWeight.w600)),
                 Switch(
                   activeColor: const Color(0xFF62C370),
@@ -270,9 +273,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
           // Data Section
           Expanded(
             child: finalGroups.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
-                      "No data available",
+                      "no_data".tr,
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
@@ -333,9 +336,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text("Sale: ₹${sale.toStringAsFixed(2)}"),
-                                      Text(
-                                          "Purchase: ₹${purchase.toStringAsFixed(2)}"),
+                                      Text("${'sale'.tr}: ₹${sale.toStringAsFixed(2)}"), 
+                                      Text("${'purchase'.tr}: ₹${purchase.toStringAsFixed(2)}"),
                                     ],
                                   ),
                                   const SizedBox(height: 8),
@@ -343,7 +345,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text("Grand Total:",
+                                      Text("grand_total".tr,
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold)),
                                       Text(
@@ -360,10 +362,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text("Received: ₹${sale.toStringAsFixed(2)}",
-                                          style: const TextStyle(
+                                      Text("${'received'.tr}: ₹${sale.toStringAsFixed(2)}",
+                                          style: TextStyle(
                                               fontWeight: FontWeight.bold)),
-                                      const Text("Due: ₹0.00",
+                                      Text("${'due'.tr}: ₹0.00",
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold)),
                                     ],
