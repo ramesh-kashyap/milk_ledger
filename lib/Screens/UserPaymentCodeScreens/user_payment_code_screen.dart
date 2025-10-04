@@ -67,7 +67,6 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
       if (response.data['status'] == true) {
         // Clear local token/session
         // await LocalStorage.clearToken();
-
         // Navigate to login page
         Get.offAll(() => LogInScreen());
       } else {

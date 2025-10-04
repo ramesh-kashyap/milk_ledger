@@ -149,6 +149,7 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
     required String value,
     required String fieldKey,
   }) {
+    bool isEditable = !(fieldKey == "phone" || fieldKey == "address");
     return Card(
       elevation: 3,
       shadowColor: Colors.black26,
@@ -188,6 +189,7 @@ class _DairyAccountSettingsState extends State<DairyAccountSettings> {
                 ],
               ),
             ),
+          if (isEditable)
             IconButton(
               icon: Icon(Icons.edit, color: Colors.green[600], size: 20),
               onPressed: () => _showEditDialog(fieldKey, value),

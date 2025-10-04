@@ -27,6 +27,9 @@ import 'package:digitalwalletpaytmcloneapp/Screens/PaymentSettingScreen/UpiAndLi
 import 'package:digitalwalletpaytmcloneapp/Screens/PaymentSettingScreen/payment_setting_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/PersonalLoanScreen/personal_loan_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/ProfileScreen/profile_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/contact_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/about_us_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/privacy_policy_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/ReferAndEarnScreen/refer_and_earn_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/TermsConditionsAndPrivacyPolicyScreens/Policies_screen.dart';
 import 'package:flutter/material.dart';
@@ -505,7 +508,7 @@ class Lists {
       "text1": "privacy_policy".tr,
       "text2": "privacy_policy_desc".tr,
       "onTap": () {
-        Get.to(() => ProfileScreen());
+        Get.to(() => PrivacyPolicyPage());
       },
     },
     {
@@ -513,7 +516,7 @@ class Lists {
       "text1": "contact_us".tr,
       "text2": "contact_us_desc".tr,
       "onTap": () {
-        Get.to(() => ProfileScreen());
+        Get.to(() => ContactUsPage());
       },
     },
     {
@@ -521,7 +524,7 @@ class Lists {
       "text1": "about_us".tr,
       "text2": "about_us_desc".tr,
       "onTap": () {
-        Get.to(() => ProfileScreen());
+        Get.to(() => AboutUsPage());
       },
     },
     {

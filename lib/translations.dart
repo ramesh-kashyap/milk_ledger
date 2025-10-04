@@ -240,6 +240,8 @@ class AppTranslations extends Translations {
       "your_dairy_name": "Your Dairy Name",
       "contact_number": "Contact Number",
       "no_user_details": "No user details available",
+      "update_success": "Update successful",
+      "edit": "Edit",
     },
       'hi_IN': {
       'settings': 'सेटिंग्स',
@@ -463,7 +465,7 @@ class AppTranslations extends Translations {
       'delete_account_desc': 'अपने खाते को स्थायी रूप से बंद और हटाएं',
       'check_update': 'अपडेट जांचें',
       'check_update_desc': 'सुनिश्चित करें कि नवीनतम संस्करण इंस्टॉल है',
-        "product_management": "उत्पाद प्रबंधन",
+      "product_management": "उत्पाद प्रबंधन",
       "product_name": "उत्पाद का नाम",
       "enter_product_name": "उत्पाद का नाम दर्ज करें",
       "product_unit": "उत्पाद की इकाई",
@@ -487,6 +489,8 @@ class AppTranslations extends Translations {
       "your_dairy_name": "आपकी डेयरी का नाम",
       "contact_number": "संपर्क नंबर",
       "no_user_details": "कोई उपयोगकर्ता विवरण उपलब्ध नहीं",
+      "update_success": "अद्यतन सफल रहा",
+      "edit": "संपादित करें",
     },
       'pa_IN': {
       'settings': 'ਸੈਟਿੰਗਜ਼',
@@ -732,6 +736,8 @@ class AppTranslations extends Translations {
       "your_dairy_name": "ਤੁਹਾਡੀ ਡੇਅਰੀ ਦਾ ਨਾਮ",
       "contact_number": "ਸੰਪਰਕ ਨੰਬਰ",
       "no_user_details": "ਕੋਈ ਯੂਜ਼ਰ ਵੇਰਵਾ ਉਪਲਬਧ ਨਹੀਂ",
+      "update_success": "ਅਪਡੇਟ ਸਫਲ ਰਿਹਾ",
+      "edit": "ਸੋਧੋ",
     },
       };
 }
