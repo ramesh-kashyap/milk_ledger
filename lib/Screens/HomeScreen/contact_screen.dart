@@ -10,7 +10,7 @@ class ContactUsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           "Contact Us",
-          style: TextStyle(color: Colors.white), // 👈 White title text
+          style: TextStyle(color: Colors.white), 
         ),
         backgroundColor: Colors.green.shade600,
         elevation: 0,
