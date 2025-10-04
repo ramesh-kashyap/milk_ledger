@@ -22,11 +22,38 @@ String name = "";
 @override
 void initState() {
   super.initState();
-  _fetchDetailsByAcNo();
 
-  // Listen for changes
-  
+  _fetchDetailsByAcNo().then((_) async {
+    if (customers.isNotEmpty) {
+      final first = customers.first;
+
+      setState(() {
+        selectedCustomerId = first['id'];
+        _codeCtrl.text = first['code'] ?? '';
+        _nameCtrl.text = '${first['name']} (${first['code']})';
+        accountNo = first['code'] ?? '';
+        name = first['name'] ?? '';
+        customerType = first['customerType'] ?? '';
+
+        final createdAtStr = first['createdAt'];
+        if (createdAtStr != null && createdAtStr.isNotEmpty) {
+          try {
+            _startDate = DateTime.parse(createdAtStr);
+          } catch (_) {
+            _startDate = DateTime.now().subtract(const Duration(days: 30));
+          }
+        } else {
+          _startDate = DateTime.now().subtract(const Duration(days: 30));
+        }
+        _endDate = DateTime.now();
+      });
+
+      // fetch all milk, product, payment data
+      await _fetchMilkData(selectedCustomerId);
+    }
+  });
 }
+
 
  final _formKey = GlobalKey<FormState>();
 
@@ -64,6 +91,21 @@ print('Response: ${response}');
           selectedCustomerId = customers[0]['id'];
           _codeCtrl.text = customers[0]['code'] ?? '';
           _nameCtrl.text = '${customers[0]['name']} (${customers[0]['code']})';
+          
+           final String? createdAtStr = customers[0]['createdAt'];
+  if (createdAtStr != null && createdAtStr.isNotEmpty) {
+    try {
+      _startDate = DateTime.parse(createdAtStr);
+    } catch (e) {
+      print('Invalid createdAt format: $createdAtStr');
+      _startDate = DateTime.now().subtract(const Duration(days: 30)); // fallback
+    }
+  } else {
+    _startDate = DateTime.now().subtract(const Duration(days: 30)); // fallback
+  }
+
+  _endDate = DateTime.now();
+
         }
       });
   } else {
@@ -182,63 +224,81 @@ void _pickEndDate(BuildContext context) async {
 }
 
 Future<void> _fetchMilkData(int? customerId) async {
-  final response = await ApiService.get('/milk-entries?customer_id=$customerId');
-  print('Response: ${response}');
+  if (customerId == null) return;
+
   try {
-    if (response.data['success'] == true) {
-      final List<dynamic> data = response.data['data'];
-      final List<dynamic>  customers = response.data['customer'];
-      payments = List<Map<String, dynamic>>.from(response.data['payment'] ?? []);
-      productTransactions = List<Map<String, dynamic>>.from(response.data['productTransactions'] ?? []);
-      print('Fetched product Data: $productTransactions');
-       accountNo = customers[0]['code'] ?? '';
-       name = customers[0]['name'] ?? '';
-        customerType = customers[0]['customerType'] ?? '';
-      final filtered = data
-          .where((entry) =>
-              entry['customer_id'] == customerId &&
-              DateTime.parse(entry['date']).isAfter(_startDate.subtract(const Duration(days: 1))) &&
-              DateTime.parse(entry['date']).isBefore(_endDate.add(const Duration(days: 1))))
-          .map((entry) => {
-                "date": _formatSessionDate(entry['date'], entry['session']),
-                "milk": double.tryParse(entry['litres'] ?? '0') ?? 0.0,
-                "fat": double.tryParse(entry['fat'] ?? '0') ?? 0.0,
-                "rate": double.tryParse(entry['rate'] ?? '0') ?? 0.0,
-                "amount": double.tryParse(entry['amount'] ?? '0') ?? 0.0,
-                "status": entry['status']?.toString() ?? 'inactive',
-              })
-          .toList();
+    final response = await ApiService.get('/milk-entries?customer_id=$customerId');
+    print('Response: $response');
 
-          final filteredProducts = productTransactions
-    .where((entry) =>
-        entry['customer_id'] == customerId &&
-        DateTime.parse(entry['bill']).isAfter(_startDate.subtract(const Duration(days: 1))) &&
-        DateTime.parse(entry['bill']).isBefore(_endDate.add(const Duration(days: 1))))
-    .map((entry) => {
-          "date": _formatSessionDate(entry['bill'], ''), // no session for products
-          "product": entry['product_name']?.toString() ?? '',
-          "quantity": double.tryParse(entry['quantity']?.toString() ?? '0') ?? 0.0,
-          "amount": double.tryParse(entry['amount']?.toString() ?? '0') ?? 0.0,
-          "status": entry['status']?.toString() ?? 'inactive',
-          "t_type": entry['t_type']?.toString() ?? 'inactive',
-        })
-    .toList();
-
-      setState(() {
-        milkData = filtered;
-        productTransactions = filteredProducts;
-         payments = List<Map<String, dynamic>>.from(response.data['payment'] ?? []);
-      });
-      
-
-      print('Filtered Milk Data: $milkData');
-    } else {
+    if (response.data['success'] != true) {
       setState(() {
         milkData = [];
         productTransactions = [];
         payments = [];
       });
+      return;
     }
+
+    final List<dynamic> milkList = response.data['data'] ?? [];
+    final List<dynamic> customerList = response.data['customer'] ?? [];
+    final List<dynamic> paymentList = response.data['payment'] ?? [];
+    final List<dynamic> productList = response.data['productTransactions'] ?? [];
+
+    // Update customer info
+    if (customerList.isNotEmpty) {
+      final customer = customerList[0];
+      setState(() {
+        accountNo = customer['code'] ?? '';
+        name = customer['name'] ?? '';
+        customerType = customer['customerType'] ?? '';
+      });
+    }
+
+    // Normalize start & end dates (ignore time)
+  final start = DateTime(_startDate.year, _startDate.month, _startDate.day);
+final end = DateTime(_endDate.year, _endDate.month, _endDate.day, 23, 59, 59);
+   print("Start: $start, End: $end");
+    // Filter milk data
+    final filteredMilk = milkList.where((entry) {
+     DateTime entryDate = DateTime.parse(entry['date']).toLocal();
+  entryDate = DateTime(entryDate.year, entryDate.month, entryDate.day);
+  return entry['customer_id'] == customerId &&
+         !entryDate.isBefore(start) && 
+         !entryDate.isAfter(end);
+    }).map((entry) => {
+      "date": _formatSessionDate(entry['date'], entry['session']),
+      "milk": double.tryParse(entry['litres']?.toString() ?? '0') ?? 0.0,
+      "fat": double.tryParse(entry['fat']?.toString() ?? '0') ?? 0.0,
+      "rate": double.tryParse(entry['rate']?.toString() ?? '0') ?? 0.0,
+      "amount": double.tryParse(entry['amount']?.toString() ?? '0') ?? 0.0,
+      "status": entry['status']?.toString() ?? 'inactive',
+    }).toList();
+
+    // Filter product transactions
+    final filteredProducts = productList.where((entry) {
+      DateTime entryDate = DateTime.parse(entry['bill']);
+      entryDate = DateTime(entryDate.year, entryDate.month, entryDate.day);
+      return entry['customer_id'] == customerId &&
+             !entryDate.isBefore(start) &&
+             !entryDate.isAfter(end);
+    }).map((entry) => {
+      "date": _formatSessionDate(entry['bill'], ''),
+      "product": entry['product_name']?.toString() ?? '',
+      "quantity": double.tryParse(entry['quantity']?.toString() ?? '0') ?? 0.0,
+      "amount": double.tryParse(entry['amount']?.toString() ?? '0') ?? 0.0,
+      "status": entry['status']?.toString() ?? 'inactive',
+      "t_type": entry['t_type']?.toString() ?? 'inactive',
+    }).toList();
+
+    // Update state
+    setState(() {
+      milkData = filteredMilk;
+      productTransactions = filteredProducts;
+      payments = List<Map<String, dynamic>>.from(paymentList);
+    });
+
+    print('Filtered Milk Data: $milkData');
+    print('Filtered Product Data: $productTransactions');
   } catch (e) {
     print('Error fetching milk data: $e');
     setState(() {
@@ -248,6 +308,7 @@ Future<void> _fetchMilkData(int? customerId) async {
     });
   }
 }
+
 
 
 // String get startDate => DateFormat('dd MMM yyyy').format(_startDate);
@@ -432,17 +493,36 @@ double get balanceGrantTotal {
       child: Text('${customer['name']} (${customer['code']})'),
     );
   }).toList(),
-  onChanged: (int? value) async{
-    setState(() {
-      
-      selectedCustomerId = value;
-      print('Selected Customer ID: $selectedCustomerId');
-      final selectedCustomer = customers.firstWhere((c) => c['id'] == value);
-      _codeCtrl.text = selectedCustomer['code'] ?? '';
-      _nameCtrl.text = '${selectedCustomer['name']} (${selectedCustomer['code']})';
-    });
-     await _fetchMilkData(selectedCustomerId); 
-  },
+onChanged: (int? value) async {
+  if (value == null) return;
+  final customer = customers.firstWhere((c) => c['id'] == value);
+
+  setState(() {
+    selectedCustomerId = customer['id'];
+    _codeCtrl.text = customer['code'] ?? '';
+    _nameCtrl.text = '${customer['name']} (${customer['code']})';
+    accountNo = customer['code'] ?? '';
+    name = customer['name'] ?? '';
+    customerType = customer['customerType'] ?? '';
+
+    // Reset date to customer registration → today
+    final createdAt = customer['createdAt'];
+    if (createdAt != null && createdAt.isNotEmpty) {
+      try {
+        _startDate = DateTime.parse(createdAt);
+      } catch (_) {
+        _startDate = DateTime.now().subtract(const Duration(days: 30));
+      }
+    } else {
+      _startDate = DateTime.now().subtract(const Duration(days: 30));
+    }
+    _endDate = DateTime.now();
+  });
+
+  await _fetchMilkData(selectedCustomerId);
+},
+
+
 ),
 
       ],
@@ -454,27 +534,45 @@ double get balanceGrantTotal {
       child: TextField(
         controller: _codeCtrl,
         keyboardType: TextInputType.number,
-          onChanged: (value) async{
-      final match = customers.firstWhere(
-        (c) => c['code'] == value,
-        orElse: () => {},
-      );
+    onChanged: (value) async {
+  final match = customers.firstWhere(
+    (c) => c['code'] == value,
+    orElse: () => {},
+  );
 
-      if (match.isNotEmpty) {
-        setState(() {
+  if (match.isNotEmpty) {
+    setState(() {
+      selectedCustomerId = match['id'];
+      _codeCtrl.text = match['code'] ?? '';
+      _nameCtrl.text = '${match['name']} (${match['code']})';
+      accountNo = match['code'] ?? '';
+      name = match['name'] ?? '';
+      customerType = match['customerType'] ?? '';
 
-          selectedCustomerId = match['id'];
-          _nameCtrl.text = '${match['name']} (${match['code']})';
-        });
-      }else {
-        // If code not found, clear selection
-        setState(() {
-          selectedCustomerId = null;
-          _nameCtrl.clear();
-        });
+      // Reset date to customer registration → today
+      final createdAtStr = match['createdAt'];
+      if (createdAtStr != null && createdAtStr.isNotEmpty) {
+        try {
+          _startDate = DateTime.parse(createdAtStr);
+        } catch (_) {
+          _startDate = DateTime.now().subtract(const Duration(days: 30));
+        }
+      } else {
+        _startDate = DateTime.now().subtract(const Duration(days: 30));
       }
-       await _fetchMilkData(selectedCustomerId);
-    },
+      _endDate = DateTime.now();
+    });
+
+    await _fetchMilkData(selectedCustomerId);
+  } else {
+    setState(() {
+      selectedCustomerId = null;
+      _nameCtrl.clear();
+    });
+  }
+},
+
+
         decoration: InputDecoration(
           hintText: "Enter Code",
           isDense: true,

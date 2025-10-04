@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
+import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 class FatSnfRateScreen extends StatefulWidget {
   /// Optional initial values
   final double? buffaloFatRate; // ₹ per 1.0 fat for Buffalo
   final double? buffaloSnfRate; // ₹ per 1.0 SNF kg for Buffalo
   final double? cowFatRate; // ₹ per 1.0 fat for Cow
   final double? cowSnfRate; // ₹ per 1.0 SNF kg for Cow
+  final double? cowRate;       // Add this
+  final double? buffaloRate;   // Add this
 
   const FatSnfRateScreen({
     super.key,
@@ -13,6 +16,8 @@ class FatSnfRateScreen extends StatefulWidget {
     this.buffaloSnfRate,
     this.cowFatRate,
     this.cowSnfRate,
+    this.cowRate,
+    this.buffaloRate,
   });
 
   @override
@@ -21,31 +26,33 @@ class FatSnfRateScreen extends StatefulWidget {
 
 class _FatSnfRateScreenState extends State<FatSnfRateScreen> {
   final _formKey = GlobalKey<FormState>();
-
-  late final TextEditingController _bmFatCtrl;
+  final _makeCtrl = TextEditingController();
+late final TextEditingController _bmFatCtrl;
   late final TextEditingController _bmSnfCtrl;
+  late final TextEditingController _bmRateCtrl;
   late final TextEditingController _cmFatCtrl;
   late final TextEditingController _cmSnfCtrl;
+  late final TextEditingController _cmRateCtrl;
 
-  @override
-  void initState() {
-    super.initState();
-    _bmFatCtrl =
-        TextEditingController(text: widget.buffaloFatRate?.toString() ?? '');
-    _bmSnfCtrl =
-        TextEditingController(text: widget.buffaloSnfRate?.toString() ?? '');
-    _cmFatCtrl =
-        TextEditingController(text: widget.cowFatRate?.toString() ?? '');
-    _cmSnfCtrl =
-        TextEditingController(text: widget.cowSnfRate?.toString() ?? '');
-  }
+ @override
+void initState() {
+  super.initState();
+  _bmFatCtrl = TextEditingController(text: widget.buffaloFatRate?.toString() ?? '');
+  _bmSnfCtrl = TextEditingController(text: widget.buffaloSnfRate?.toString() ?? '');
+  _bmRateCtrl = TextEditingController(text:widget.buffaloRate?.toString() ?? '');
+  _cmFatCtrl = TextEditingController(text: widget.cowFatRate?.toString() ?? '');
+  _cmSnfCtrl = TextEditingController(text: widget.cowSnfRate?.toString() ?? '');
+  _cmRateCtrl = TextEditingController(text: widget.cowRate?.toString() ?? '');
+}
 
   @override
   void dispose() {
     _bmFatCtrl.dispose();
     _bmSnfCtrl.dispose();
+    // _bmRateCtrl.dispose();
     _cmFatCtrl.dispose();
     _cmSnfCtrl.dispose();
+    // _cmRateCtrl.dispose();
     super.dispose();
   }
 
@@ -56,20 +63,47 @@ class _FatSnfRateScreenState extends State<FatSnfRateScreen> {
     return null;
   }
 
-  void _save() {
+  void _save() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final result = {
+    final payload = {
       "buffalo_fat_rate": double.parse(_bmFatCtrl.text.trim()),
       "buffalo_snf_rate": double.parse(_bmSnfCtrl.text.trim()),
       "cow_fat_rate": double.parse(_cmFatCtrl.text.trim()),
       "cow_snf_rate": double.parse(_cmSnfCtrl.text.trim()),
+      "buffalo_fixed_rate": double.parse(_bmRateCtrl.text.trim()),
+      "cow_fixed_rate": double.parse(_cmRateCtrl.text.trim()),
     };
 
-    // TODO: call your API here if you want to persist immediately
-    // await ApiService.post('/rates/fat-snf', result);
+    try {
+      
+      final payload = {
+      "buffalo_fat_rate": double.parse(_bmFatCtrl.text.trim()),
+      "buffalo_snf_rate": double.parse(_bmSnfCtrl.text.trim()),
+      "cow_fat_rate": double.parse(_cmFatCtrl.text.trim()),
+      "cow_snf_rate": double.parse(_cmSnfCtrl.text.trim()),
+      "buffalo_fixed_rate": double.parse(_bmRateCtrl.text.trim()),
+      "cow_fixed_rate": double.parse(_cmRateCtrl.text.trim()),
+    };
 
-    Navigator.pop(context, result);
+    final response = await ApiService.post('/user-fat-snf-rates', payload);
+    final data = response.data;
+
+    if (data['status'] == true) {
+        Get.snackbar("Rates Saved ✅", "Milk rates have been updated successfully",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green.shade100);
+        Navigator.pop(context, payload);
+      } else {
+        Get.snackbar("Save Failed ❌", data['message'] ?? "Could not save milk rates",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red.shade100);
+      }
+    }catch(e){
+      print("Error saving rates: $e");
+    }
+
+   
   }
 
   @override
@@ -114,11 +148,18 @@ class _FatSnfRateScreenState extends State<FatSnfRateScreen> {
               subtitle: '₹ per fat unit',
               child: _NumInput(controller: _bmFatCtrl, validator: _numRequired),
             ),
+
             const SizedBox(height: 10),
             _Tile(
               title: 'Buffalo SNFBase',
               subtitle: '₹ per SNF kg',
               child: _NumInput(controller: _bmSnfCtrl, validator: _numRequired),
+            ),
+             const SizedBox(height: 8),
+            _Tile(
+              title: 'Buffalo Fixed Rate',
+              subtitle: 'Fixed Rate Per Litre',
+              child: _NumInput(controller: _bmRateCtrl, validator: _numRequired),
             ),
 
             const Divider(height: 32),
@@ -138,6 +179,12 @@ class _FatSnfRateScreenState extends State<FatSnfRateScreen> {
               title: 'Cow SNFBase',
               subtitle: '₹ per SNF kg',
               child: _NumInput(controller: _cmSnfCtrl, validator: _numRequired),
+            ),
+             const SizedBox(height: 8),
+            _Tile(
+              title: 'Cow Fixed Rate',
+              subtitle: 'Fixed Rate Per Litre',
+              child: _NumInput(controller: _cmRateCtrl, validator: _numRequired),
             ),
           ],
         ),
