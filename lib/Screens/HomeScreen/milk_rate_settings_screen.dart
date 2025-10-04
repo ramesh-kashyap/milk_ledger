@@ -237,6 +237,8 @@ class _MilkRateSettingsScreenState extends State<MilkRateSettingsScreen> {
                       buffaloSnfRate: _get('buffalo', 'fat_snf', 'snf_rate', 0),
                       cowFatRate: _get('cow', 'fat_snf', 'fat_rate', 0),
                       cowSnfRate: _get('cow', 'fat_snf', 'snf_rate', 0),
+                      cowRate: _get('cow', 'fat_snf', 'fixed_rate', 0),
+                      buffaloRate: _get('buffalo', 'fat_snf', 'fixed_rate', 0),
                     ),
                   ),
                 );

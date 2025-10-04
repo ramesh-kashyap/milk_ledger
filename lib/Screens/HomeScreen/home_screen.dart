@@ -550,7 +550,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "milk_rate_settings".tr,
                   subtitle: "change_milk_rates".tr,
                   onTap: () {
-                    // Get.to(()=> const SettingsPage());
+                    Get.to(()=> const MilkRateSettingsScreen());
                   },
                 ),
               ),

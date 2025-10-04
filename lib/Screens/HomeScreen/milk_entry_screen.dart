@@ -17,7 +17,11 @@ class MilkEntryScreen extends StatefulWidget {
 
 class _MilkEntryScreenState extends State<MilkEntryScreen> {
   final _formKey = GlobalKey<FormState>();
-
+@override
+void initState() {
+  super.initState();
+ _allResultst();
+}
   // form state
   DateTime date = DateTime.now();
   String session = 'PM'; // AM / PM
@@ -27,7 +31,8 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
   final rateCtrl = TextEditingController();
   final noteCtrl = TextEditingController();
   final snfCtrl = TextEditingController(); // 👈 NEW
-
+  final fatCtrl1 = TextEditingController();
+  final fatSnfCtrl = TextEditingController();
   bool zero = false;
   String animal = 'buffalo'; // cow/buffalo
 
@@ -37,11 +42,47 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
   bool showSnf = false; // 👈 NEW
 
   num get snf => num.tryParse(snfCtrl.text) ?? 0; // 👈 NEW
+void _fillFatSnfRatesForAnimal(String animal) {
+  // Make sure we already fetched allRates from the API
+  if (allRates.isEmpty) {
+    debugPrint("No allRates data yet");
+    return;
+  }
+
+  final animalRates = allRates[animal]; // e.g., allRates['cow'] or allRates['buffalo']
+  if (animalRates == null) {
+    debugPrint("No rates found for animal: $animal");
+    fatCtrl1.text = '';
+    fatSnfCtrl.text = '';
+    return;
+  }
+
+  double fatRate1 = 0;
+  double fatSnfRate = 0;
+
+  // Get the fat-only rate
+  if (animalRates['fat_snf'] != null && (animalRates['fat_snf'] as List).isNotEmpty) {
+    fatRate1 = (animalRates['fat_snf'][0]['fat_rate'] ?? 0).toDouble();
+  }
+
+  // Get the fat+snf rate
+  if (animalRates['fat_snf'] != null && (animalRates['fat_snf'] as List).isNotEmpty) {
+    fatSnfRate = (animalRates['fat_snf'][0]['snf_rate'] ?? 0).toDouble();
+  }
+
+  fatCtrl1.text = fatRate1 == 0 ? '' : fatRate1.toStringAsFixed(2);
+  fatSnfCtrl.text = fatSnfRate == 0 ? '' : fatSnfRate.toStringAsFixed(2);
+
+  debugPrint(
+    "Rates for $animal → FAT: ${fatCtrl1.text}, SNF: ${fatSnfCtrl.text}"
+  );
+}
+
 
   // enabled animals for the selected customer
   bool cowEnabled = true;
   bool buffaloEnabled = true;
-
+   Map<String, dynamic> allRates = {};
   num get litres => num.tryParse(litresCtrl.text) ?? 0;
   num get rate => num.tryParse(rateCtrl.text) ?? 0;
   num get amount => (litres * rate);
@@ -107,17 +148,22 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
     final s = num.tryParse(snfCtrl.text) ?? 0;
 
     final perFat = _animalValueFor(seller!, animal); // ₹ per 1 fat
-    debugPrint('per Fatt → $perFat');
-    final perSnf = animal == 'buffalo'
-        ? _toNum(seller!['buffaloSnfValue'])
-        : _toNum(seller!['cowSnfValue']);
+    debugPrint('per Fat → ${_toNum(fatSnfCtrl.text)}');
 
+    final perfat = fatCtrl1.text.trim().isEmpty
+        ? 0
+        : _toNum(fatCtrl1.text); // ₹ per 1 snf
+     print('per Snf → $perfat');
     // fixedRate depends on animal
-    final fixedRate = animal == 'buffalo'
-        ? _toNum(seller!['buffaloFixedRate'])
-        : _toNum(seller!['cowFixedRate']);
+    final snfRate = fatSnfCtrl.text.trim().isEmpty
+        ? 0
+        : _toNum(fatSnfCtrl.text); // ₹ fixed rate
 
-    return (f * perFat) + (s * perSnf) + fixedRate;
+     final perLiter = ((f * perfat) + (s * snfRate) )/100;
+  print("Calculated perLiter: $perLiter for Fat: $f, SNF: $s, perFat: $perfat, snfRate: $snfRate, litres: ${litresCtrl.text}");
+ 
+     return  perLiter ;
+
   }
 
   void _recompute() {
@@ -183,8 +229,8 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
           'buffaloEnabled': _toBool(e['buffaloEnabled'] ?? e['buffaloEnabled']),
           'cowValue': cowValue,
           'buffaloValue': buffaloValue,
-          'cowSnfValue': basis == 'fatsnf' ? cowSnf : 0,
-          'buffaloSnfValue': basis == 'fatsnf' ? buffaloSnf : 0,
+          'cowSnfValue': basis == 'fatSnf' ? cowSnf : 0,
+          'buffaloSnfValue': basis == 'fatSnf' ? buffaloSnf : 0,
           'basis': basis,
         };
       }).toList();
@@ -203,7 +249,7 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
         {
           'id': 1,
           'name': 'Rameshk',
-          'code': '001',
+          'code': '0',
           'cowEnabled': false,
           'buffaloEnabled': true,
           'cowValue': 0,
@@ -251,26 +297,52 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
       builder: (_) => _SellerPicker(fetch: fetchSellers),
     );
 
-    if (picked != null) {
-      _applySellerDefaults(picked);
-    }
+     if (picked != null) {
+    print("Initial basis: ${picked['basis']}");
+
+    final basis = _normBasis(picked['basis']);
+    showSnf = basis == 'fat_snf';   // use underscore, not fatSnf
+    print("After normalization: $basis, showSnf: $showSnf");
+    _applySellerDefaults(picked);
+    _fillFatSnfRatesForAnimal(animal);
+    setState(() {}); // refresh the UI to show SNF field if needed
+  } else {
+    showSnf = false;
+  }
   }
 
+
+   Future<void> _allResultst() async {
+  try {
+    final res = await ApiService.get('/all-fat-snf-rates');
+    print("/all-fat-snf-rates ${res.data}");
+      final data = res.data;
+      if(data['status'] == true){
+          setState(() {
+        allRates = res.data['data'] as Map<String, dynamic>;
+      });
+      }
+  } catch (e) {
+    print("Error fetching initial sellers: $e");
+  }
+}
   void _applySellerDefaults(Map<String, dynamic> s) {
     // enabled animals
     final ce = _toBool(s['cowEnabled']);
     final be = _toBool(s['buffaloEnabled']);
-
+      
     // choose default animal
     String defaultAnimal;
     if (be) {
       defaultAnimal = 'buffalo';
+      print("Default animal set to buffalo");
     } else if (ce) {
       defaultAnimal = 'cow';
+      print("Default animal set to cow");
     } else {
       defaultAnimal = 'cow';
     }
-
+    print("Basis in _applySellerDefaults: ${s['basis']}");
     // pick rate by animal (used only for basis == rate)
     final rateFromAnimal = defaultAnimal == 'buffalo'
         ? _toNum(s['buffaloValue'])
@@ -284,10 +356,11 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
       buffaloEnabled = be;
       animal = defaultAnimal;
 
+      print("Applying animal: $animal");
       final basis = _normBasis(s['basis']);
-
-      showFat = basis == 'fat' || basis == 'fatsnf';
-      showSnf = basis == 'fatsnf';
+    print("Applying basis: $s");
+      showFat = basis == 'fat' || basis == 'fat_snf';
+      showSnf = basis == 'fat_snf';
       showRate = basis == 'rate';
 
       // prefill rate field if needed (for basis==rate)
@@ -315,6 +388,7 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
   void _onAnimalChange(String a) {
     if (a == 'cow' && !cowEnabled) return;
     if (a == 'buffalo' && !buffaloEnabled) return;
+      print("Animal changed to: $a");
 
     setState(() {
       animal = a;
@@ -326,6 +400,8 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
           // basis==fat -> rate is derived via _recompute
         }
       }
+  _fillFatSnfRatesForAnimal(a);  // <-- add this
+    
     });
     _recompute();
   }
@@ -432,6 +508,11 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
     bool ce = _toBool(seller!['cowEnabled']);
     bool be = _toBool(seller!['buffaloEnabled']);
     String basis = _normBasis(seller!['basis']);
+   
+
+
+
+
 
     await showModalBottomSheet<void>(
       context: context,
@@ -496,6 +577,7 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
                               contentPadding: EdgeInsets.zero,
                               value: ce,
                               onChanged: (v) => setModalState(() => ce = v),
+                              
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -528,33 +610,41 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
                       const SizedBox(height: 10),
 
                       // Per-unit values row (meaning changes with basis)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: cowValCtrl,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                      decimal: true),
-                              decoration: _dec('Cow value'),
+                      if(basis != 'fat_snf') ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: cowValCtrl,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                decoration: _dec('Cow Fat Rate'),
+                                enabled: ce, 
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              controller: bufValCtrl,
+                            const SizedBox(width: 10),
+                          
+                            Expanded(
+                              child: TextField(
+                                controller: bufValCtrl,
                               keyboardType:
                                   const TextInputType.numberWithOptions(
                                       decimal: true),
                               decoration: _dec(
-                                'Buffalo value',
+                                'Buffalo Fat Rate',
                               ),
+                               enabled: be, 
                             ),
                           ),
+                         
                         ],
                       ),
+                        const SizedBox(height: 6),
+                      ],
+                   
 
-                      if (basis == 'fat_snf') ...[
+                      if (basis == 'fatsnf') ...[
                         const SizedBox(height: 10),
                         Row(
                           children: [
@@ -592,7 +682,7 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12)),
                           ),
-                          onPressed: () {
+                          onPressed: () async{
                             final updated = {
                               ...seller!,
                               'name': nameCtrl.text.trim().isEmpty
@@ -609,19 +699,35 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
                               'cowValue': _toNum(cowValCtrl.text.trim()),
                               'buffaloValue': _toNum(bufValCtrl.text.trim()),
                               // Only meaningful for fat_snf
-                              'cowSnfValue': basis == 'fat_snf'
-                                  ? _toNum(cowSnfCtrl.text.trim())
-                                  : 0,
-                              'buffaloSnfValue': basis == 'fat_snf'
-                                  ? _toNum(bufSnfCtrl.text.trim())
-                                  : 0,
+                              // 'cowSnfValue': basis == 'fat_snf'
+                              //     ? _toNum(cowSnfCtrl.text.trim())
+                              //     : 0,
+                              // 'buffaloSnfValue': basis == 'fat_snf'
+                              //     ? _toNum(bufSnfCtrl.text.trim())
+                              //     : 0,
                             };
 
                             _applySellerDefaults(updated);
-                            Navigator.pop(ctx);
+                            // Navigator.pop(ctx);
 
+                            print("Updated customer: $updated");
                             // TODO: persist to API if needed
                             // await ApiService.post('/customers/update', {...});
+                            try {
+                             final response = await ApiService.post(
+                                 '/updateCustomer', updated);
+                              final data = response.data;
+                              if(data['status'] == true){
+                                Get.snackbar("Success 🎉",
+                                    "Customer has been updated successfully");
+                              } else {
+                                Get.snackbar("Update Failed",
+                                    data['message'] ?? "Something went wrong");
+                              }
+                                
+                            } catch (e) {
+                              print("Error updating customer: $e");
+                            }
                           },
                           child: Text('save'.tr),
                         ),
