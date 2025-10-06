@@ -33,6 +33,8 @@ void initState() {
   final snfCtrl = TextEditingController(); // 👈 NEW
   final fatCtrl1 = TextEditingController();
   final fatSnfCtrl = TextEditingController();
+  
+  bool _isSubmitting = false;
   bool zero = false;
   String animal = 'buffalo'; // cow/buffalo
 
@@ -436,6 +438,10 @@ void _fillFatSnfRatesForAnimal(String animal) {
       }
     }
 
+    if (_isSubmitting) return; // 👈 Ignore further taps
+
+  setState(() => _isSubmitting = true);
+
     final payload = {
       'date': date.toIso8601String().substring(0, 10),
       'session': session, // AM/PM
@@ -478,6 +484,10 @@ void _fillFatSnfRatesForAnimal(String animal) {
         SnackBar(content: Text("❌ Error saving customer: $e")),
       );
     }
+     finally {
+    // ✅ Always reset flag, even if there’s an error
+    if (mounted) setState(() => _isSubmitting = false);
+  }
   }
 
   void _toast(String msg) {
@@ -766,26 +776,39 @@ void _fillFatSnfRatesForAnimal(String animal) {
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: ElevatedButton(
-          onPressed: save,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
-            minimumSize: const Size.fromHeight(52),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
+  onPressed: _isSubmitting ? null : save,   // disable while saving
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.green,
+    foregroundColor: Colors.white,          // if using Flutter <3.3 use `onPrimary: Colors.white`
+    minimumSize: const Size.fromHeight(52),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
+    ),
+  ),
+  child: _isSubmitting
+      ? const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Colors.white,
           ),
-          child: Text(
-            'save'.tr,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        )
+      : Text(
+          'save'.tr,                          // requires: import 'package:get/get.dart';
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
           ),
         ),
+)
+
       ),
 
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
-          // ---- Summary bar ----
+          //////////// ---- Summary bar ---- \\\\\\\\\
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(

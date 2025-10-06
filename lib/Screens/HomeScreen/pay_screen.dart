@@ -206,6 +206,7 @@ void _pickStartDate(BuildContext context) async {
     setState(() {
       _startDate = picked;
     });
+      await _fetchMilkData(selectedCustomerId);
   }
 }
 
@@ -220,6 +221,7 @@ void _pickEndDate(BuildContext context) async {
     setState(() {
       _endDate = picked;
     });
+    await _fetchMilkData(selectedCustomerId);
   }
 }
 
