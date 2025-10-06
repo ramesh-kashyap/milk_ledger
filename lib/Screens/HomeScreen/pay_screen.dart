@@ -133,19 +133,15 @@ String _formatSessionDate(String dateStr, String session) {
 }
 
 Future<void> _createPayment(String type) async {
-  if (selectedCustomerId == null || _amountController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Select a customer and enter an amount")),
-    );
+  if (selectedCustomerId == null || _amountController.text.isEmpty) {       
+    Get.snackbar("Warning","Select a customer and enter an amount",);
     return;
   }
   print('Creating payment of type: $type for customer ID: $selectedCustomerId');
 
   final double? amount = double.tryParse(_amountController.text);
   if (amount == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Enter a valid amount")),
-    );
+    Get.snackbar("Warning","Enter a valid amount",);
     return;
   }
 
@@ -157,9 +153,7 @@ Future<void> _createPayment(String type) async {
     });
 
     if (response.data['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Payment recorded successfully")),
-      );
+      Get.snackbar("Success 🎉", response.data["message"] ?? "Payment recorded successfully",);
 
       // Clear input after success
       _amountController.clear();
@@ -167,15 +161,10 @@ Future<void> _createPayment(String type) async {
       // Refresh milk data if needed
       await _fetchMilkData(selectedCustomerId);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response.data['message'] ?? "Payment failed")),
-      );
+      Get.snackbar("Warning", response.data["message"] ?? "Payment failed",);
     }
   } catch (e) {
-    print('Error creating payment: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Server Error")),
-    );
+    Get.snackbar("Error", response.data["message"] ?? "Server Error",);
   }
 }
 
@@ -298,11 +287,7 @@ final end = DateTime(_endDate.year, _endDate.month, _endDate.day, 23, 59, 59);
       productTransactions = filteredProducts;
       payments = List<Map<String, dynamic>>.from(paymentList);
     });
-
-    print('Filtered Milk Data: $milkData');
-    print('Filtered Product Data: $productTransactions');
   } catch (e) {
-    print('Error fetching milk data: $e');
     setState(() {
       milkData = [];
       productTransactions = [];
@@ -341,10 +326,8 @@ double get totalProduct =>
           .toLowerCase();       // convert to lower case
         print('Normalized type: $type');
       if (type == 'sale') {
-        print('Subtracting for sale: $amount');
         return sum - amount;      // subtract for sale
       } else if (type == 'purchase') {
-        print('Adding for purchase: $amount');
         return sum + amount;      // add for purchase
       } else {
         return sum;               // ignore unknown
@@ -395,7 +378,6 @@ double get balanceAmount {
 
 double get balanceProduct {
   // total product amount minus payments received
-  print("Total Product: $totalProduct");
   return totalProduct ;
 }
 
@@ -414,7 +396,6 @@ double get balanceProMilk {
 
 double get balanceGrantTotal {
   // total milk amount minus payments received
-  print("Total Grant Total: $balanceProMilk");
 
   return   balanceProMilk;
 }

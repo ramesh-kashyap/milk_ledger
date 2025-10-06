@@ -233,83 +233,81 @@ void _applyFilters() {
             ),
             const SizedBox(height: 12),
             Expanded(
-  child: loading
-      ? const Center(child: CircularProgressIndicator())
-      : filteredEntries.isEmpty
-          ? Center(child: Text("no_entries_found".tr))
-          : ListView.builder(
-              itemCount: filteredEntries.length + 2, // +1 for header +1 for totals
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  // Header row
-                  return Container(
-                    color: Colors.green[400],
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                    child: Row(
-                      children: const [
-                        Expanded(flex: 1, child: Text("Ac No", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("Milk", style: TextStyle(fontWeight: FontWeight.bold))),
-                        // Expanded(flex: 1, child: Text("Amount", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("Fat", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("Rate", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("Amount", style: TextStyle(fontWeight: FontWeight.bold))),
-                        // Expanded(flex: 1, child: Text("Session", style: TextStyle(fontWeight: FontWeight.bold))),
-                      ],
-                    ),
-                  );
-                }
+              child: loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : filteredEntries.isEmpty
+                      ? Center(child: Text("no_entries_found".tr))
+                      : ListView.builder(
+                          itemCount: filteredEntries.length + 2, // +1 for header +1 for totals
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              // Header row
+                              return Container(
+                                color: Colors.green[400],
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                                child: Row(
+                                  children: const [
+                                    Expanded(flex: 1, child: Text("Ac No", style: TextStyle(fontWeight: FontWeight.bold))),
+                                    Expanded(flex: 1, child: Text("Milk", style: TextStyle(fontWeight: FontWeight.bold))),
+                                    // Expanded(flex: 1, child: Text("Amount", style: TextStyle(fontWeight: FontWeight.bold))),
+                                    Expanded(flex: 1, child: Text("Fat", style: TextStyle(fontWeight: FontWeight.bold))),
+                                    Expanded(flex: 1, child: Text("Rate", style: TextStyle(fontWeight: FontWeight.bold))),
+                                    Expanded(flex: 1, child: Text("Amount", style: TextStyle(fontWeight: FontWeight.bold))),
+                                    // Expanded(flex: 1, child: Text("Session", style: TextStyle(fontWeight: FontWeight.bold))),
+                                  ],
+                                ),
+                              );
+                            }
 
-                if (index == filteredEntries.length + 1) {
-                  // Totals row
-                  return Container(
-                    color: Colors.green[400],
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                    child: Row(
-                      children: [
-                        const Expanded(flex: 1, child: Text("TOTAL", style: TextStyle(fontWeight: FontWeight.bold))),
-                        // Expanded(flex: 1, child: Text("$totalLitres L", style: const TextStyle(fontWeight: FontWeight.bold))), 
-                        Expanded(flex: 1, child: Text("$totalLitres L", style: const TextStyle(fontWeight: FontWeight.bold))),                         
-                        Expanded(flex: 1, child: Text("$totalFat L", style: const TextStyle(fontWeight: FontWeight.bold))), 
-                        Expanded(flex: 1, child: Text("$totalRate L", style: const TextStyle(fontWeight: FontWeight.bold))),                         
-                        Expanded(flex: 1, child: Text("₹ $totalAmount", style: const TextStyle(fontWeight: FontWeight.bold))),                        
-                        // const Expanded(flex: 1, child: SizedBox()),
-                        // const Expanded(flex: 1, child: SizedBox()),
-                      ],
-                    ),
-                  );
-                }
+                            if (index == filteredEntries.length + 1) {
+                              // Totals row
+                              return Container(
+                                color: Colors.green[400],
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                                child: Row(
+                                  children: [
+                                    const Expanded(flex: 1, child: Text("TOTAL", style: TextStyle(fontWeight: FontWeight.bold))),
+                                    // Expanded(flex: 1, child: Text("$totalLitres L", style: const TextStyle(fontWeight: FontWeight.bold))), 
+                                    Expanded(flex: 1, child: Text("$totalLitres L", style: const TextStyle(fontWeight: FontWeight.bold))),                         
+                                    Expanded(flex: 1, child: Text("$totalFat L", style: const TextStyle(fontWeight: FontWeight.bold))), 
+                                    Expanded(flex: 1, child: Text("$totalRate L", style: const TextStyle(fontWeight: FontWeight.bold))),                         
+                                    Expanded(flex: 1, child: Text("₹ $totalAmount", style: const TextStyle(fontWeight: FontWeight.bold))),                        
+                                    // const Expanded(flex: 1, child: SizedBox()),
+                                    // const Expanded(flex: 1, child: SizedBox()),
+                                  ],
+                                ),
+                              );
+                            }
 
-                final entry = filteredEntries[index - 1];
+                            final entry = filteredEntries[index - 1];
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
-                  child: Row(
-                    children: [
-                      // Expanded(
-                      //   flex: 2,
-                      //   child: Text(DateFormat('hh:mm a').format(DateTime.parse(entry['createdAt']))),
-                      // ),
-                      // Expanded(
-                      //   flex: 1,
-                      //   child: Text(DateFormat('yyyy-MM-dd').format(DateTime.parse(entry['createdAt']))),
-                      // ),
-                      // Expanded(flex: 1, child: Text("${entry['customer_id'] ?? '0'}")),
-                      Expanded(flex: 1, child: Text("${entry['customer_id'] ?? '0'}")),
-                      Expanded(flex: 1, child: Text("${entry['litres'] ?? '0'} L")),                      
-                      Expanded(flex: 1, child: Text("${entry['fat'] ?? '0'}")),
-                      Expanded(flex: 1, child: Text("${entry['Rate'] ?? '0'}")),
-                      Expanded(flex: 1, child: Text("₹ ${entry['amount'] ?? '0'}")),
-                      // Expanded(flex: 1, child: Text(entry['animal']?.toString().toUpperCase() ?? '')),
-                      // Expanded(flex: 1, child: Text(entry['session']?.toString() ?? '')),
-                      
-                    ],
-                  ),
-                );
-              },
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
+                              child: Row(
+                                children: [
+                                  // Expanded(
+                                  //   flex: 2,
+                                  //   child: Text(DateFormat('hh:mm a').format(DateTime.parse(entry['createdAt']))),
+                                  // ),
+                                  // Expanded(
+                                  //   flex: 1,
+                                  //   child: Text(DateFormat('yyyy-MM-dd').format(DateTime.parse(entry['createdAt']))),
+                                  // ),
+                                  // Expanded(flex: 1, child: Text("${entry['customer_id'] ?? '0'}")),
+                                  Expanded(flex: 1, child: Text("${entry['customer_id'] ?? '0'}")),
+                                  Expanded(flex: 1, child: Text("${entry['litres'] ?? '0'} L")),                      
+                                  Expanded(flex: 1, child: Text("${entry['fat'] ?? '0'}")),
+                                  Expanded(flex: 1, child: Text("${entry['Rate'] ?? '0'}")),
+                                  Expanded(flex: 1, child: Text("₹ ${entry['amount'] ?? '0'}")),
+                                  // Expanded(flex: 1, child: Text(entry['animal']?.toString().toUpperCase() ?? '')),
+                                  // Expanded(flex: 1, child: Text(entry['session']?.toString() ?? '')),
+                                  
+                                ],
+                              ),
+                            );
+                          },
+                        ),
             ),
-),
-
-
           ],
         ),
       ),

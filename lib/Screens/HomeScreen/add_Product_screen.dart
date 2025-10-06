@@ -54,11 +54,10 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
     String stock = _stockController.text.trim();
 
     if (name.isEmpty || price.isEmpty || stock.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("fill_all_fields".tr)),
-      );
-      return;
-    }
+        Get.snackbar("Warning", "fill_all_fields".tr);
+        return;
+      }
+
 
     try {
       dio.Response response = await ApiService.post("/dairyProducts", {
@@ -72,20 +71,14 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
       final data = response.data;
 
       if (data["status"] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "saved_success".tr)),
-        );
+        Get.snackbar("Success 🎉", data["message"] ?? "saved_success".tr,);
         _clearInputs();
         _fetchProducts();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "failed_save".tr)),
-        );
+        Get.snackbar("Failed ❌", data["message"] ?? "failed_save".tr,);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error saving: $e")),
-      );
+       Get.snackbar("Error ❌", "Error saving: $e",);
     }
   }
 
@@ -96,20 +89,14 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
       final data = response.data;
 
       if (data["status"] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "deleted_success".tr)),
-        );
+        Get.snackbar("Success 🎉", data["message"] ?? "deleted_success".tr,);
         _clearInputs();
         _fetchProducts();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "failed_delete".tr)),
-        );
+        Get.snackbar("Failed ❌", data["message"] ?? "failed_delete".tr);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error deleting: $e")),
-      );
+        Get.snackbar("Error ❌", "Error deleting: $e");
     }
   }
 
