@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart'; 
 class ContactUsPage extends StatelessWidget {
   const ContactUsPage({super.key});
 
@@ -8,8 +8,8 @@ class ContactUsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xfff5fff7),
       appBar: AppBar(
-        title: const Text(
-          "Contact Us",
+        title: Text(
+          'contact_us'.tr, 
           style: TextStyle(color: Colors.white), 
         ),
         backgroundColor: Colors.green.shade600,
@@ -31,11 +31,10 @@ class ContactUsPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
-                children: const [
+                children: [
                   Icon(Icons.support_agent, color: Colors.white, size: 60),
                   SizedBox(height: 10),
-                  Text(
-                    "We’re here to help you!",
+                  Text('we_are_here'.tr,
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -43,7 +42,7 @@ class ContactUsPage extends StatelessWidget {
                   ),
                   SizedBox(height: 5),
                   Text(
-                    "Get in touch with us anytime.",
+                     'get_in_touch'.tr,
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
@@ -57,7 +56,7 @@ class ContactUsPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12)),
               child: ListTile(
                 leading: const Icon(Icons.phone, color: Colors.green),
-                title: const Text("Phone"),
+                title: Text('phone'.tr),
                 subtitle: const Text("+91 9876543210"),
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
@@ -72,7 +71,7 @@ class ContactUsPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12)),
               child: ListTile(
                 leading: const Icon(Icons.email, color: Colors.green),
-                title: const Text("Email"),
+                title: Text('email'.tr), 
                 subtitle: const Text("support@yourdairy.com"),
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
@@ -87,7 +86,7 @@ class ContactUsPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12)),
               child: ListTile(
                 leading: const Icon(Icons.location_on, color: Colors.green),
-                title: const Text("Address"),
+                title: Text('address'.tr), 
                 subtitle: const Text("123 Dairy Street, Village, India"),
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
