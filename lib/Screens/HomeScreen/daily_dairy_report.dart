@@ -4,21 +4,22 @@ import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 import 'package:get/get.dart';
 class DairyReportScreen extends StatefulWidget {
   const DairyReportScreen({super.key});
-
+ 
   @override
   State<DairyReportScreen> createState() => _DairyReportScreenState();
 }
-
+ 
 class _DairyReportScreenState extends State<DairyReportScreen> {
   Map<String, dynamic>? reportData;
+ 
   bool loading = true;
-
+ 
   @override
   void initState() {
     super.initState();
     fetchReport();
   }
-
+ 
   // Fetch API data
   Future<void> fetchReport() async {
     try {
@@ -34,11 +35,16 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
       setState(() => loading = false);
     }
   }
-
+ 
   @override
   Widget build(BuildContext context) {
+   
+final todayList = (reportData?['today'] as List? ?? []);
+ 
+final todayPurchase = todayList.isNotEmpty ? todayList[0] : null;
+final todaySale = todayList.length > 1 ? todayList[1] : null;
     String todayDate = DateFormat('dd MMM yyyy').format(DateTime.now());
-
+ 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green[500],
@@ -64,20 +70,20 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
                           "${'today'.tr} ($todayDate)",
                           Icons.calendar_today,
                           {
-                            "purchaseLitres": double.tryParse((reportData!['today'] as List)[0]['litres']?.toString() ?? "0") ?? 0.0,
-                            "purchaseAmount": double.tryParse((reportData!['today'] as List)[0]['amount']?.toString() ?? "0") ?? 0.0,
-                            "saleLitres": double.tryParse((reportData!['today'] as List)[1]['litres']?.toString() ?? "0") ?? 0.0, // backend not splitting buy/sale for today
-                            "saleAmount": double.tryParse((reportData!['today'] as List)[1]['amount']?.toString() ?? "0") ?? 0.0,
+                             "purchaseLitres": double.tryParse(todayPurchase?['litres']?.toString() ?? "0") ?? 0.0,
+  "purchaseAmount": double.tryParse(todayPurchase?['amount']?.toString() ?? "0") ?? 0.0,
+  "saleLitres": double.tryParse(todaySale?['litres']?.toString() ?? "0") ?? 0.0,
+  "saleAmount": double.tryParse(todaySale?['amount']?.toString() ?? "0") ?? 0.0,
                           },
                         ),
                       const SizedBox(height: 16),
-
+ 
                       // ✅ Monthly reports
                       if (reportData?['months'] != null)
                         ...(() {
                           List<Map<String, dynamic>> months =
                               (reportData!['months'] as List).cast<Map<String, dynamic>>();
-
+ 
                           // Sort by year & month descending
                           months.sort((a, b) {
                             int yearComp = (b['year'] as int).compareTo(a['year'] as int);
@@ -85,7 +91,7 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
                                 ? yearComp
                                 : (b['month'] as int).compareTo(a['month'] as int);
                           });
-
+ 
                           // Group months by year+month
                           Map<String, Map<String, dynamic>> grouped = {};
                           for (var m in months) {
@@ -101,7 +107,7 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
                                 "saleAmount": 0.0,
                               };
                             }
-
+ 
                             if (m['note'] == "Buy") {
                               grouped[key]!["purchaseLitres"] +=
                                   double.tryParse(m['litres'].toString()) ?? 0.0;
@@ -114,7 +120,7 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
                                   double.tryParse(m['amount'].toString()) ?? 0.0;
                             }
                           }
-
+ 
                           // Map to widgets
                           return grouped.values.map((monthData) {
                             final title =
@@ -136,17 +142,17 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
             ),
     );
   }
-
+ 
   // Build each card (Today / Month)
   Widget _buildReportCard(String title, IconData icon, Map<String, dynamic> data) {
     double purchaseLitres = data['purchaseLitres'] ?? 0.0;
     double purchaseAmount = data['purchaseAmount'] ?? 0.0;
     double saleLitres = data['saleLitres'] ?? 0.0;
     double saleAmount = data['saleAmount'] ?? 0.0;
-
+ 
     double totalLitres = purchaseLitres + saleLitres;
     double totalAmount = purchaseAmount + saleAmount;
-
+ 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -191,7 +197,7 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
       ),
     );
   }
-
+ 
   Widget _buildRow(String label, String liters, String amount) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -215,3 +221,5 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
     );
   }
 }
+ 
+ 
