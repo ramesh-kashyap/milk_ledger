@@ -372,26 +372,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Expanded(
-  child: GestureDetector(
-    onTap: () {
-      Get.to(() =>  PayScreen());
-    },
-    child: OutlineTile(
-      iconAsset: "assets/images/icons8-bill-80.png",
-      title: "bill".tr,
-      subtitle: "customer_bills".tr,
-    ),
-  ),
-),
+                        child: GestureDetector(
+                          onTap: () {
+                            Get.to(() =>  PayScreen());
+                          },
+                          child: OutlineTile(
+                            iconAsset: "assets/images/icons8-bill-80.png",
+                            title: "bill".tr,
+                            subtitle: "customer_bills".tr,
+                          ),
+                        ),
+                      ),
 
                     const SizedBox(width: 8), // <- only middle gap
                     Expanded(
+                       child: GestureDetector(
+                       onTap: () {
+                          Get.to(() =>  DairyProductsScreen());
+                        },
                       child: OutlineTile(
                         // no margin here either
                         iconAsset: "assets/images/icons8-product-48.png",
                         title: "products".tr,
-                        subtitle: "daily_products".tr,
+                        subtitle: "daily_products".tr,                        
                       ),
+                       ),
                     ),
                   ],
                 ),
@@ -405,21 +410,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Expanded(
+                       child: GestureDetector(
+                      onTap: () {
+                            Get.to(() =>  DairyReportScreen());
+                        },
                       child: OutlineTile(
                         // no margin inside this widget
                         iconAsset: "assets/images/icons8-bill-80.png",
                         title: "report".tr,
-                        subtitle: "dairy_reports".tr,
+                        subtitle: "dairy_reports".tr,                        
                       ),
+                       ),
                     ),
                     const SizedBox(width: 8), // <- only middle gap
                     Expanded(
+                       child: GestureDetector(
+                       onTap: () {
+                          Get.to(() => PayReceiveScreen());
+                        },
                       child: OutlineTile(
                         // no margin here either
                         iconAsset: "assets/images/icons8-product-48.png",
                         title: "pay/receive".tr,
-                        subtitle: "amount_entries".tr,
+                        subtitle: "amount_entries".tr,                        
                       ),
+                       ),
                     ),
                   ],
                 ),
