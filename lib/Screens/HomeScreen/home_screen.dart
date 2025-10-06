@@ -340,11 +340,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       text: "my_dairy_data".tr,
                       fontSize: 18,
                     ),
-                    CommonTextWidget.InterRegular(
-                      color: grey757,
-                      text: "1234567890@paytm",
-                      fontSize: 12,
-                    ),
+                    // CommonTextWidget.InterRegular(
+                    //   color: grey757,
+                    //   text: "1234567890@paytm",
+                    //   fontSize: 12,
+                    // ),
                   ],
                 ),
               ),

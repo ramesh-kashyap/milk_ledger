@@ -122,9 +122,9 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
                   ],
                 ),
                 InkWell(
-                  onTap: () {
-                    Get.to(() => MyQrCodeScreen());
-                  },
+                  // onTap: () {
+                  //   Get.to(() => MyQrCodeScreen());
+                  // },
                   child: Container(
                     height: 100,
                     width: 100,
