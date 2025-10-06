@@ -144,14 +144,12 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
     } else {
       if (mounted) {
           Get.snackbar("Error ❌", data["message"] ?? "Failed to load".tr,);
-          return
       }
     }
   } catch (e, st) {
     debugPrint("Error fetching customer/products: $e\n$st");
     if (mounted) {
        Get.snackbar("Error ❌", "Failed to load customers/products",);
-       return
     }
   }
 }
@@ -545,7 +543,11 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
 
       if (response.data["success"] == true) {
         if (mounted) {
-          Get.snackbar("Success 🎉", response.data["message"] ?? "transaction_success".tr,);
+          Get.snackbar(
+          "Success 🎉",
+          response.data["message"] ?? "transaction_success".tr,
+        );
+
         }
         // optional: refresh list / clear inputs
       } else {

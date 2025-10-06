@@ -153,7 +153,7 @@ Future<void> _createPayment(String type) async {
     });
 
     if (response.data['success'] == true) {
-      Get.snackbar("Success 🎉", response.data["message"] ?? "Payment recorded successfully",);
+      Get.snackbar("Success 🎉", response.data["message"] ?? "Payment recorded successfully");
 
       // Clear input after success
       _amountController.clear();
@@ -161,10 +161,11 @@ Future<void> _createPayment(String type) async {
       // Refresh milk data if needed
       await _fetchMilkData(selectedCustomerId);
     } else {
-      Get.snackbar("Warning", response.data["message"] ?? "Payment failed",);
+      Get.snackbar("Warning ⚠️",
+      response.data["message"] ?? "Payment failed",);
     }
   } catch (e) {
-    Get.snackbar("Error", response.data["message"] ?? "Server Error",);
+    Get.snackbar("Error", "Server Error: $e",);
   }
 }
 

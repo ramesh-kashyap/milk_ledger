@@ -11,7 +11,6 @@ class DairyReportScreen extends StatefulWidget {
 
 class _DairyReportScreenState extends State<DairyReportScreen> {
   Map<String, dynamic>? reportData;
-  
   bool loading = true;
 
   @override
@@ -38,11 +37,6 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    
-final todayList = (reportData?['today'] as List? ?? []);
-
-final todayPurchase = todayList.isNotEmpty ? todayList[0] : null;
-final todaySale = todayList.length > 1 ? todayList[1] : null;
     String todayDate = DateFormat('dd MMM yyyy').format(DateTime.now());
 
     return Scaffold(
@@ -70,10 +64,10 @@ final todaySale = todayList.length > 1 ? todayList[1] : null;
                           "${'today'.tr} ($todayDate)",
                           Icons.calendar_today,
                           {
-                             "purchaseLitres": double.tryParse(todayPurchase?['litres']?.toString() ?? "0") ?? 0.0,
-  "purchaseAmount": double.tryParse(todayPurchase?['amount']?.toString() ?? "0") ?? 0.0,
-  "saleLitres": double.tryParse(todaySale?['litres']?.toString() ?? "0") ?? 0.0,
-  "saleAmount": double.tryParse(todaySale?['amount']?.toString() ?? "0") ?? 0.0,
+                            "purchaseLitres": double.tryParse((reportData!['today'] as List)[0]['litres']?.toString() ?? "0") ?? 0.0,
+                            "purchaseAmount": double.tryParse((reportData!['today'] as List)[0]['amount']?.toString() ?? "0") ?? 0.0,
+                            "saleLitres": double.tryParse((reportData!['today'] as List)[1]['litres']?.toString() ?? "0") ?? 0.0, // backend not splitting buy/sale for today
+                            "saleAmount": double.tryParse((reportData!['today'] as List)[1]['amount']?.toString() ?? "0") ?? 0.0,
                           },
                         ),
                       const SizedBox(height: 16),
