@@ -418,21 +418,21 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
   Future<void> save() async {
     if (seller == null) {
-      _toast('Please select a customer');
+          Get.snackbar("Warning", "Please select a customer");
       return;
     }
     if (!zero) {
-      if (litres <= 0) {
-        _toast('Enter litres');
-        return;
+      if (litres <= 0) {        
+          Get.snackbar("Warning", "Enter litres");
+      return;
       }
-      if (showRate && (rateCtrl.text.trim().isEmpty || rate <= 0)) {
-        _toast('Enter rate / litre');
-        return;
+      if (showRate && (rateCtrl.text.trim().isEmpty || rate <= 0)) {       
+        Get.snackbar("Warning", "Enter rate / litre");
+          return;
       }
       if (showFat && fatCtrl.text.trim().isEmpty) {
-        _toast('Enter fat');
-        return;
+        Get.snackbar("Warning", "Enter fat");
+          return;
       }
     }
 
