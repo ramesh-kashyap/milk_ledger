@@ -29,7 +29,9 @@ import 'package:digitalwalletpaytmcloneapp/Screens/PersonalLoanScreen/personal_l
 import 'package:digitalwalletpaytmcloneapp/Screens/ProfileScreen/profile_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/contact_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/about_us_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/report_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/privacy_policy_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/customers_list_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/ReferAndEarnScreen/refer_and_earn_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/TermsConditionsAndPrivacyPolicyScreens/Policies_screen.dart';
 import 'package:flutter/material.dart';
@@ -484,23 +486,23 @@ class Lists {
       "text1": "report".tr,
       "text2": "report_desc".tr,
       "onTap": () {
-        Get.to(() => ProfileScreen());
+        Get.to(() => ReportScreen());
       },
     },
-    {
-      "icon": Icons.delete, // Delete Client
-      "text1": "delete_client".tr,
-      "text2": "delete_client_desc".tr,
-      "onTap": () {
-        Get.to(() => ProfileScreen());
-      },
-    },
+    // {
+    //   "icon": Icons.delete, // Delete Client
+    //   "text1": "delete_client".tr,
+    //   "text2": "delete_client_desc".tr,
+    //   "onTap": () {
+    //     Get.to(() => );
+    //   },
+    // },
     {
       "icon": Icons.account_balance, // All Account
       "text1": "all_account".tr,
       "text2": "all_account_desc".tr,
       "onTap": () {
-        Get.to(() => ProfileScreen());
+        Get.to(() => CustomersListScreen());
       },
     },
     {
@@ -527,22 +529,22 @@ class Lists {
         Get.to(() => AboutUsPage());
       },
     },
-    {
-      "icon": Icons.person_remove, // Delete Account
-      "text1": "delete_account".tr,
-      "text2": "delete_account_desc".tr,
-      "onTap": () {
-        Get.to(() => ProfileScreen());
-      },
-    },
-    {
-      "icon": Icons.system_update, // Check Update
-      "text1": "check_update".tr,
-      "text2": "check_update_desc".tr,
-      "onTap": () {
-        Get.to(() => ProfileScreen());
-      },
-    },
+    // {
+    //   "icon": Icons.person_remove, // Delete Account
+    //   "text1": "delete_account".tr,
+    //   "text2": "delete_account_desc".tr,
+    //   "onTap": () {
+    //     Get.to(() => );
+    //   },
+    // },
+    // {
+    //   "icon": Icons.system_update, // Check Update
+    //   "text1": "check_update".tr,
+    //   "text2": "check_update_desc".tr,
+    //   "onTap": () {
+    //     Get.to(() => );
+    //   },
+    // },
   ];
 
 
