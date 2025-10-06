@@ -143,17 +143,13 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
       });
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "Failed to load")),
-        );
+          Get.snackbar("Error ❌", data["message"] ?? "Failed to load".tr,);
       }
     }
   } catch (e, st) {
     debugPrint("Error fetching customer/products: $e\n$st");
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to load customers/products")),
-      );
+       Get.snackbar("Error ❌", "Failed to load customers/products",);
     }
   }
 }
@@ -547,24 +543,22 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
 
       if (response.data["success"] == true) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("transaction_success".tr)),
-          );
+          Get.snackbar(
+          "Success 🎉",
+          response.data["message"] ?? "transaction_success".tr,
+        );
+
         }
         // optional: refresh list / clear inputs
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.data["message"] ?? "failed".tr)),
-          );
+          Get.snackbar("Failed ❌", response.data["message"] ?? "failed".tr);
         }
       }
     } catch (e, st) {
       debugPrint("Submit error: $e\n$st");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text("something_wrong".tr)),
-        );
+        Get.snackbar("Error ❌", "something_wrong".tr);
       }
     }
   }

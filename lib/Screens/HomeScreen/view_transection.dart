@@ -106,7 +106,7 @@ class _TransactionPageState extends State<TransactionPage> {
       appBar: AppBar(
         backgroundColor: Colors.green[500],
         foregroundColor: Colors.white,
-        title: Text("view_transactions".tr, style: TextStyle(color: Colors.white),),
+        title: Text("view_transactions".tr, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
         centerTitle: true,
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.print, color: Colors.white)),

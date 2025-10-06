@@ -105,12 +105,12 @@ class _SettingsPageState extends State<SettingsPage> {
             onTap: _showLanguageDialog,
           ),
 
-          _buildSettingTile(
-            icon: Icons.calendar_today,
-            title: "duration".tr,
-            subtitle: "every_month".tr,
-            onTap: () {},
-          ),
+          // _buildSettingTile(
+          //   icon: Icons.calendar_today,
+          //   title: "duration".tr,
+          //   subtitle: "every_month".tr,
+          //   onTap: () {},
+          // ),
 
           const SizedBox(height: 20),
 
