@@ -197,15 +197,15 @@ class _TransactionPageState extends State<TransactionPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("name_val: ${selectedCustomer["name"]}"),
-                          Text("code_val: ${selectedCustomer["code"]}"),
-                          Text("phone_val: ${selectedCustomer["phone"]}"),
+                          Text("${'name_val'.tr}: ${selectedCustomer["name"]}"),
+                          Text("${'code_val'.tr}: ${selectedCustomer["code"]}"),
+                          Text("${'phone_val'.tr}: ${selectedCustomer["phone"]}"),
                         ],
                       ),
 
                       // Right side → Type
                       Text(
-                        "type_val: ${selectedCustomer["customerType"]}",
+                        "${'type_val'.tr}: ${selectedCustomer["customerType"]}",
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],

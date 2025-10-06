@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 class PrivacyPolicyPage extends StatelessWidget {
   const PrivacyPolicyPage({super.key});
 
@@ -8,8 +8,8 @@ class PrivacyPolicyPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xfff5fff7),
       appBar: AppBar(
-        title: const Text(
-          "Privacy Policy",
+        title: Text(
+          'privacy_policy'.tr,
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.green.shade600,
@@ -32,11 +32,11 @@ class PrivacyPolicyPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
-                children: const [
+                children: [
                   Icon(Icons.privacy_tip, color: Colors.white, size: 60),
                   SizedBox(height: 10),
                   Text(
-                    "Our Privacy Policy",
+                    'our_privacy_policy'.tr,
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -44,7 +44,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                   ),
                   SizedBox(height: 5),
                   Text(
-                    "Your privacy and data security are important to us.",
+                    'privacy_message'.tr,
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
@@ -56,10 +56,10 @@ class PrivacyPolicyPage extends StatelessWidget {
             Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Text(
-                  "This Privacy Policy describes how our Dairy App collects, uses, and protects your personal information. By using our app, you agree to the terms outlined here.",
+                  'intro_privacy'.tr,
                   style: TextStyle(fontSize: 14, height: 1.4),
                   textAlign: TextAlign.justify,
                 ),
@@ -71,14 +71,14 @@ class PrivacyPolicyPage extends StatelessWidget {
             Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              child: const ListTile(
+              child: ListTile(
                 leading: Icon(Icons.cloud_download, color: Colors.green),
                 title: Text(
-                  "Data Collection",
+                  'data_collection'.tr,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  "We may collect information such as your name, phone number, email address, and usage details to improve our services.",
+                'data_collection_desc'.tr, 
                 ),
               ),
             ),
@@ -88,14 +88,14 @@ class PrivacyPolicyPage extends StatelessWidget {
             Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              child: const ListTile(
+              child: ListTile(
                 leading: Icon(Icons.security, color: Colors.green),
                 title: Text(
-                  "Data Usage",
+                  'data_usage'.tr, 
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  "Your data is used only to provide better features, customer support, and personalized services. We do not sell your information.",
+                 'data_usage_desc'.tr,
                 ),
               ),
             ),
@@ -105,14 +105,14 @@ class PrivacyPolicyPage extends StatelessWidget {
             Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              child: const ListTile(
+              child: ListTile(
                 leading: Icon(Icons.lock, color: Colors.green),
                 title: Text(
-                  "Data Protection",
+                 'data_protection'.tr,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  "We use secure methods to protect your personal data and ensure it is not misused or accessed by unauthorized parties.",
+                 'data_protection_desc'.tr,
                 ),
               ),
             ),
@@ -122,14 +122,14 @@ class PrivacyPolicyPage extends StatelessWidget {
             Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              child: const ListTile(
+              child: ListTile(
                 leading: Icon(Icons.contact_mail, color: Colors.green),
                 title: Text(
-                  "Contact Us",
+                  'contact_us'.tr,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  "If you have any questions about this Privacy Policy, please contact us at support@yourdairy.com.",
+                 'contact_us_desc'.tr,
                 ),
               ),
             ),

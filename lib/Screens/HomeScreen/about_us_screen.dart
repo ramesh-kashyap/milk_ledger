@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 class AboutUsPage extends StatelessWidget {
   const AboutUsPage({super.key});
 
@@ -8,8 +8,8 @@ class AboutUsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xfff5fff7),
       appBar: AppBar(
-        title: const Text(
-          "About Us",
+        title: Text(
+          'about_us'.tr,
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.green.shade600,
@@ -32,11 +32,11 @@ class AboutUsPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
-                children: const [
+                children: [
                   Icon(Icons.info_outline, color: Colors.white, size: 60),
                   SizedBox(height: 10),
                   Text(
-                    "About Our Dairy App",
+                    'about_our_dairy_app'.tr,
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -44,7 +44,7 @@ class AboutUsPage extends StatelessWidget {
                   ),
                   SizedBox(height: 5),
                   Text(
-                    "Manage your dairy business with ease!",
+                    'manage_dairy_business'.tr,
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
@@ -56,11 +56,10 @@ class AboutUsPage extends StatelessWidget {
             Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Text(
-                  "This Dairy Management App helps dairy owners to record milk entries, manage customers, generate bills, track payments, and view detailed reports. "
-                  "Our goal is to simplify dairy operations and bring digital convenience to farmers and dairy businesses.",
+                  'about_description'.tr,
                   style: TextStyle(fontSize: 14, height: 1.4),
                   textAlign: TextAlign.justify,
                 ),
@@ -72,14 +71,14 @@ class AboutUsPage extends StatelessWidget {
             Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              child: const ListTile(
+              child: ListTile(
                 leading: Icon(Icons.flag, color: Colors.green),
                 title: Text(
-                  "Our Mission",
+                  'our_mission'.tr,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  "To empower dairy farmers and business owners with simple and powerful digital tools.",
+                  'our_mission_desc'.tr, 
                 ),
               ),
             ),
@@ -89,14 +88,14 @@ class AboutUsPage extends StatelessWidget {
             Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              child: const ListTile(
+              child: ListTile(
                 leading: Icon(Icons.visibility, color: Colors.green),
                 title: Text(
-                  "Our Vision",
+                  'our_vision'.tr,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  "To create a smart dairy ecosystem where technology helps every farmer grow.",
+                  'our_vision_desc'.tr,
                 ),
               ),
             ),
