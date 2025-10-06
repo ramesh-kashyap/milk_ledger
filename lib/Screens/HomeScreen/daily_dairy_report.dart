@@ -64,10 +64,10 @@ class _DairyReportScreenState extends State<DairyReportScreen> {
                           "${'today'.tr} ($todayDate)",
                           Icons.calendar_today,
                           {
-                            "purchaseLitres": double.tryParse(reportData!['today']['litres']?.toString() ?? "0") ?? 0.0,
-                            "purchaseAmount": double.tryParse(reportData!['today']['amount']?.toString() ?? "0") ?? 0.0,
-                            "saleLitres": 0.0, // backend not splitting buy/sale for today
-                            "saleAmount": 0.0,
+                            "purchaseLitres": double.tryParse((reportData!['today'] as List)[0]['litres']?.toString() ?? "0") ?? 0.0,
+                            "purchaseAmount": double.tryParse((reportData!['today'] as List)[0]['amount']?.toString() ?? "0") ?? 0.0,
+                            "saleLitres": double.tryParse((reportData!['today'] as List)[1]['litres']?.toString() ?? "0") ?? 0.0, // backend not splitting buy/sale for today
+                            "saleAmount": double.tryParse((reportData!['today'] as List)[1]['amount']?.toString() ?? "0") ?? 0.0,
                           },
                         ),
                       const SizedBox(height: 16),
