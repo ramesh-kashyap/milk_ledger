@@ -48,7 +48,7 @@ class _DailyPurchaseReportScreenState extends State<DailyPurchaseReportScreen> {
   Future<void> fetchAllEntries() async {
     setState(() => loading = true);
     try {
-      final res = await ApiService.get('/dairypurchase'); // fetch all user entries
+      final res = await ApiService.get('/dairypurchase'); // fetch all user entrie
     //  print(res);
       allEntries = res.data['entries'] ?? [];
       _applyFilters();
