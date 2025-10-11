@@ -12,15 +12,16 @@ class ReportScreen extends StatefulWidget {
 
 class _ReportScreenState extends State<ReportScreen> {
   DateTimeRange? selectedRange;
-
-  List<Map<String, dynamic>> transactions = [];
+  List<Map<String, dynamic>> sellers = [];
+  List<Map<String, dynamic>> purchasers = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchBillReport();// l oad all by default
+    _fetchBillReport(); // Load all by default
   }
 
+  // ---------------- FETCH BILL REPORT ----------------
   Future<void> _fetchBillReport() async {
     try {
       final body = <String, dynamic>{};
@@ -32,10 +33,10 @@ class _ReportScreenState extends State<ReportScreen> {
 
       final response = await ApiService.post("/billreport", body);
       final data = response.data;
-
       if (data["success"] == true) {
         setState(() {
-          transactions = (data["data"] as List).cast<Map<String, dynamic>>();
+          sellers = (data["sellers"] as List).cast<Map<String, dynamic>>();
+          purchasers = (data["purchasers"] as List).cast<Map<String, dynamic>>();
         });
       }
     } catch (e) {
@@ -43,6 +44,7 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
+  // ---------------- DATE RANGE PICKER ----------------
   Future<void> _selectDateRange(BuildContext context) async {
     final DateTimeRange? picked = await showDateRangePicker(
       context: context,
@@ -50,6 +52,7 @@ class _ReportScreenState extends State<ReportScreen> {
       lastDate: DateTime(2035),
       initialDateRange: selectedRange,
     );
+
     if (picked != null) {
       setState(() {
         selectedRange = picked;
@@ -61,35 +64,22 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   Widget build(BuildContext context) {
     final rangeText = selectedRange == null
-        ? "select_date_range".tr
+        ? "Select Date Range"
         : "${DateFormat("dd MMM").format(selectedRange!.start)} - ${DateFormat("dd MMM").format(selectedRange!.end)}";
-
-    // Sellers: only pay rows
-    final sellers = transactions
-        .where((t) => t["type"] == "pay")
-        .toList();
-
-    // Purchasers: only receive rows
-    final purchasers = transactions
-        .where((t) => t["type"] == "receive")
-        .toList();
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.green[500],
-        title: Text(
-          "report".tr, 
-          style: TextStyle(color: Colors.white),
-        ),
+        backgroundColor: Colors.green[600],
+        title: const Text("Bill Report", style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
             icon: const Icon(Icons.date_range, color: Colors.white),
             onPressed: () => _selectDateRange(context),
           ),
           IconButton(
-            icon: const Icon(Icons.print, color: Colors.white),
-            onPressed: () {},
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: _fetchBillReport,
           ),
         ],
       ),
@@ -98,95 +88,86 @@ class _ReportScreenState extends State<ReportScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Date Range Header
+            // ---------------- DATE RANGE SELECTOR ----------------
             Center(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  rangeText,
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
+              child: GestureDetector(
+                onTap: () => _selectDateRange(context),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.date_range,
+                          color: Colors.white, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        rangeText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-
-            // Date & Timestamp
-            Container(
-              padding: const EdgeInsets.all(4),
-              color: Colors.green[100],
-              child: Text(
-                DateFormat("EEE yyyy MMM dd HH:mm:ss").format(DateTime.now()),
-                style: const TextStyle(fontSize: 12, color: Colors.black87),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              selectedRange == null
-                  ? "no_date_range_selected".tr
-                  : "${DateFormat("dd MMM yyyy").format(selectedRange!.start)} to ${DateFormat("dd MMM yyyy").format(selectedRange!.end)}",
-              style: const TextStyle(fontSize: 13, color: Colors.black87),
-              textAlign: TextAlign.center,
             ),
 
             const SizedBox(height: 16),
 
-            // Sellers Table
-            buildTableHeader("seller".tr),
+            // ================= SELLER SECTION =================
+            buildTableHeader("Seller Report"),
             buildTableRow(
-                 ["ac_no".tr, "name".tr, "send".tr], 
+                ["Account Name", "Payment", "Due", "Product", "Total"],
                 isHeader: true),
-            ...sellers.map((t) => buildTableRow([
-                  t["Customer.code"] ?? "",
-                  t["Customer.name"] ?? "",
-                  (t["totalAmount"] ?? "0").toString(),
-                ])),
-            buildTableRow([
-               "total".tr + "(${sellers.length})",
-              "",
-              sellers.fold<double>(
-                      0,
-                      (sum, t) =>
-                          sum + double.parse(t["totalAmount"].toString()))
-                  .toStringAsFixed(2),
-            ]),
+
+            if (sellers.isEmpty)
+              buildTableRow(["No data", "-", "-", "-", "-"])
+            else
+              ...sellers.map((t) => buildTableRow([
+                    t["account_name"] ?? "-",
+                    "₹${t["payment"]}",
+                    "₹${t["due"]}",
+                    "₹${t["product"]}",
+                    "₹${t["total"]}",
+                  ])),
+
+            if (sellers.isNotEmpty) buildSummaryRow(sellers),
 
             const SizedBox(height: 20),
 
-            // Purchasers Table
-            buildTableHeader("purchaser".tr), 
+            // ================= PURCHASER SECTION =================
+            buildTableHeader("Purchaser Report"),
             buildTableRow(
-                ["ac_no".tr, "name".tr, "receive".tr], 
+                ["Account Name", "Payment", "Due", "Product", "Total"],
                 isHeader: true),
-            ...purchasers.map((t) => buildTableRow([
-                  t["Customer.code"] ?? "",
-                  t["Customer.name"] ?? "",
-                  (t["totalAmount"] ?? "0").toString(),
-                ])),
-            buildTableRow([
-              "total".tr + "(${purchasers.length})",
-              "",
-              purchasers.fold<double>(
-                      0,
-                      (sum, t) =>
-                          sum + double.parse(t["totalAmount"].toString()))
-                  .toStringAsFixed(2),
-            ]),
+
+            if (purchasers.isEmpty)
+              buildTableRow(["No data", "-", "-", "-", "-"])
+            else
+              ...purchasers.map((t) => buildTableRow([
+                    t["account_name"] ?? "-",
+                    "₹${t["payment"]}",
+                    "₹${t["due"]}",
+                    "₹${t["product"]}",
+                    "₹${t["total"]}",
+                  ])),
+
+            if (purchasers.isNotEmpty) buildSummaryRow(purchasers),
 
             const SizedBox(height: 20),
 
-             Center(
+            // ---------------- FOOTER ----------------
+            Center(
               child: Text(
-                "doodhbazzar".tr,
-                style: TextStyle(
-                  color: Colors.green,
-                  fontWeight: FontWeight.w500,
-                ),
+                "DoodhBazzar".tr,
+                style: const TextStyle(
+                    color: Colors.green, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -195,6 +176,7 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
+  // ---------------- HEADER TEXT ----------------
   Widget buildTableHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
@@ -207,11 +189,16 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
+  // ---------------- TABLE ROW ----------------
   Widget buildTableRow(List<String> values,
       {bool isHeader = false, bool highlight = false}) {
     return Container(
       decoration: BoxDecoration(
-        color: highlight ? Colors.grey[200] : Colors.transparent,
+        color: highlight
+            ? Colors.grey[200]
+            : isHeader
+                ? Colors.green[100]
+                : Colors.transparent,
         border: Border(
           bottom: BorderSide(color: Colors.grey.shade400, width: 0.8),
         ),
@@ -239,5 +226,25 @@ class _ReportScreenState extends State<ReportScreen> {
             .toList(),
       ),
     );
+  }
+
+  // ---------------- SUMMARY TOTAL ROW ----------------
+  Widget buildSummaryRow(List<Map<String, dynamic>> list) {
+    double totalPayment = 0, totalDue = 0, totalProduct = 0, totalAmount = 0;
+
+    for (var t in list) {
+      totalPayment += double.tryParse(t["payment"].toString()) ?? 0;
+      totalDue += double.tryParse(t["due"].toString()) ?? 0;
+      totalProduct += double.tryParse(t["product"].toString()) ?? 0;
+      totalAmount += double.tryParse(t["total"].toString()) ?? 0;
+    }
+
+    return buildTableRow([
+      "Total (${list.length})",
+      "₹${totalPayment.toStringAsFixed(2)}",
+      "₹${totalDue.toStringAsFixed(2)}",
+      "₹${totalProduct.toStringAsFixed(2)}",
+      "₹${totalAmount.toStringAsFixed(2)}",
+    ], highlight: true);
   }
 }
