@@ -3,8 +3,11 @@ import 'package:get/get.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/dairy_account_setting.dart';
 import 'package:digitalwalletpaytmcloneapp/main.dart';
 import 'package:get_storage/get_storage.dart';
-
+import 'package:digitalwalletpaytmcloneapp/Screens/AuthScreens/login_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
+import 'package:digitalwalletpaytmcloneapp/main.dart';
 class SettingsPage extends StatefulWidget {
+
   const SettingsPage({super.key});
 
   @override
@@ -29,6 +32,27 @@ class _SettingsPageState extends State<SettingsPage> {
       selectedLang = "Punjabi";
     } else {
       selectedLang = "English";
+    }
+  }
+
+   Future<void> logout() async {
+    try {
+      final response = await ApiService.post(
+        '/logout',
+        {}, // if your backend doesn’t need any body
+      );
+
+      if (response.data['status'] == true) {
+        // Clear local token/session
+        // await LocalStorage.clearToken();
+        await ApiService.removeToken();
+        // Navigate to login page
+        Get.offAll(() => LogInScreen());
+      } else {
+        Get.snackbar('Error', response.data['message'] ?? 'Logout failed');
+      }
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
     }
   }
 
@@ -129,11 +153,28 @@ class _SettingsPageState extends State<SettingsPage> {
             iconColor: Colors.red,
             onTap: () {},
           ),
-          _buildSettingTile(
-            icon: Icons.logout,
-            title: "sign_out".tr,
-            onTap: () {},
-          ),
+     _buildSettingTile(
+  icon: Icons.logout,
+  title: "sign_out".tr,
+  onTap: () {
+    Get.defaultDialog(
+      title: "Sign Out".tr,
+      middleText: "Are you sure you want to logout?".tr,
+      textCancel: "cancel".tr,
+      textConfirm: "logout".tr,
+       confirmTextColor: Colors.white,         // Text color of confirm button
+    cancelTextColor: Colors.green,          // Text color of cancel button
+    buttonColor: Colors.green,        
+      onConfirm: () async {
+        Get.back(); // close dialog
+        await logout();
+      },
+      onCancel: () {},
+      radius: 12,
+    );
+  },
+),
+
 
           const SizedBox(height: 20),
 

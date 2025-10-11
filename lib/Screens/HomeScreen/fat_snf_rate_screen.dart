@@ -144,20 +144,20 @@ void initState() {
                     theme.textTheme.titleMedium?.copyWith(color: Colors.green)),
             const SizedBox(height: 8),
             _Tile(
-              title: 'Buffalo Rate',
+              title: 'STD FAT',
               subtitle: '₹ per fat unit',
               child: _NumInput(controller: _bmFatCtrl, validator: _numRequired),
             ),
 
             const SizedBox(height: 10),
             _Tile(
-              title: 'Buffalo SNFBase',
+              title: 'STD SNF',
               subtitle: '₹ per SNF kg',
               child: _NumInput(controller: _bmSnfCtrl, validator: _numRequired),
             ),
              const SizedBox(height: 8),
             _Tile(
-              title: 'Buffalo Fixed Rate',
+              title: 'RATE',
               subtitle: 'Fixed Rate Per Litre',
               child: _NumInput(controller: _bmRateCtrl, validator: _numRequired),
             ),
@@ -170,19 +170,19 @@ void initState() {
                     theme.textTheme.titleMedium?.copyWith(color: Colors.green)),
             const SizedBox(height: 8),
             _Tile(
-              title: 'Cow Rate',
+              title: 'STD FAT',
               subtitle: '₹ per fat unit',
               child: _NumInput(controller: _cmFatCtrl, validator: _numRequired),
             ),
             const SizedBox(height: 10),
             _Tile(
-              title: 'Cow SNFBase',
+              title: 'STD SNF',
               subtitle: '₹ per SNF kg',
               child: _NumInput(controller: _cmSnfCtrl, validator: _numRequired),
             ),
              const SizedBox(height: 8),
             _Tile(
-              title: 'Cow Fixed Rate',
+              title: 'RATE',
               subtitle: 'Fixed Rate Per Litre',
               child: _NumInput(controller: _cmRateCtrl, validator: _numRequired),
             ),

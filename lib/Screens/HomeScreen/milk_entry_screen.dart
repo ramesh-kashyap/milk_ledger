@@ -33,7 +33,7 @@ void initState() {
   final snfCtrl = TextEditingController(); // 👈 NEW
   final fatCtrl1 = TextEditingController();
   final fatSnfCtrl = TextEditingController();
-  
+  final fixRateCtrl = TextEditingController();
   bool _isSubmitting = false;
   bool zero = false;
   String animal = 'buffalo'; // cow/buffalo
@@ -61,7 +61,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
   double fatRate1 = 0;
   double fatSnfRate = 0;
-
+  double fixRate = 0;
   // Get the fat-only rate
   if (animalRates['fat_snf'] != null && (animalRates['fat_snf'] as List).isNotEmpty) {
     fatRate1 = (animalRates['fat_snf'][0]['fat_rate'] ?? 0).toDouble();
@@ -71,10 +71,13 @@ void _fillFatSnfRatesForAnimal(String animal) {
   if (animalRates['fat_snf'] != null && (animalRates['fat_snf'] as List).isNotEmpty) {
     fatSnfRate = (animalRates['fat_snf'][0]['snf_rate'] ?? 0).toDouble();
   }
+  if (animalRates['fat_snf'] != null && (animalRates['fat_snf'] as List).isNotEmpty) {
+    fixRate = (animalRates['fat_snf'][0]['fixed_rate'] ?? 0).toDouble();
+  }
 
   fatCtrl1.text = fatRate1 == 0 ? '' : fatRate1.toStringAsFixed(2);
   fatSnfCtrl.text = fatSnfRate == 0 ? '' : fatSnfRate.toStringAsFixed(2);
-
+  fixRateCtrl.text = fixRate == 0 ? '' : fixRate.toStringAsFixed(2);
   debugPrint(
     "Rates for $animal → FAT: ${fatCtrl1.text}, SNF: ${fatSnfCtrl.text}"
   );
@@ -161,8 +164,13 @@ void _fillFatSnfRatesForAnimal(String animal) {
         ? 0
         : _toNum(fatSnfCtrl.text); // ₹ fixed rate
 
-     final perLiter = ((f * perfat) + (s * snfRate) )/100;
-  print("Calculated perLiter: $perLiter for Fat: $f, SNF: $s, perFat: $perfat, snfRate: $snfRate, litres: ${litresCtrl.text}");
+    final fixRate0 = fixRateCtrl.text.trim().isEmpty
+        ? 0
+        : _toNum(fixRateCtrl.text); // ₹ fixed rate
+    //  final perLiter = ((f * perfat) + (s * snfRate) +55)/1000;
+
+    final perLiter = ((f + s)/(perfat/10 + snfRate/10))*(fixRate0/100);
+  print("Calculated perLiters: $perLiter for Fat: $f, SNF: $s, perFat: $perfat, snfRate: $snfRate, litres: ${litresCtrl.text}, fixRate: $fixRate0");
  
      return  perLiter ;
 

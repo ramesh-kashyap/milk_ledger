@@ -149,7 +149,7 @@ class LogInScreen extends StatelessWidget {
         SizedBox(height: 40),
         InkWell(
           onTap: () {
-            Get.to(() => TroubleLoginScreen());
+            Get.to(() =>());
           },
           child: Center(
             child: CommonTextWidget.InterRegular(
@@ -177,18 +177,18 @@ class LogInScreen extends StatelessWidget {
           },
         ),
         SizedBox(height: 15),
-        Center(
-          child: InkWell(
-            onTap: () {
-              Get.to(() => HomeScreen());
-            },
-            child: CommonTextWidget.InterBold(
-              text: "SKIP",
-              color: Colors.green,
-              fontSize: 16,
-            ),
-          ),
-        ),
+        // Center(
+        //   child: InkWell(
+        //     onTap: () {
+        //       Get.to(() => HomeScreen());
+        //     },
+        //     child: CommonTextWidget.InterBold(
+        //       text: "SKIP",
+        //       color: Colors.green,
+        //       fontSize: 16,
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

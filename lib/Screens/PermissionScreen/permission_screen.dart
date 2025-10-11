@@ -14,6 +14,7 @@ class PermissionScreen extends StatelessWidget {
   const PermissionScreen({super.key, required this.phone});
 
   Future<void> _sendOtp() async {
+    print("Sending OTP to $phone");
     try {
       // optional: show loader
       Get.dialog(const Center(child: CircularProgressIndicator()),
@@ -21,7 +22,7 @@ class PermissionScreen extends StatelessWidget {
 
       final response = await ApiService.post('/sendOtp', {"phone": phone});
 
-      // print('Response: ${response.data}'); // Debugging line
+      print('Response: ${response}'); // Debugging line
 
       Get.back(); // close loader
 

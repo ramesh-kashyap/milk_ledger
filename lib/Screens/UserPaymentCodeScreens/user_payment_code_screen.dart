@@ -68,6 +68,7 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
         // Clear local token/session
         // await LocalStorage.clearToken();
         // Navigate to login page
+        await ApiService.removeToken();
         Get.offAll(() => LogInScreen());
       } else {
         Get.snackbar('Error', response.data['message'] ?? 'Logout failed');
@@ -213,7 +214,21 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
                         ),
                       ),
                       onPressed: () async {
-                        await logout();
+                         Get.defaultDialog(
+      title: "Sign Out".tr,
+      middleText: "Are you sure you want to logout?".tr,
+      textCancel: "cancel".tr,
+      textConfirm: "logout".tr,
+       confirmTextColor: Colors.white,         // Text color of confirm button
+    cancelTextColor: Colors.green,          // Text color of cancel button
+    buttonColor: Colors.green,        
+      onConfirm: () async {
+        Get.back(); // close dialog
+        await logout();
+      },
+      onCancel: () {},
+      radius: 12,
+    );
                       },
                       icon: const Icon(Icons.logout, color: Colors.white),
                       label: Text("logout".tr,
