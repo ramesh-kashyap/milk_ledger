@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:dio/dio.dart';
-import 'package:get/get.dart'; 
+import 'package:get/get.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
 class DailySaleReportScreen extends StatefulWidget {
   const DailySaleReportScreen({super.key});
 
   @override
-  State<DailySaleReportScreen> createState() =>
-      _DailySaleReportScreenState();
+  State<DailySaleReportScreen> createState() => _DailySaleReportScreenState();
 }
 
 class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
@@ -20,6 +18,8 @@ class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
 
   List<dynamic> allEntries = [];
   List<dynamic> filteredEntries = [];
+  List<dynamic> morningEntries = [];
+  List<dynamic> eveningEntries = [];
 
   final List<String> sessionOptions = ["Both", "Morning", "Evening"];
   final List<String> milkTypeOptions = ["Both", "Cow", "Buffalo"];
@@ -48,107 +48,137 @@ class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
   Future<void> fetchAllEntries() async {
     setState(() => loading = true);
     try {
-      final res = await ApiService.get('/dairysale'); // fetch all user entries
-    //  print(res);
+      final res = await ApiService.get('/dairysale');
       allEntries = res.data['entries'] ?? [];
       _applyFilters();
-      setState(() => loading = false);
     } catch (e) {
       print("Error fetching entries: $e");
+    } finally {
       setState(() => loading = false);
     }
   }
 
-void _applyFilters() {
-  final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+  void _applyFilters() {
+    final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
 
-  filteredEntries = allEntries.where((entry) {
-    // ✅ Use createdAt (not created_at)
-    final entryDate = DateTime.parse(entry['createdAt']);
-    final entryDateStr = DateFormat('yyyy-MM-dd').format(entryDate);
+    // Filter base list (date + milk type)
+    List<dynamic> dateFiltered = allEntries.where((entry) {
+      final entryDate = DateTime.parse(entry['createdAt']);
+      final entryDateStr = DateFormat('yyyy-MM-dd').format(entryDate);
+      bool dateMatch = entryDateStr == dateStr;
 
-    bool dateMatch = entryDateStr == dateStr;
+      bool milkTypeMatch = selectedMilkType == "Both" ||
+          entry['animal'].toString().toLowerCase() ==
+              selectedMilkType.toLowerCase();
 
-    // Match session correctly (AM/PM)
-    String session = entry['session'].toString().toUpperCase();
-    String selected = selectedSession == "Both"
-        ? session
-        : selectedSession == "Morning"
-            ? "AM"
-            : "PM";
+      return dateMatch && milkTypeMatch;
+    }).toList();
 
-    bool sessionMatch = session == selected;
+    // Separate AM and PM
+    morningEntries = dateFiltered
+        .where((e) => e['session'].toString().toUpperCase() == "AM")
+        .toList();
+    eveningEntries = dateFiltered
+        .where((e) => e['session'].toString().toUpperCase() == "PM")
+        .toList();
 
-    bool milkTypeMatch = selectedMilkType == "Both" ||
-        entry['animal'].toString().toLowerCase() ==
-            selectedMilkType.toLowerCase();
+    // If “Both”, show all; otherwise filter by selected session
+    if (selectedSession == "Morning") {
+      filteredEntries = morningEntries;
+    } else if (selectedSession == "Evening") {
+      filteredEntries = eveningEntries;
+    } else {
+      filteredEntries = dateFiltered;
+    }
 
-    return dateMatch && sessionMatch && milkTypeMatch;
-  }).toList();
-}
+    setState(() {});
+  }
 
-
- Widget _buildEntryCard(Map entry) {
-  return Container(
-    padding: const EdgeInsets.all(12),
-    margin: const EdgeInsets.symmetric(vertical: 6),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.2),
-          blurRadius: 4,
-          offset: const Offset(0, 2),
-        )
-      ],
-    ),
-    child: Row(
-      children: [
-        Expanded(
-          flex: 2,
-          // ✅ Fix createdAt
-        child: Text(DateFormat('hh:mm a')
-              .format(DateTime.parse(entry['createdAt']))),
+  Widget _buildHeaderRow() => Container(
+        color: Colors.green[400],
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        child: Row(
+          children: [
+            Expanded(flex: 1, child: Text("ac_no".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("milk".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("fat".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("rate".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("amount".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+          ],
         ),
-        Expanded(flex: 1, child: Text("${entry['customer_id'] ?? '0'}")),
-        Expanded(flex: 1, child: Text("${entry['litres'] ?? '0'} L")),
-        Expanded(flex: 1, child: Text("₹ ${entry['amount'] ?? '0'}")),
-        Expanded(flex: 1, child: Text(entry['animal']?.toString().toUpperCase() ?? '')),
-        Expanded(flex: 1, child: Text(entry['session']?.toString() ?? '')),
-      ],
-    ),
-  );
-}
+      );
 
+  Widget _buildEntryRow(Map entry) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
+        child: Row(
+          children: [
+            Expanded(flex: 1, child: Text("${entry['customer_id'] ?? '0'}")),
+            Expanded(flex: 1, child: Text("${entry['litres'] ?? '0'}")),
+            Expanded(flex: 1, child: Text("${entry['fat'] ?? '0'}")),
+            Expanded(flex: 1, child: Text("${entry['rate'] ?? '0'}")),
+            Expanded(flex: 1, child: Text("${entry['amount'] ?? '0'}")),
+          ],
+        ),
+      );
+
+  Widget _buildListSection(String title, List<dynamic> list) {
+    final totalLitres = list.fold<double>(
+        0, (sum, e) => sum + double.parse(e['litres'] ?? "0"));
+    final totalFat =
+        list.fold<double>(0, (sum, e) => sum + double.parse(e['fat'] ?? "0"));
+    final totalRate =
+        list.fold<double>(0, (sum, e) => sum + double.parse(e['rate'] ?? "0"));
+    final totalAmount = list.fold<double>(
+        0, (sum, e) => sum + double.parse(e['amount'] ?? "0"));
+
+    return Card(
+      margin: const EdgeInsets.only(top: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            Text(title,
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green)),
+            const SizedBox(height: 8),
+            _buildHeaderRow(),
+            ...list.map((e) => _buildEntryRow(e)).toList(),
+            Container(
+              color: Colors.green[400],
+              padding:
+                  const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              child: Row(
+                children: [
+                  Expanded(flex: 1, child: Text("total".tr, style: const TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(flex: 1, child: Text("$totalLitres")),
+                  Expanded(flex: 1, child: Text("$totalFat")),
+                  Expanded(flex: 1, child: Text("$totalRate")),
+                  Expanded(flex: 1, child: Text("₹ $totalAmount")),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final totalLitres = filteredEntries.fold<double>(
-    0, (sum, entry) => sum + double.parse(entry['litres'] ?? "0"));
-    final totalAmount = filteredEntries.fold<double>(
-    0, (sum, entry) => sum + double.parse(entry['amount'] ?? "0"));
-    final totalFat = filteredEntries.fold<double>(
-    0, (sum, entry) => sum + double.parse(entry['fat'] ?? "0"));
-    final totalRate = filteredEntries.fold<double>(
-    0, (sum, entry) => sum + double.parse(entry['rate'] ?? "0"));
-    // final customerId = filteredEntries.fold<double>(
-    // 0, (sum, entry) => sum + double.parse(entry['customer_id'] ?? "0"));
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green[500],
-        elevation: 0,
-        title: Text(
-          "daily_sale_report".tr, 
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: Text("daily_sale_report".tr,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
-            onPressed: fetchAllEntries,
-            icon: const Icon(Icons.refresh, color: Colors.white),
-          ),
+              onPressed: fetchAllEntries,
+              icon: const Icon(Icons.refresh, color: Colors.white))
         ],
       ),
       body: Padding(
@@ -158,7 +188,8 @@ void _applyFilters() {
             InkWell(
               onTap: _pickDate,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.green, width: 1.5),
@@ -168,10 +199,8 @@ void _applyFilters() {
                   children: [
                     const Icon(Icons.calendar_today, color: Colors.green),
                     const SizedBox(width: 12),
-                    Text(
-                      DateFormat('yyyy-MM-dd').format(selectedDate),
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                    Text(DateFormat('yyyy-MM-dd').format(selectedDate),
+                        style: const TextStyle(fontSize: 16)),
                     const Spacer(),
                     const Icon(Icons.arrow_drop_down, color: Colors.green),
                   ],
@@ -186,7 +215,8 @@ void _applyFilters() {
                     value: selectedSession,
                     decoration: InputDecoration(labelText: "session".tr),
                     items: sessionOptions
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e.tr)))
+                        .map((e) =>
+                            DropdownMenuItem(value: e, child: Text(e.tr)))
                         .toList(),
                     onChanged: (value) {
                       setState(() {
@@ -202,7 +232,8 @@ void _applyFilters() {
                     value: selectedMilkType,
                     decoration: InputDecoration(labelText: "milk_type".tr),
                     items: milkTypeOptions
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e.tr)))
+                        .map((e) =>
+                            DropdownMenuItem(value: e, child: Text(e.tr)))
                         .toList(),
                     onChanged: (value) {
                       setState(() {
@@ -216,83 +247,27 @@ void _applyFilters() {
             ),
             const SizedBox(height: 12),
             Expanded(
-  child: loading
-      ? const Center(child: CircularProgressIndicator())
-      : filteredEntries.isEmpty
-          ? Center(child: Text("no_entries".tr))
-          : ListView.builder(
-              itemCount: filteredEntries.length + 2, // +1 for header +1 for totals
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  // Header row
-                  return Container(
-                    color: Colors.green[400],
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                    child: Row(
-                      children: [
-                        Expanded(flex: 1, child: Text("ac_no".tr, style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("milk".tr, style: TextStyle(fontWeight: FontWeight.bold))),
-                        // Expanded(flex: 1, child: Text("Amount", style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("fat".tr, style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("rate".tr, style: TextStyle(fontWeight: FontWeight.bold))),
-                        Expanded(flex: 1, child: Text("amount".tr, style: TextStyle(fontWeight: FontWeight.bold))),
-                        // Expanded(flex: 1, child: Text("Session", style: TextStyle(fontWeight: FontWeight.bold))),
-                      ],
-                    ),
-                  );
-                }
-
-                if (index == filteredEntries.length + 1) {
-                  // Totals row
-                  return Container(
-                    color: Colors.green[400],
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                    child: Row(
-                      children: [
-                        Expanded(flex: 1, child: Text("total".tr, style: const TextStyle(fontWeight: FontWeight.bold))),
-                        // Expanded(flex: 1, child: Text("$totalLitres L", style: const TextStyle(fontWeight: FontWeight.bold))), 
-                        Expanded(flex: 1, child: Text("$totalLitres L", style: const TextStyle(fontWeight: FontWeight.bold))),                         
-                        Expanded(flex: 1, child: Text("$totalFat L", style: const TextStyle(fontWeight: FontWeight.bold))), 
-                        Expanded(flex: 1, child: Text("$totalRate L", style: const TextStyle(fontWeight: FontWeight.bold))),                         
-                        Expanded(flex: 1, child: Text("₹ $totalAmount", style: const TextStyle(fontWeight: FontWeight.bold))),                        
-                        // const Expanded(flex: 1, child: SizedBox()),
-                        // const Expanded(flex: 1, child: SizedBox()),
-                      ],
-                    ),
-                  );
-                }
-
-                final entry = filteredEntries[index - 1];
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
-                  child: Row(
-                    children: [
-                      // Expanded(
-                      //   flex: 2,
-                      //   child: Text(DateFormat('hh:mm a').format(DateTime.parse(entry['createdAt']))),
-                      // ),
-                      // Expanded(
-                      //   flex: 1,
-                      //   child: Text(DateFormat('yyyy-MM-dd').format(DateTime.parse(entry['createdAt']))),
-                      // ),
-                      // Expanded(flex: 1, child: Text("${entry['customer_id'] ?? '0'}")),
-                      Expanded(flex: 1, child: Text("${entry['customer_id'] ?? '0'}")),
-                      Expanded(flex: 1, child: Text("${entry['litres'] ?? '0'} L")),                      
-                      Expanded(flex: 1, child: Text("${entry['fat'] ?? '0'}")),
-                      Expanded(flex: 1, child: Text("${entry['Rate'] ?? '0'}")),
-                      Expanded(flex: 1, child: Text("₹ ${entry['amount'] ?? '0'}")),
-                      // Expanded(flex: 1, child: Text(entry['animal']?.toString().toUpperCase() ?? '')),
-                      // Expanded(flex: 1, child: Text(entry['session']?.toString() ?? '')),
-                      
-                    ],
-                  ),
-                );
-              },
+              child: loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : selectedSession == "Both"
+                      ? SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              _buildListSection("Morning Data (AM)", morningEntries),
+                              _buildListSection("Evening Data (PM)", eveningEntries),
+                            ],
+                          ),
+                        )
+                      : filteredEntries.isEmpty
+                          ? Center(child: Text("no_entries".tr))
+                          : SingleChildScrollView(
+                              child: _buildListSection(
+                                  selectedSession == "Morning"
+                                      ? "Morning Data (AM)"
+                                      : "Evening Data (PM)",
+                                  filteredEntries),
+                            ),
             ),
-),
-
-
           ],
         ),
       ),
