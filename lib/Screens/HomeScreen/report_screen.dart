@@ -18,7 +18,7 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchBillReport(); // Load all by default
+    _fetchBillReport();
   }
 
   // ---------------- FETCH BILL REPORT ----------------
