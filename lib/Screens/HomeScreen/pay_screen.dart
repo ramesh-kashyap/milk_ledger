@@ -74,7 +74,7 @@ String? selectedCustomerName;
  Future<void> _fetchDetailsByAcNo() async {
   
    final response = await ApiService.get('/get-code');
-print('Response: ${response}');
+print('ResponseAr: ${response}');
 
     try {
    if ( response.data['success'] == true) {
@@ -318,11 +318,11 @@ final end = DateTime(_endDate.year, _endDate.month, _endDate.day, 23, 59, 59);
       double get totalBalance {
   if (customerType == 'Seller') {
     // For seller, sum all milk amounts
-    print('seller totalBalance calculation');
+    print('seller totalBalance calculation: ${milkData.toString()}');
     return milkData.fold(0.0, (sum, item) => sum + (item["amount"] ?? 0.0));
 
   } else if (customerType == 'Purchaser') {
-    print('purchaser totalBalance calculation');
+    print('purchaser totalBalance calculation: ${milkData.toString()}');
     // For purchaser, sum all milk amounts as negative (or however you track it)
     return milkData.fold(0.0, (sum, item) => sum - (item["amount"] ?? 0.0));
   } else {
@@ -330,25 +330,31 @@ final end = DateTime(_endDate.year, _endDate.month, _endDate.day, 23, 59, 59);
   }
 }
 
-double get totalProduct =>
-    productTransactions.fold(0.0, (sum, item) {
-      // make sure we are always working with a double
-      final amount = double.tryParse(item['amount'].toString()) ?? 0.0;
-      print('Processing item: $item with amount: $amount');
-      // normalize the type (fix capital letters / spaces)
-      final type = (item['t_type'] ?? '')
-          .toString()
-          .trim()               // remove spaces before/after
-          .toLowerCase();       // convert to lower case
-        print('Normalized type: $type');
-      if (type == 'sale') {
-        return sum - amount;      // subtract for sale
-      } else if (type == 'purchase') {
-        return sum + amount;      // add for purchase
-      } else {
-        return sum;               // ignore unknown
-      }
-    });
+double get totalProduct {
+  double totalPurchase = 0.0;
+  double totalSale = 0.0;
+
+  for (var item in productTransactions) {
+    final amount = double.tryParse(item['amount'].toString()) ?? 0.0;
+    final type = (item['t_type'] ?? '')
+        .toString()
+        .trim()
+        .toLowerCase();
+
+    print('Processing item: $item with amount: $amount');
+    print('Normalized type: $type');
+
+    if (type == 'purchase') {
+      totalPurchase += amount;
+    } else if (type == 'sale') {
+      totalSale += amount;
+    }
+  }
+
+  print('Calculated totalProduct: purchase=$totalPurchase, sale=$totalSale, net=${totalPurchase - totalSale}');
+
+  return totalPurchase - totalSale;
+}
 
 
 
