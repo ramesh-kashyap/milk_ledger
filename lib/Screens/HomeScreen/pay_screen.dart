@@ -74,7 +74,7 @@ String? selectedCustomerName;
  Future<void> _fetchDetailsByAcNo() async {
   
    final response = await ApiService.get('/get-code');
-print('Response: ${response}');
+print('ResponseAr: ${response}');
 
     try {
    if ( response.data['success'] == true) {
@@ -312,28 +312,49 @@ final end = DateTime(_endDate.year, _endDate.month, _endDate.day, 23, 59, 59);
     {"date": "31Aug", "detail": "Previous balance 0.00", "created": "02Sep", "total": 0.00},
   ];
 
-  double get totalBalance =>
-      milkData.fold(0.0, (sum, item) => sum + item["amount"]);
+  // double get totalBalance =>
+  //     milkData.fold(0.0, (sum, item) => sum + item["amount"]);
 
-double get totalProduct =>
-    productTransactions.fold(0.0, (sum, item) {
-      // make sure we are always working with a double
-      final amount = double.tryParse(item['amount'].toString()) ?? 0.0;
-      print('Processing item: $item with amount: $amount');
-      // normalize the type (fix capital letters / spaces)
-      final type = (item['t_type'] ?? '')
-          .toString()
-          .trim()               // remove spaces before/after
-          .toLowerCase();       // convert to lower case
-        print('Normalized type: $type');
-      if (type == 'sale') {
-        return sum - amount;      // subtract for sale
-      } else if (type == 'purchase') {
-        return sum + amount;      // add for purchase
-      } else {
-        return sum;               // ignore unknown
-      }
-    });
+      double get totalBalance {
+  if (customerType == 'Seller') {
+    // For seller, sum all milk amounts
+    print('seller totalBalance calculation: ${milkData.toString()}');
+    return milkData.fold(0.0, (sum, item) => sum + (item["amount"] ?? 0.0));
+
+  } else if (customerType == 'Purchaser') {
+    print('purchaser totalBalance calculation: ${milkData.toString()}');
+    // For purchaser, sum all milk amounts as negative (or however you track it)
+    return milkData.fold(0.0, (sum, item) => sum - (item["amount"] ?? 0.0));
+  } else {
+    return 0.0; // fallback
+  }
+}
+
+double get totalProduct {
+  double totalPurchase = 0.0;
+  double totalSale = 0.0;
+
+  for (var item in productTransactions) {
+    final amount = double.tryParse(item['amount'].toString()) ?? 0.0;
+    final type = (item['t_type'] ?? '')
+        .toString()
+        .trim()
+        .toLowerCase();
+
+    print('Processing item: $item with amount: $amount');
+    print('Normalized type: $type');
+
+    if (type == 'purchase') {
+      totalPurchase += amount;
+    } else if (type == 'sale') {
+      totalSale += amount;
+    }
+  }
+
+  print('Calculated totalProduct: purchase=$totalPurchase, sale=$totalSale, net=${totalPurchase - totalSale}');
+
+  return totalPurchase - totalSale;
+}
 
 
 
@@ -345,7 +366,7 @@ double get totalSBalance {
 }
 
 double get totalPBalance {
-  if (customerType != 'Seller') {
+  if (customerType != 'Purchaser') {
     return milkData.fold(0.0, (sum, item) => sum - (item["amount"] ?? 0.0));
   }
   return 0.0; // fallback if Seller
@@ -372,6 +393,7 @@ double get totalPay {
 }
 
 double get balanceAmount {
+  print('Calculating balanceAmount: totalBalance=$totalBalance, totalReceive=$totalReceive');
   // total milk amount minus payments received
   return totalBalance - totalReceive;
 }
@@ -383,7 +405,8 @@ double get balanceProduct {
 }
 
 double get balanceProMilk {
-  double totalDue = totalProduct + totalBalance;
+  double totalDue = totalProduct - totalBalance;
+  print('Calculating balanceProMilk: totalProduct=$totalProduct, totalBalance=$totalBalance, totalDue=$totalDue, totalReceive=$totalReceive, totalPay=$totalPay');
   double net = (totalReceive - totalPay) - totalDue;
 
   if (net < 0) {
@@ -402,18 +425,42 @@ double get balanceGrantTotal {
 }
 
 
-  double get totalMilk =>
-      milkData.fold(0.0, (sum, item) => sum + item["milk"]);
+ double get totalMilk =>
+    milkData
+        .where((item) => item["status"] == "active")
+        .fold(0.0, (sum, item) => sum + (item["milk"] ?? 0.0));
 
-  double get avgFat =>
-      milkData.isEmpty ? 0.0 : milkData.fold(0.0, (s, i) => s + i["fat"]) / milkData.length;
+double get totalAmounts => 
+    milkData
+        .where((item) => item["status"] == "active")
+        .fold(0.0, (sum, item) => sum + (item["amount"] ?? 0.0));
+double get avgFat {
+  final activeMilk = milkData.where((i) => i["status"] == "active").toList();
+  if (activeMilk.isEmpty) return 0.0;
+  final totalFat = activeMilk.fold(0.0, (s, i) => s + (i["fat"] ?? 0.0));
+  return totalFat / activeMilk.length;
+}
 
-  double get avgRate =>
-      milkData.isEmpty ? 0.0 : milkData.fold(0.0, (s, i) => s + i["rate"]) / milkData.length;
+double get avgRate {
+  final activeMilk = milkData.where((i) => i["status"] == "active").toList();
+  if (activeMilk.isEmpty) return 0.0;
+  final totalRate = activeMilk.fold(0.0, (s, i) => s + (i["rate"] ?? 0.0));
+  return totalRate / activeMilk.length;
+}
 
-  double get totalQuantity =>
-      productTransactions.isEmpty ? 0.0 : productTransactions.fold(0.0, (s, i) => s + i["quantity"]);
+  double get totalQuantity {
+  final activeProducts =
+      productTransactions.where((i) => i["status"] == "active").toList();
+  if (activeProducts.isEmpty) return 0.0;
+  return activeProducts.fold(0.0, (s, i) => s + (i["quantity"] ?? 0.0));
+}
 
+double get totalAmountsProduct {
+  final activeProducts =
+      productTransactions.where((i) => i["status"] == "active").toList();
+  if (activeProducts.isEmpty) return 0.0;
+  return activeProducts.fold(0.0, (s, i) => s + (i["amount"] ?? 0.0));
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -710,11 +757,11 @@ onChanged: (int? value) async {
           ),
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(children: [
-            Expanded(child: Center(child: Text("Total Milk Detail(${milkData.length})", style: whiteBold))),
+            Expanded(child: Center(child: Text("Total Milk Detail(${milkData.where((i) => i['status'] == 'active').length})", style: whiteBold))),
             Expanded(child: Center(child: Text(totalMilk.toStringAsFixed(2), style: whiteBold))),
             Expanded(child: Center(child: Text(avgFat.toStringAsFixed(2), style: whiteBold))),
             Expanded(child: Center(child: Text(avgRate.toStringAsFixed(2), style: whiteBold))),
-            Expanded(child: Center(child: Text("${customerType == 'Seller' ? '-' : '+'}${balanceAmount.toStringAsFixed(1)}", style: whiteBold))),
+            Expanded(child: Center(child: Text("${totalAmounts.toStringAsFixed(1)}", style: whiteBold))),
           ]),
         ),
       ]),
@@ -760,11 +807,11 @@ onChanged: (int? value) async {
           ),
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(children: [
-            Expanded(child: Center(child: Text("Total Product Detail(${productTransactions.length})", style: whiteBold))),
+            Expanded(child: Center(child: Text("Total Product Detail(${productTransactions.where((i) => i['status'] == 'active').length})", style: whiteBold))),
           
            
             Expanded(child: Center(child: Text(totalQuantity.toStringAsFixed(2), style: whiteBold))),
-            Expanded(child: Center(child: Text("${balanceProduct.toStringAsFixed(1)}", style: whiteBold))),
+            Expanded(child: Center(child: Text("${totalAmountsProduct.toStringAsFixed(1)}", style: whiteBold))),
           ]),
         ),
       ]),
@@ -821,26 +868,45 @@ onChanged: (int? value) async {
             borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
           ),
           padding: const EdgeInsets.all(8),
-          child: const Center(child: Text("Grant Total", style: whiteBold)),
+          child: const Center(child: Text("Total", style: whiteBold)),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: const Row(children: [
-            Expanded(child: Center(child: Text("Sale", style: boldText))),
-            Expanded(child: Center(child: Text("Purchase", style: boldText))),
-            Expanded(child: Center(child: Text("Payments", style: boldText))),
-            Expanded(child: Center(child: Text("Grant Total", style: boldText))),
-          ]),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(children: [
-            Expanded(child: Center(child: Text(totalSBalance.toStringAsFixed(2)))),
-            Expanded(child: Center(child: Text(totalPBalance.toStringAsFixed(2)))),
-            Expanded(child: Center(child: Text(totalReceive.toStringAsFixed(2)))),
-            Expanded(child: Center(child: Text("${balanceGrantTotal.toStringAsFixed(2)}"))),
-          ]),
-        ),
+       Container(
+  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(8),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black12,
+        blurRadius: 4,
+        offset: Offset(0, 2),
+      ),
+    ],
+  ),
+  child: Column(
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text("Grant Total", style: boldText),
+          Text("₹${balanceGrantTotal.toStringAsFixed(2)}", style: boldText),
+        ],
+      ),
+      const Divider(),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text("Total Due", style: boldText), 
+          Text(
+            "₹${(balanceGrantTotal).toStringAsFixed(2)}",
+            style: boldText,
+          ),
+        ],
+      ),
+    ],
+  ),
+),
+
       ]),
     );
   }

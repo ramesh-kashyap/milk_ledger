@@ -32,6 +32,7 @@ class _ReportScreenState extends State<ReportScreen> {
       }
 
       final response = await ApiService.post("/billreport", body);
+      print("Bill Report Response: ${response.data}");
       final data = response.data;
       if (data["success"] == true) {
         setState(() {
@@ -89,34 +90,34 @@ class _ReportScreenState extends State<ReportScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ---------------- DATE RANGE SELECTOR ----------------
-            Center(
-              child: GestureDetector(
-                onTap: () => _selectDateRange(context),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.date_range,
-                          color: Colors.white, size: 18),
-                      const SizedBox(width: 6),
-                      Text(
-                        rangeText,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            // Center(
+            //   child: GestureDetector(
+            //     onTap: () => _selectDateRange(context),
+            //     child: Container(
+            //       padding:
+            //           const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            //       decoration: BoxDecoration(
+            //         color: Colors.green,
+            //         borderRadius: BorderRadius.circular(6),
+            //       ),
+            //       child: Row(
+            //         mainAxisSize: MainAxisSize.min,
+            //         children: [
+            //           const Icon(Icons.date_range,
+            //               color: Colors.white, size: 18),
+            //           const SizedBox(width: 6),
+            //           Text(
+            //             rangeText,
+            //             style: const TextStyle(
+            //               color: Colors.white,
+            //               fontWeight: FontWeight.bold,
+            //             ),
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   ),
+            // ),
 
             const SizedBox(height: 16),
 

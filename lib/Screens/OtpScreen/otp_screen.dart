@@ -20,11 +20,13 @@ class OtpScreen extends StatelessWidget {
   final FocusNode _pinPutFocusNode = FocusNode();
 
   Future<void> _verifyOtp() async {
+    print("its working");
     try {
       final res = await ApiService.post('/login', {
         "phone": phone,
         "otp": _pinPutController.text.trim(), // get OTP from Pinput
       });
+    print('check..: ${res.data}');
       if (res.data['status'] == true) {
         final user = res.data['user'];
         // handle success -> save token, navigate to home

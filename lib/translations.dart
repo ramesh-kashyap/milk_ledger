@@ -25,6 +25,7 @@ class AppTranslations extends Translations {
       'select_customer_type': 'Select Customer Type',
       'seller': 'Seller',
       'purchaser': 'Purchaser',
+      'are_you_sure_logout': 'Are you sure you want to logout?',
       'milk_entry': 'Milk Entry',
       'pay_receive': 'Pay/Receive',
       'reports': 'Reports',
