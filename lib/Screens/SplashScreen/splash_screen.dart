@@ -28,16 +28,17 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 2));
 
     // Get token from storage (example)
+    try {
     final token = await ApiService.getToken();
-
     if (token != null && token.isNotEmpty) {
-      // ✅ User logged in → go to Home
       Get.offAll(() => HomeScreen());
     } else {
-      // ❌ No token → go to Login
-   
-       Get.offAll(() => LogInScreen());
+      Get.offAll(() => LogInScreen());
     }
+  } catch (e) {
+    print('Error fetching token: $e');
+    Get.offAll(() => LogInScreen());
+  }
   }
 
   @override

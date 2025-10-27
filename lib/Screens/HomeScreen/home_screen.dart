@@ -29,6 +29,7 @@ import 'package:digitalwalletpaytmcloneapp/main.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/AuthScreens/login_screen.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -51,6 +52,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void fetchUserName() async {
     print("Fetching user profile...");
+       final token = await ApiService.getToken(); // check if token exists
+       print("Token1: $token");
+    if (token == null || token.isEmpty) {
+      // No token found → go to login directly
+      Get.offAll(() => LogInScreen());
+      return;
+    }
 
     try {
       final response = await ApiService.get("/auth/me");

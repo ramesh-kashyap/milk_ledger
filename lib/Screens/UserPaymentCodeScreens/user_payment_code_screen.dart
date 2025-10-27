@@ -59,11 +59,11 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
 
   Future<void> logout() async {
     try {
-      final response = await ApiService.post(
+      final response = await ApiService.get(
         '/logout',
-        {}, // if your backend doesn’t need any body
+       
       );
-
+      print("Logout Response: ${response.data}");
       if (response.data['status'] == true) {
         // Clear local token/session
         // await LocalStorage.clearToken();
@@ -74,7 +74,18 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
         Get.snackbar('Error', response.data['message'] ?? 'Logout failed');
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      print("Logout Error: $e");
+      try {
+      final err = e as dynamic;
+      final statusCode = err.response?.statusCode;
+      final data = err.response?.data;
+      print("🔻 Status Code: $statusCode");
+      print("🔻 Response Data: $data");
+    } catch (_) {
+      // If it's not a Dio error, ignore
+    }
+      
+      Get.snackbar('Errors', e.toString());
     }
   }
 

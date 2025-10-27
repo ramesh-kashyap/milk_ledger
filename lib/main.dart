@@ -10,6 +10,7 @@ import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
+
   ApiService.init();
 
   final box = GetStorage();

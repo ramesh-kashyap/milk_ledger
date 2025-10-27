@@ -9,12 +9,40 @@ import 'package:digitalwalletpaytmcloneapp/Utils/common_text_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'dart:async';
 
 import 'package:pinput/pinput.dart';
 
-class OtpScreen extends StatelessWidget {
+
+class OtpScreen extends StatefulWidget {
   final String phone;
   OtpScreen({super.key, required this.phone});
+
+  @override
+  _OtpScreenState createState() => _OtpScreenState();
+}
+
+class _OtpScreenState extends State<OtpScreen> {
+  
+  int _seconds = 60;
+  Timer? _timer;
+  @override
+  void initState() {
+    super.initState();
+    startTimer();
+  }
+
+  void startTimer() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_seconds == 0) {
+        timer.cancel();
+      } else {
+        setState(() {
+          _seconds--;
+        });
+      }
+    });
+  }
 
   final TextEditingController _pinPutController = TextEditingController();
   final FocusNode _pinPutFocusNode = FocusNode();
@@ -23,7 +51,7 @@ class OtpScreen extends StatelessWidget {
     print("its working");
     try {
       final res = await ApiService.post('/login', {
-        "phone": phone,
+        "phone": widget.phone,
         "otp": _pinPutController.text.trim(), // get OTP from Pinput
       });
     print('check..: ${res.data}');
@@ -80,7 +108,7 @@ class OtpScreen extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 75),
             child: CommonTextWidget.InterBold(
               color: black171,
-              text: "We have sent an OTP to $phone",
+              text: "otp_sent".tr + " " + "${widget.phone}",
               fontSize: 20,
               textAlign: TextAlign.center,
             ),
@@ -90,7 +118,7 @@ class OtpScreen extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 40),
             child: CommonTextWidget.InterRegular(
               color: grey757,
-              text: "Please ensure that the sim is present in this device",
+              text: "sim_check".tr,
               fontSize: 12,
               textAlign: TextAlign.center,
             ),
@@ -100,7 +128,7 @@ class OtpScreen extends StatelessWidget {
           SizedBox(height: 70),
           CommonTextWidget.InterRegular(
             color: grey757,
-            text: "One Time Password (OTP)",
+            text: "one_time_password".tr,
             fontSize: 12,
             textAlign: TextAlign.center,
           ),
@@ -166,10 +194,10 @@ class OtpScreen extends StatelessWidget {
             ),
           ),
           SizedBox(height: 25),
-          RichText(
+            RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              text: "Resend code in ",
+              text: "code_expires_in".tr + " ",
               style: TextStyle(
                 fontFamily: FontFamily.InterRegular,
                 fontSize: 12,
@@ -177,14 +205,15 @@ class OtpScreen extends StatelessWidget {
               ),
               children: <TextSpan>[
                 TextSpan(
-                  text: "43 ",
+                  text: "$_seconds ",
                   style: TextStyle(
-                      fontSize: 12,
-                      fontFamily: FontFamily.InterRegular,
-                      color: Colors.green),
+                    fontSize: 12,
+                    fontFamily: FontFamily.InterRegular,
+                    color: Colors.green,
+                  ),
                 ),
                 TextSpan(
-                  text: "second",
+                  text: _seconds == 1 ? "second" : "seconds",
                   style: TextStyle(
                     fontFamily: FontFamily.InterRegular,
                     fontSize: 12,
@@ -194,11 +223,12 @@ class OtpScreen extends StatelessWidget {
               ],
             ),
           ),
+
           SizedBox(height: 60),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 25),
             child: CommonButtonWidget.button(
-              text: "Continue",
+              text: "continue".tr,
               onTap:
                   _verifyOtp, // 👈 Call verify function instead of direct navigation
               buttonColor: Colors.green,

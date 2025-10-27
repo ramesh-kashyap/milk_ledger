@@ -49,9 +49,21 @@ class ApiService {
   }
 
   /// Get saved token
-  static Future<String?> getToken() async {
-    return await _storage.read(key: _tokenKey);
+   static Future<String?> getToken() async {
+    try {
+      return await _storage.read(key: _tokenKey);
+    } catch (e) {
+      print("SecureStorage read error: $e");
+
+      // Clear all secure storage if corrupted
+      await clearSecureStorage();
+      return null;
+    }
   }
+
+static Future<void> clearSecureStorage() async {
+   return await _storage.deleteAll();
+}
 
   /// Remove saved token (logout)
   static Future<void> removeToken() async {
@@ -59,10 +71,24 @@ class ApiService {
   }
 
   /// Make a GET request
-  static Future<Response> get(String endpoint,
-      {Map<String, dynamic>? query}) async {
-    return await _dio.get(endpoint, queryParameters: query);
+ static Future<Response> get(String endpoint,
+    {Map<String, dynamic>? query}) async {
+  final token = await getToken();
+  print("➡️ GET Request:");
+  print("URL: ${_dio.options.baseUrl}$endpoint");
+  print("Headers: ${token != null ? {'Authorization': 'Bearer $token'} : {}}");
+  if (query != null) print("Query: $query");
+
+  try {
+    final response = await _dio.get(endpoint, queryParameters: query);
+    print("✅ Response: ${response.data}");
+    return response;
+  } catch (e) {
+    print("❌ GET Error: $e");
+    rethrow;
   }
+}
+
 
   /// Make a POST request
   static Future<Response> post(
@@ -70,7 +96,7 @@ class ApiService {
     try {
       return await _dio.post(endpoint, data: data);
     } on DioException catch (e) {
-      print('Dio POST error: ${e.response?.statusCode} - ${e.message}');
+      print('Dio POST error: ${e}- ${e.response?.statusCode} - ${e.message}');
       throw e; // let caller catch it
     }
   }
