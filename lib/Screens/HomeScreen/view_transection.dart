@@ -49,8 +49,8 @@ class _TransactionPageState extends State<TransactionPage> {
       final response = await ApiService.post("/transection", body);
       final data = response.data;
 
-      print("Products: ${data["products"]}");
-      print("Payments: ${data["payments"]}");
+      // print("Products: ${data["products"]}");
+      // print("Payments: ${data["payments"]}");
 
       if (data["success"] == true) {
         setState(() {
@@ -165,8 +165,8 @@ List<Map<String, dynamic>> _getCombinedEntries() {
       appBar: AppBar(
         backgroundColor: Colors.green[500],
         foregroundColor: Colors.white,
-        title: const Text(
-          "View transaction",
+        title: Text(
+          'view_transactions'.tr,
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -207,7 +207,7 @@ List<Map<String, dynamic>> _getCombinedEntries() {
                   const SizedBox(width: 10),
                   Column(
                     children: [
-                      const Text("All Entries", style: TextStyle(fontWeight: FontWeight.w500)),
+                      Text("all_entries".tr, style: TextStyle(fontWeight: FontWeight.w500)),
                       Switch(
                         value: showAllEntries,
                         activeColor: Colors.green,
@@ -235,7 +235,7 @@ List<Map<String, dynamic>> _getCombinedEntries() {
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: selectedCustomerCode,
-                      hint: const Text("Select Customer"),
+                      hint: Text("select_customer".tr),
                       items: customers.map<DropdownMenuItem<String>>((c) {
                         return DropdownMenuItem<String>(
                           value: c["code"].toString(),
@@ -255,8 +255,8 @@ List<Map<String, dynamic>> _getCombinedEntries() {
                   Expanded(
                     child: TextField(
                       controller: _codeController,
-                      decoration: const InputDecoration(
-                        labelText: "Code",
+                      decoration: InputDecoration(
+                        labelText: "code".tr,
                         border: OutlineInputBorder(),
                         isDense: true,
                       ),
@@ -281,8 +281,8 @@ List<Map<String, dynamic>> _getCombinedEntries() {
                       style: const TextStyle(color: Colors.green),
                     ),
                     const SizedBox(height: 4),
-                    Text("Account No: ${selectedCustomer["code"]}"),
-                    Text("Name: ${selectedCustomer["name"]}"),
+                    Text("${'account_no'.tr}: ${selectedCustomer["code"]}"),
+                    Text("${'name'.tr}: ${selectedCustomer["name"]}"),
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
@@ -298,12 +298,12 @@ List<Map<String, dynamic>> _getCombinedEntries() {
             Container(
               color: Colors.green[600],
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-              child: const Row(
+              child:  Row(
                 children: [
-                  Expanded(flex: 2, child: Text("Bill date", style: TextStyle(color: Colors.white))),
-                  Expanded(flex: 3, child: Text("Detail", style: TextStyle(color: Colors.white))),
-                  Expanded(flex: 2, child: Text("Created Date", style: TextStyle(color: Colors.white))),
-                  Expanded(flex: 2, child: Text("Debit(-)/Credit(+)", style: TextStyle(color: Colors.white))),
+                  Expanded(flex: 2, child: Text("bill_date".tr, style: TextStyle(color: Colors.white))),
+                  Expanded(flex: 3, child: Text("detail".tr, style: TextStyle(color: Colors.white))),
+                  Expanded(flex: 2, child: Text("created_date".tr, style: TextStyle(color: Colors.white))),
+                  Expanded(flex: 2, child: Text("debit_credit".tr, style: TextStyle(color: Colors.white))),
                 ],
               ),
             ),

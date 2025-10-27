@@ -96,13 +96,13 @@ class _DailyPurchaseReportScreenState
   Widget _buildHeaderRow() => Container(
         color: Colors.green[400],
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-        child: const Row(
+        child: Row(
           children: [
-            Expanded(flex: 1, child: Text("Ac No", style: TextStyle(fontWeight: FontWeight.bold))),
-            Expanded(flex: 1, child: Text("Milk", style: TextStyle(fontWeight: FontWeight.bold))),
-            Expanded(flex: 1, child: Text("Fat", style: TextStyle(fontWeight: FontWeight.bold))),
-            Expanded(flex: 1, child: Text("Rate", style: TextStyle(fontWeight: FontWeight.bold))),
-            Expanded(flex: 1, child: Text("Amount", style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("ac_no".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("milk".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("fat".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("rate".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("amount".tr, style: TextStyle(fontWeight: FontWeight.bold))),
           ],
         ),
       );
@@ -152,9 +152,9 @@ class _DailyPurchaseReportScreenState
                   const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               child: Row(
                 children: [
-                  const Expanded(
+                   Expanded(
                       flex: 1,
-                      child: Text("TOTAL",
+                      child: Text("total".tr,
                           style: TextStyle(fontWeight: FontWeight.bold))),
                   Expanded(
                       flex: 1,
@@ -284,8 +284,8 @@ class _DailyPurchaseReportScreenState
                       ? SingleChildScrollView(
                           child: Column(
                             children: [
-                              _buildListSection("Morning Data (AM)", morningEntries),
-                              _buildListSection("Evening Data (PM)", eveningEntries),
+                              _buildListSection("morning_data".tr, morningEntries),
+                              _buildListSection("evening_data".tr, eveningEntries),
                             ],
                           ),
                         )
@@ -294,8 +294,8 @@ class _DailyPurchaseReportScreenState
                           : SingleChildScrollView(
                               child: _buildListSection(
                                 selectedSession == "Morning"
-                                    ? "Morning Data (AM)"
-                                    : "Evening Data (PM)",
+                                    ? "morning_data".tr
+                                    : "evening_data".tr,
                                 filteredEntries,
                               ),
                             ),

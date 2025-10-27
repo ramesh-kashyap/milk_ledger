@@ -65,14 +65,14 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   Widget build(BuildContext context) {
     final rangeText = selectedRange == null
-        ? "Select Date Range"
+        ? "select_date_range".tr
         : "${DateFormat("dd MMM").format(selectedRange!.start)} - ${DateFormat("dd MMM").format(selectedRange!.end)}";
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.green[600],
-        title: const Text("Bill Report", style: TextStyle(color: Colors.white)),
+        title: Text('bill_report'.tr, style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
             icon: const Icon(Icons.date_range, color: Colors.white),
@@ -122,9 +122,9 @@ class _ReportScreenState extends State<ReportScreen> {
             const SizedBox(height: 16),
 
             // ================= SELLER SECTION =================
-            buildTableHeader("Seller Report"),
+            buildTableHeader("seller_report".tr),
             buildTableRow(
-                ["Account Name", "Payment", "Due", "Product", "Total"],
+                 ["account_name".tr, "payment".tr,"due".tr, "product".tr,"total".tr,],
                 isHeader: true),
 
             if (sellers.isEmpty)
@@ -143,9 +143,9 @@ class _ReportScreenState extends State<ReportScreen> {
             const SizedBox(height: 20),
 
             // ================= PURCHASER SECTION =================
-            buildTableHeader("Purchaser Report"),
+            buildTableHeader('purchaser_report'.tr),
             buildTableRow(
-                ["Account Name", "Payment", "Due", "Product", "Total"],
+                ["account_name".tr, "payment".tr,"due".tr, "product".tr,"total".tr,],
                 isHeader: true),
 
             if (purchasers.isEmpty)

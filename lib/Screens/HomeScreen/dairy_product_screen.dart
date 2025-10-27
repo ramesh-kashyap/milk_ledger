@@ -205,8 +205,8 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green[500],
-        title: const Text(
-          "Dairy Products",
+        title: Text(
+          "dairy_products".tr,
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         leading: IconButton(
