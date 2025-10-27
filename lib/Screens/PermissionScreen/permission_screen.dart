@@ -83,7 +83,7 @@ class PermissionScreen extends StatelessWidget {
                                 EdgeInsets.only(top: 25, right: 25, bottom: 8),
                             child: CommonTextWidget.InterBold(
                               color: black171,
-                              text: "Cancel",
+                              text: "cancel".tr,
                               fontSize: 16,
                             ),
                           ),
@@ -95,7 +95,7 @@ class PermissionScreen extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 52),
                         child: CommonTextWidget.InterSemiBold(
                           color: black171,
-                          text: "To log in, we need an OTP",
+                          text: "otp_login".tr,
                           fontSize: 20,
                           textAlign: TextAlign.center,
                         ),
@@ -105,8 +105,7 @@ class PermissionScreen extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 52),
                         child: CommonTextWidget.InterRegular(
                           color: grey757,
-                          text:
-                              "This information is used to provide a secure login experience, ensuring that only you can access your Dashboard account",
+                          text: "secure_login_info".tr,
                           fontSize: 14,
                           textAlign: TextAlign.center,
                         ),
@@ -116,9 +115,7 @@ class PermissionScreen extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 52),
                         child: CommonTextWidget.InterRegular(
                           color: grey757,
-                          text: "Location and SMS may also be used to give "
-                              "you a richer experience through bill reminders, "
-                              "deals, and recommen",
+                          text: "location_sms_info".tr,
                           fontSize: 14,
                           textAlign: TextAlign.center,
                         ),
@@ -132,7 +129,7 @@ class PermissionScreen extends StatelessWidget {
                             // ... permissions text/switches ...
                             const SizedBox(height: 16),
                             CommonButtonWidget.button(
-                              text: "Proceed",
+                              text: "proceed".tr,
                               buttonColor: Colors.green,
                               onTap: _sendOtp,
                             ),

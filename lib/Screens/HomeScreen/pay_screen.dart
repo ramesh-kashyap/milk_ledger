@@ -468,7 +468,7 @@ double get totalAmountsProduct {
 
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text("Bill", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text("bill".tr, style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
@@ -779,11 +779,11 @@ onChanged: (int? value) async {
             borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
           ),
           padding: const EdgeInsets.symmetric(vertical: 10),
-          child: const Row(children: [
-            Expanded(child: Center(child: Text("Date", style: headerStyle))),
-            Expanded(child: Center(child: Text("Product", style: headerStyle))),
-            Expanded(child: Center(child: Text("Quantity", style: headerStyle))),
-            Expanded(child: Center(child: Text("Amount", style: headerStyle))),
+          child:  Row(children: [
+            Expanded(child: Center(child: Text("date".tr, style: headerStyle))),
+            Expanded(child: Center(child: Text("product".tr, style: headerStyle))),
+            Expanded(child: Center(child: Text("quantity".tr, style: headerStyle))),
+            Expanded(child: Center(child: Text("amount".tr, style: headerStyle))),
           ]),
         ),
 
@@ -807,7 +807,19 @@ onChanged: (int? value) async {
           ),
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(children: [
-            Expanded(child: Center(child: Text("Total Product Detail(${productTransactions.where((i) => i['status'] == 'active').length})", style: whiteBold))),
+Expanded(
+  child: Center(
+    child: Text(
+      "total_product_detail".trParams({
+        'count': productTransactions
+            .where((i) => i['status'] == 'active')
+            .length
+            .toString()
+      }),
+      style: whiteBold,
+    ),
+  ),
+),
           
            
             Expanded(child: Center(child: Text(totalQuantity.toStringAsFixed(2), style: whiteBold))),
@@ -868,7 +880,7 @@ onChanged: (int? value) async {
             borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
           ),
           padding: const EdgeInsets.all(8),
-          child: const Center(child: Text("Total", style: whiteBold)),
+          child: Center(child: Text("total".tr, style: whiteBold)),
         ),
        Container(
   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -888,7 +900,7 @@ onChanged: (int? value) async {
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text("Grant Total", style: boldText),
+          Text("grant_total".tr, style: boldText),
           Text("₹${balanceGrantTotal.toStringAsFixed(2)}", style: boldText),
         ],
       ),
@@ -896,7 +908,7 @@ onChanged: (int? value) async {
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text("Total Due", style: boldText), 
+          Text("total_due".tr, style: boldText),
           Text(
             "₹${(balanceGrantTotal).toStringAsFixed(2)}",
             style: boldText,
