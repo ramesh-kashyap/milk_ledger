@@ -35,8 +35,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   bool buffaloEnabled = true;
   bool cowEnabled = false;
 
-  String alertMethod = 'No Alerts';
-  String printSlip = 'Default';
+  String alertMethod = 'no_alerts';
+  String printSlip = 'default';
 
   bool _loading = true;
 
@@ -494,30 +494,34 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       children: [
                         DropdownButtonFormField<String>(
                           value: alertMethod,
-                          decoration: _decor('Alert Method'),
-                          items: const [
-                            'No Alerts',
-                            'SMS',
-                            'WhatsApp',
-                            'Phone Call'
-                          ]
-                              .map((e) =>
-                                  DropdownMenuItem(value: e, child: Text(e)))
+                          decoration: _decor('alert_method'.tr),
+                          items: [
+                            'no_alerts',
+                            'sms',
+                            'whatsapp',
+                            'phone_call'
+                          ].map((e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.tr),
+                              ))
                               .toList(),
                           onChanged: (v) => setState(() => alertMethod = v!),
                         ),
+
                         spacer,
                         DropdownButtonFormField<String>(
                           value: printSlip,
-                          decoration: _decor("Print Entry Slip's"),
-                          items: const [
-                            'Default',
-                            'Compact',
-                            'Detailed',
-                            'None'
+                          decoration: _decor('print_entry_slip'.tr),
+                          items: [
+                            'default',
+                            'compact',
+                            'detailed',
+                            'none'
                           ]
-                              .map((e) =>
-                                  DropdownMenuItem(value: e, child: Text(e)))
+                              .map((e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Text(e.tr), // ✅ added .tr for translations
+                                  ))
                               .toList(),
                           onChanged: (v) => setState(() => printSlip = v!),
                         ),
