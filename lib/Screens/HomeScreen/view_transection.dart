@@ -50,7 +50,11 @@ class _TransactionPageState extends State<TransactionPage> {
         }
       };
 
-      final response = await ApiService.post("/transection", body);
+      final response = await ApiService.post("/transection",{
+            ...body, // include existing fields
+            "from": fromDate.toIso8601String(),
+            "to": toDate.toIso8601String(),
+          },);
       final data = response.data;
 
       // print("Products: ${data["products"]}");
