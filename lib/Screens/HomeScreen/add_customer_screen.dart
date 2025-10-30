@@ -35,8 +35,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   bool buffaloEnabled = true;
   bool cowEnabled = false;
 
-  String alertMethod = 'No Alerts';
-  String printSlip = 'Default';
+  String alertMethod = 'no_alerts';
+  String printSlip = 'default';
 
   bool _loading = true;
 
@@ -404,12 +404,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           onSelected: (_) => _onBasisChanged(PricingBasis.fat),
                         ),
                         ChoiceChip(
-                          label: const Text('Rate'),
+                          label:  Text('rate'.tr),
                           selected: _basis == PricingBasis.rate,
                           onSelected: (_) => _onBasisChanged(PricingBasis.rate),
                         ),
                         ChoiceChip(
-                          label: const Text('Fat/SNF'),
+                          label: Text('fat_snf'.tr),
                           selected: _basis == PricingBasis.fatSnf,
                           onSelected: (_) =>
                               _onBasisChanged(PricingBasis.fatSnf),
@@ -420,7 +420,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
                   // Buffalo Milk
                   _sectionCard(
-                    title: 'buffalo_milk',
+                    title: 'buffalo_milk'.tr,
                     child: Row(
                       children: [
                         Expanded(
@@ -449,7 +449,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
                   // Cow Milk
                   _sectionCard(
-                    title: 'cow_milk',
+                    title: 'cow_milk'.tr,
                     child: Row(
                       children: [
                         Expanded(
@@ -479,8 +479,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        "Tip: For Fat/SNF basis this box shows the FAT rate. "
-                        "SNF rate can be edited from the Fat & SNF screen.",
+                        "fat_snf_tip".tr,
                         style: Theme.of(context)
                             .textTheme
                             .bodySmall
@@ -490,35 +489,39 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
                   // Preferences
                   _sectionCard(
-                    title: 'Preferences',
+                    title: 'preferences'.tr,
                     child: Column(
                       children: [
                         DropdownButtonFormField<String>(
                           value: alertMethod,
-                          decoration: _decor('Alert Method'),
-                          items: const [
-                            'No Alerts',
-                            'SMS',
-                            'WhatsApp',
-                            'Phone Call'
-                          ]
-                              .map((e) =>
-                                  DropdownMenuItem(value: e, child: Text(e)))
+                          decoration: _decor('alert_method'.tr),
+                          items: [
+                            'no_alerts',
+                            'sms',
+                            'whatsapp',
+                            'phone_call'
+                          ].map((e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.tr),
+                              ))
                               .toList(),
                           onChanged: (v) => setState(() => alertMethod = v!),
                         ),
+
                         spacer,
                         DropdownButtonFormField<String>(
                           value: printSlip,
-                          decoration: _decor("Print Entry Slip's"),
-                          items: const [
-                            'Default',
-                            'Compact',
-                            'Detailed',
-                            'None'
+                          decoration: _decor('print_entry_slip'.tr),
+                          items: [
+                            'default',
+                            'compact',
+                            'detailed',
+                            'none'
                           ]
-                              .map((e) =>
-                                  DropdownMenuItem(value: e, child: Text(e)))
+                              .map((e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Text(e.tr), // ✅ added .tr for translations
+                                  ))
                               .toList(),
                           onChanged: (v) => setState(() => printSlip = v!),
                         ),

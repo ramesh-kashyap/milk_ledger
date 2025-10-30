@@ -205,8 +205,8 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green[500],
-        title: const Text(
-          "Dairy Products",
+        title: Text(
+          "dairy_products".tr,
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         leading: IconButton(
@@ -497,9 +497,10 @@ class _DairyProductsScreenState extends State<DairyProductsScreen> {
           DropdownButtonFormField<String>(
             value: transactionType,
             decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
-            items: ["Sale", "Purchase"]
-                .map((e) => DropdownMenuItem<String>(value: e, child: Text(e.tr)))
-                .toList(),
+                      items: [
+            DropdownMenuItem(value: "Sale", child: Text("sale".tr)),
+            DropdownMenuItem(value: "Purchase", child: Text("purchase".tr)),
+          ],
             onChanged: (value) {
               if (value != null) {
                 setState(() => transactionType = value);

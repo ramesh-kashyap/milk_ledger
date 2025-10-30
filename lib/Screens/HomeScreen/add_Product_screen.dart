@@ -207,7 +207,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
             /// Price
             Row(
               children: [
-                const Text("Price",
+                 Text("price".tr,
                     style: TextStyle(color: Colors.green, fontSize: 16)),
                 const SizedBox(width: 40),
                 Expanded(
@@ -227,7 +227,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
             /// Stock
             Row(
               children: [
-                const Text("Stock",
+                Text("stock".tr,
                     style: TextStyle(color: Colors.green, fontSize: 16)),
                 const SizedBox(width: 40),
                 Expanded(
@@ -268,7 +268,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                     ),
                     onPressed: _saveProduct,
                     child: Text(
-                      editingProductId == null ? "ADD" : "UPDATE",
+                      editingProductId == null ? "add".tr : "update".tr,
                       style: const TextStyle(color: Colors.white),
                     ),
                   ),

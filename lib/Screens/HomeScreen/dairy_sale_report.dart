@@ -12,8 +12,8 @@ class DailySaleReportScreen extends StatefulWidget {
 
 class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
   DateTime selectedDate = DateTime.now();
-  String selectedSession = "Both";
-  String selectedMilkType = "Both";
+      String selectedSession = "both";
+      String selectedMilkType = "both";
   bool loading = false;
 
   List<dynamic> allEntries = [];
@@ -21,8 +21,8 @@ class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
   List<dynamic> morningEntries = [];
   List<dynamic> eveningEntries = [];
 
-  final List<String> sessionOptions = ["Both", "Morning", "Evening"];
-  final List<String> milkTypeOptions = ["Both", "Cow", "Buffalo"];
+    final List<String> sessionOptions = ["both", "morning", "evening"];
+    final List<String> milkTypeOptions = ["both", "cow", "buffalo"];
 
   @override
   void initState() {
@@ -67,7 +67,7 @@ class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
       final entryDateStr = DateFormat('yyyy-MM-dd').format(entryDate);
       bool dateMatch = entryDateStr == dateStr;
 
-      bool milkTypeMatch = selectedMilkType == "Both" ||
+      bool milkTypeMatch = selectedMilkType == "both" ||
           entry['animal'].toString().toLowerCase() ==
               selectedMilkType.toLowerCase();
 
@@ -83,9 +83,9 @@ class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
         .toList();
 
     // If “Both”, show all; otherwise filter by selected session
-    if (selectedSession == "Morning") {
+    if (selectedSession == "morning") {
       filteredEntries = morningEntries;
-    } else if (selectedSession == "Evening") {
+    } else if (selectedSession == "evening") {
       filteredEntries = eveningEntries;
     } else {
       filteredEntries = dateFiltered;
@@ -249,12 +249,12 @@ class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
             Expanded(
               child: loading
                   ? const Center(child: CircularProgressIndicator())
-                  : selectedSession == "Both"
+                  : selectedSession == "both"
                       ? SingleChildScrollView(
                           child: Column(
                             children: [
-                              _buildListSection("Morning Data (AM)", morningEntries),
-                              _buildListSection("Evening Data (PM)", eveningEntries),
+                             _buildListSection("morning_data".tr, morningEntries),
+                              _buildListSection("evening_data".tr, eveningEntries),
                             ],
                           ),
                         )
@@ -262,9 +262,9 @@ class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
                           ? Center(child: Text("no_entries".tr))
                           : SingleChildScrollView(
                               child: _buildListSection(
-                                  selectedSession == "Morning"
-                                      ? "Morning Data (AM)"
-                                      : "Evening Data (PM)",
+                                  selectedSession == "morning"
+                                      ? "morning_data".tr
+                                    : "evening_data".tr,
                                   filteredEntries),
                             ),
             ),

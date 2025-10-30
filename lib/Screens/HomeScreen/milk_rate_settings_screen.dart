@@ -144,7 +144,7 @@ class _MilkRateSettingsScreenState extends State<MilkRateSettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Milk Rate Settings"),
+        title: Text("milk_rate_settings".tr),
       ),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -167,8 +167,8 @@ class _MilkRateSettingsScreenState extends State<MilkRateSettingsScreen> {
         children: [
           _SectionCard(
             icon: Icons.opacity,
-            title: "Common Rate (Fat based)",
-            subtitle: "Set rate per fat unit for buffalo & cow",
+            title: "common_rate_fat".tr,
+            subtitle: "set_rate_per_fat_unit".tr,
             children: [
               Row(
                 children: [
@@ -186,8 +186,8 @@ class _MilkRateSettingsScreenState extends State<MilkRateSettingsScreen> {
           const SizedBox(height: 18),
           _SectionCard(
             icon: Icons.attach_money,
-            title: "Fixed Rate (per litre)",
-            subtitle: "Set fixed price per litre of milk",
+            title: "fixed_rate_per_litre".tr,
+            subtitle: "set_fixed_price_litre".tr,
             children: [
               Row(
                 children: [
@@ -201,8 +201,8 @@ class _MilkRateSettingsScreenState extends State<MilkRateSettingsScreen> {
           const SizedBox(height: 18),
           // inside MilkRateSettingsScreen
           _InfoCard(
-            title: "Fat & SNF",
-            subtitle: "Fat SNF Chart • Formula",
+            title: "fat_snf".tr,
+            subtitle: "fat_snf_chart_formula".tr,
             onTap: () async {
               try {
                 // 1. Load defaults from API
@@ -264,10 +264,7 @@ class _MilkRateSettingsScreenState extends State<MilkRateSettingsScreen> {
             },
           ),
           const SizedBox(height: 18),
-          Text(
-            "Tip: If you buy & sell milk then fill both the fat rate and fixed rate. "
-            "For local sale, you can just enter fixed rate. "
-            "Further you can customize it for every seller or buyer.",
+          Text('milk_rate_tip',
             style: theme.textTheme.bodyMedium,
           ),
         ],

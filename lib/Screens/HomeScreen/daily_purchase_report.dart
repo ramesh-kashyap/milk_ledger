@@ -14,8 +14,8 @@ class DailyPurchaseReportScreen extends StatefulWidget {
 class _DailyPurchaseReportScreenState
     extends State<DailyPurchaseReportScreen> {
   DateTime selectedDate = DateTime.now();
-  String selectedSession = "Both";
-  String selectedMilkType = "Both";
+String selectedSession = "both";
+String selectedMilkType = "both";
   bool loading = false;
 
   List<dynamic> allEntries = [];
@@ -23,8 +23,8 @@ class _DailyPurchaseReportScreenState
   List<dynamic> eveningEntries = [];
   List<dynamic> filteredEntries = [];
 
-  final List<String> sessionOptions = ["Both", "Morning", "Evening"];
-  final List<String> milkTypeOptions = ["Both", "Cow", "Buffalo"];
+    final List<String> sessionOptions = ["both", "morning", "evening"];
+    final List<String> milkTypeOptions = ["both", "cow", "buffalo"];
 
   @override
   void initState() {
@@ -51,6 +51,7 @@ class _DailyPurchaseReportScreenState
     setState(() => loading = true);
     try {
       final res = await ApiService.get('/dairypurchase');
+      print(res);
       allEntries = res.data['entries'] ?? [];
       _applyFilters();
     } catch (e) {
@@ -68,7 +69,7 @@ class _DailyPurchaseReportScreenState
       final entryDateStr = DateFormat('yyyy-MM-dd').format(entryDate);
       bool dateMatch = entryDateStr == dateStr;
 
-      bool milkTypeMatch = selectedMilkType == "Both" ||
+      bool milkTypeMatch = selectedMilkType == "both" ||
           entry['animal'].toString().toLowerCase() ==
               selectedMilkType.toLowerCase();
 
@@ -82,13 +83,13 @@ class _DailyPurchaseReportScreenState
         .where((e) => e['session'].toString().toUpperCase() == "PM")
         .toList();
 
-    if (selectedSession == "Morning") {
-      filteredEntries = morningEntries;
-    } else if (selectedSession == "Evening") {
-      filteredEntries = eveningEntries;
-    } else {
-      filteredEntries = dateFiltered;
-    }
+      if (selectedSession == "morning") {
+        filteredEntries = morningEntries;
+      } else if (selectedSession == "evening") {
+        filteredEntries = eveningEntries;
+      } else {
+        filteredEntries = dateFiltered;
+      }
 
     setState(() {});
   }
@@ -96,13 +97,13 @@ class _DailyPurchaseReportScreenState
   Widget _buildHeaderRow() => Container(
         color: Colors.green[400],
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-        child: const Row(
+        child: Row(
           children: [
-            Expanded(flex: 1, child: Text("Ac No", style: TextStyle(fontWeight: FontWeight.bold))),
-            Expanded(flex: 1, child: Text("Milk", style: TextStyle(fontWeight: FontWeight.bold))),
-            Expanded(flex: 1, child: Text("Fat", style: TextStyle(fontWeight: FontWeight.bold))),
-            Expanded(flex: 1, child: Text("Rate", style: TextStyle(fontWeight: FontWeight.bold))),
-            Expanded(flex: 1, child: Text("Amount", style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("ac_no".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("milk".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("fat".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("rate".tr, style: TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 1, child: Text("amount".tr, style: TextStyle(fontWeight: FontWeight.bold))),
           ],
         ),
       );
@@ -152,9 +153,9 @@ class _DailyPurchaseReportScreenState
                   const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               child: Row(
                 children: [
-                  const Expanded(
+                   Expanded(
                       flex: 1,
-                      child: Text("TOTAL",
+                      child: Text("total".tr,
                           style: TextStyle(fontWeight: FontWeight.bold))),
                   Expanded(
                       flex: 1,
@@ -242,12 +243,12 @@ class _DailyPurchaseReportScreenState
             Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<String>(
+                  child:
+                  DropdownButtonFormField<String>(
                     value: selectedSession,
                     decoration: InputDecoration(labelText: "session".tr),
                     items: sessionOptions
-                        .map((e) =>
-                            DropdownMenuItem(value: e, child: Text(e.tr)))
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e.tr)))
                         .toList(),
                     onChanged: (value) {
                       setState(() {
@@ -259,12 +260,12 @@ class _DailyPurchaseReportScreenState
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: DropdownButtonFormField<String>(
+                  child: 
+                  DropdownButtonFormField<String>(
                     value: selectedMilkType,
                     decoration: InputDecoration(labelText: "milk_type".tr),
                     items: milkTypeOptions
-                        .map((e) =>
-                            DropdownMenuItem(value: e, child: Text(e.tr)))
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e.tr)))
                         .toList(),
                     onChanged: (value) {
                       setState(() {
@@ -280,25 +281,26 @@ class _DailyPurchaseReportScreenState
             Expanded(
               child: loading
                   ? const Center(child: CircularProgressIndicator())
-                  : selectedSession == "Both"
-                      ? SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              _buildListSection("Morning Data (AM)", morningEntries),
-                              _buildListSection("Evening Data (PM)", eveningEntries),
-                            ],
-                          ),
-                        )
-                      : filteredEntries.isEmpty
-                          ? Center(child: Text("no_entries_found".tr))
-                          : SingleChildScrollView(
-                              child: _buildListSection(
-                                selectedSession == "Morning"
-                                    ? "Morning Data (AM)"
-                                    : "Evening Data (PM)",
-                                filteredEntries,
-                              ),
-                            ),
+                  :selectedSession == "both"
+  ? SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildListSection("morning_data".tr, morningEntries),
+          _buildListSection("evening_data".tr, eveningEntries),
+        ],
+      ),
+    )
+  : filteredEntries.isEmpty
+      ? Center(child: Text("no_entries_found".tr))
+      : SingleChildScrollView(
+          child: _buildListSection(
+            selectedSession == "morning"
+                ? "morning_data".tr
+                : "evening_data".tr,
+            filteredEntries,
+          ),
+        ),
+
             ),
           ],
         ),

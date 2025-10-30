@@ -483,8 +483,8 @@ class Lists {
   static List<Map> userQrCodeList = [
     {
       "icon": Icons.bar_chart, // Report
-      "text1": "report".tr,
-      "text2": "report_desc".tr,
+      "text1": "report",
+      "text2": "report_desc",
       "onTap": () {
         Get.to(() => ReportScreen());
       },
@@ -499,32 +499,32 @@ class Lists {
     // },
     {
       "icon": Icons.account_balance, // All Account
-      "text1": "all_account".tr,
-      "text2": "all_account_desc".tr,
+      "text1": "all_account",
+      "text2": "all_account_desc",
       "onTap": () {
         Get.to(() => CustomersListScreen());
       },
     },
     {
       "icon": Icons.privacy_tip, // Privacy Policy
-      "text1": "privacy_policy".tr,
-      "text2": "privacy_policy_desc".tr,
+      "text1": "privacy_policy",
+      "text2": "privacy_policy_desc",
       "onTap": () {
         Get.to(() => PrivacyPolicyPage());
       },
     },
     {
       "icon": Icons.phone, // Contact Us
-      "text1": "contact_us".tr,
-      "text2": "contact_us_desc".tr,
+      "text1": "contact_us",
+      "text2": "contact_us_desc",
       "onTap": () {
         Get.to(() => ContactUsPage());
       },
     },
     {
       "icon": Icons.info, // About Us
-      "text1": "about_us".tr,
-      "text2": "about_us_desc".tr,
+      "text1": "about_us",
+      "text2": "about_us_desc",
       "onTap": () {
         Get.to(() => AboutUsPage());
       },

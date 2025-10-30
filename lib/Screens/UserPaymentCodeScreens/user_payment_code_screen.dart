@@ -48,7 +48,6 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching user profile: $e");
       setState(() {
         userName = "Guest User";
         userPhone = "No Phone";
@@ -63,7 +62,6 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
         '/logout',
         {}, // if your backend doesn’t need any body
       );
-      print("Logout Response: ${response.data}");
       if (response.data['status'] == true) {
         // Clear local token/session
         // await LocalStorage.clearToken();
@@ -74,13 +72,10 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
         Get.snackbar('Error', response.data['message'] ?? 'Logout failed');
       }
     } catch (e) {
-      print("Logout Error: $e");
       try {
       final err = e as dynamic;
       final statusCode = err.response?.statusCode;
       final data = err.response?.data;
-      print("🔻 Status Code: $statusCode");
-      print("🔻 Response Data: $data");
     } catch (_) {
       // If it's not a Dio error, ignore
     }
@@ -195,12 +190,12 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
                               ),
                               title: CommonTextWidget.InterBold(
                                 color: black171,
-                                text: Lists.userQrCodeList[index]["text1"],
+                                text: Lists.userQrCodeList[index]["text1"].toString().tr,
                                 fontSize: 14,
                               ),
                               subtitle: CommonTextWidget.InterRegular(
                                 color: grey757,
-                                text: Lists.userQrCodeList[index]["text2"],
+                                text: Lists.userQrCodeList[index]["text2"].toString().tr,
                                 fontSize: 12,
                               ),
                               trailing: const Icon(Icons.arrow_forward_ios,
@@ -226,20 +221,20 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
                       ),
                       onPressed: () async {
                          Get.defaultDialog(
-      title: "Sign Out".tr,
-      middleText: "Are you sure you want to logout?".tr,
-      textCancel: "cancel".tr,
-      textConfirm: "logout".tr,
-       confirmTextColor: Colors.white,         // Text color of confirm button
-    cancelTextColor: Colors.green,          // Text color of cancel button
-    buttonColor: Colors.green,        
-      onConfirm: () async {
-        Get.back(); // close dialog
-        await logout();
-      },
-      onCancel: () {},
-      radius: 12,
-    );
+                            title: "sign_out".tr,
+                            middleText: "are_you_sure_logout".tr,
+                            textCancel: "cancel".tr,
+                            textConfirm: "logout".tr,
+                            confirmTextColor: Colors.white,         // Text color of confirm button
+                          cancelTextColor: Colors.green,          // Text color of cancel button
+                          buttonColor: Colors.green,        
+                            onConfirm: () async {
+                              Get.back(); // close dialog
+                              await logout();
+                            },
+                            onCancel: () {},
+                            radius: 12,
+                          );
                       },
                       icon: const Icon(Icons.logout, color: Colors.white),
                       label: Text("logout".tr,
