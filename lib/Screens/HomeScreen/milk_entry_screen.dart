@@ -491,7 +491,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
     } catch (e) {
       // error feedback
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("❌ Error saving customer: $e")),
+        SnackBar(content: Text(" Error saving customer: $e")),
       );
     }
      finally {
