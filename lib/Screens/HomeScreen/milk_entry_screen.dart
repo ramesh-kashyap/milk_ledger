@@ -7,6 +7,7 @@ import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/add_customer_screen.dart';
 
 class MilkEntryScreen extends StatefulWidget {
   const MilkEntryScreen({super.key});
@@ -468,6 +469,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
     try {
       // 👇 call backend
+      print(payload);
       final response = await ApiService.post('/save/milk-entries', payload);
 
       // print("Response: $response");
@@ -500,6 +502,30 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
   void _toast(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+   Future<String?> _selectCustomerType(BuildContext context) async {
+    return await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("select_customer_type".tr),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.green),
+              title: Text("seller".tr),
+              onTap: () => Navigator.pop(ctx, "Seller"),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.blue),
+             title: Text("purchaser".tr),
+              onTap: () => Navigator.pop(ctx, "Purchaser"),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   // ---------- OPTION 1: Edit action in AppBar ----------
@@ -768,17 +794,27 @@ void _fillFatSnfRatesForAnimal(String animal) {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        title: Text('milk_collection'.tr),
-        centerTitle: false,
-        actions: [
-          if (seller != null)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              tooltip: 'edit_customer'.tr, 
-              onPressed: _openEditCustomerSheet,
-            ),
-        ],
+  title: Text('milk_collection'.tr),
+  centerTitle: false,
+  actions: [
+    if (seller != null)
+      IconButton(
+        icon: const Icon(Icons.edit),
+        tooltip: 'edit_customer'.tr,
+        onPressed: _openEditCustomerSheet,
       ),
+    IconButton(
+      icon: const Icon(Icons.add),
+      tooltip: 'Add New',
+      onPressed: () async {
+    final type = await _selectCustomerType(context);
+    if (type != null) {
+      Get.to(() => AddCustomerScreen(customerType: type));
+    }
+  },
+    ),
+  ],
+),
 
       // bottom action bar
       bottomNavigationBar: SafeArea(
