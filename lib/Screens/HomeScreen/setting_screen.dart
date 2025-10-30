@@ -95,39 +95,36 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   // ✅ Duration Popup Dialog
-  void _showDurationDialog() async {
-    final durations = ["5 Days", "10 Days", "15 Days", "30 Days", "Every Month"];
-    final result = await showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Select Duration"),
+      void _showDurationDialog() {
+        final List<int> durations = [5, 10, 15, 30];
+        int? selectedDuration = box.read('duration');
+
+        Get.defaultDialog(
+          title: "Select Duration",
           content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: durations
-                .map((duration) => ListTile(
-                      title: Text(duration),
-                      onTap: () => Navigator.pop(context, duration),
-                    ))
-                .toList(),
+            children: durations.map((days) {
+              return RadioListTile<int>(
+                title: Text("$days days"),
+                value: days,
+                groupValue: selectedDuration,
+                onChanged: (val) {
+                  setState(() {
+                    selectedDuration = val;
+                    box.write('duration', val); // ✅ store selected duration
+                  });
+                  Get.back();
+                  Get.snackbar(
+                    "Updated",
+                    "Duration set to $val days",
+                    snackPosition: SnackPosition.BOTTOM,
+                  );
+                },
+              );
+            }).toList(),
           ),
         );
-      },
-    );
+      }
 
-    if (result != null) {
-      setState(() {
-        selectedDuration = result;
-      });
-
-      Get.snackbar(
-        "Selected Duration",
-        result,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green[100],
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +152,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSettingTile(
             icon: Icons.calendar_today,
             title: "duration".tr,
-            subtitle: selectedDuration,
+            subtitle: "${box.read('duration') ?? 5} days",
             onTap: _showDurationDialog,
           ),
 
