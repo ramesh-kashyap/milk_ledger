@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:get_storage/get_storage.dart';
 class PayScreen extends StatefulWidget {
   const PayScreen({super.key});
 
@@ -19,40 +20,61 @@ String name = "";
   double previousBalance = 5446.82;
   String customerType = "";
     String type = "";
-@override
-void initState() {
-  super.initState();
+     final box = GetStorage();
+  int durationDays = 5;
+    
+    @override
+    void initState() {
+      super.initState();
 
-  _fetchDetailsByAcNo().then((_) async {
-    if (customers.isNotEmpty) {
-      final first = customers.first;
+      // 👇 read duration from settings
+      durationDays = box.read('duration') ?? 5;
 
-      setState(() {
-        selectedCustomerId = first['id'];
-        _codeCtrl.text = first['code'] ?? '';
-        _nameCtrl.text = '${first['name']} (${first['code']})';
-        accountNo = first['code'] ?? '';
-        name = first['name'] ?? '';
-        customerType = first['customerType'] ?? '';
+      // 👇 set default start/end dates using duration
+      _startDate = DateTime.now().subtract(Duration(days: durationDays));
+      _endDate = DateTime.now();
 
-        final createdAtStr = first['createdAt'];
-        if (createdAtStr != null && createdAtStr.isNotEmpty) {
-          try {
-            _startDate = DateTime.parse(createdAtStr);
-          } catch (_) {
-            _startDate = DateTime.now().subtract(const Duration(days: 30));
-          }
-        } else {
-          _startDate = DateTime.now().subtract(const Duration(days: 30));
+      // 👇 fetch customer details first
+      _fetchDetailsByAcNo().then((_) async {
+        if (customers.isNotEmpty) {
+          final first = customers.first;
+
+          setState(() {
+            selectedCustomerId = first['id'];
+            _codeCtrl.text = first['code'] ?? '';
+            _nameCtrl.text = '${first['name']} (${first['code']})';
+            accountNo = first['code'] ?? '';
+            name = first['name'] ?? '';
+            customerType = first['customerType'] ?? '';
+
+            // final createdAtStr = first['createdAt'];
+            // if (createdAtStr != null && createdAtStr.isNotEmpty) {
+            //   try {
+            //     _startDate = DateTime.parse(createdAtStr);
+            //   } catch (_) {}
+            // }
+          });
+
+          // 👇 once data ready, fetch report
+          _fetchMilkData(selectedCustomerId);
         }
-        _endDate = DateTime.now();
       });
-
-      // fetch all milk, product, payment data
-      await _fetchMilkData(selectedCustomerId);
     }
-  });
+     @override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  int newDuration = box.read('duration') ?? 5;
+
+  if (newDuration != durationDays) {
+    setState(() {
+      durationDays = newDuration;
+      _startDate = DateTime.now().subtract(Duration(days: durationDays));
+      _endDate = DateTime.now();
+    });
+    _fetchMilkData(selectedCustomerId);
+  }
 }
+
 
 
  final _formKey = GlobalKey<FormState>();
@@ -92,19 +114,19 @@ print('ResponseAr: ${response}');
           _codeCtrl.text = customers[0]['code'] ?? '';
           _nameCtrl.text = '${customers[0]['name']} (${customers[0]['code']})';
           
-           final String? createdAtStr = customers[0]['createdAt'];
-  if (createdAtStr != null && createdAtStr.isNotEmpty) {
-    try {
-      _startDate = DateTime.parse(createdAtStr);
-    } catch (e) {
-      print('Invalid createdAt format: $createdAtStr');
-      _startDate = DateTime.now().subtract(const Duration(days: 30)); // fallback
-    }
-  } else {
-    _startDate = DateTime.now().subtract(const Duration(days: 30)); // fallback
-  }
+          //  final String? createdAtStr = customers[0]['createdAt'];
+          //     if (createdAtStr != null && createdAtStr.isNotEmpty) {
+          //       try {
+          //         _startDate = DateTime.parse(createdAtStr);
+          //       } catch (e) {
+          //         print('Invalid createdAt format: $createdAtStr');
+          //         _startDate = DateTime.now().subtract(const Duration(days: 30)); // fallback
+          //       }
+          //     } else {
+          //       _startDate = DateTime.now().subtract(const Duration(days: 30)); // fallback
+          //     }
 
-  _endDate = DateTime.now();
+          //     _endDate = DateTime.now();
 
         }
       });
