@@ -841,6 +841,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
                           child: Text('save'.tr),
                         ),
                       ),
+                      
                     ],
                   ),
                 );
@@ -882,37 +883,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
 ),
 
       // bottom action bar
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-        child: ElevatedButton(
-  onPressed: _isSubmitting ? null : save,   // disable while saving
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.green,
-    foregroundColor: Colors.white,          // if using Flutter <3.3 use `onPrimary: Colors.white`
-    minimumSize: const Size.fromHeight(52),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(14),
-    ),
-  ),
-  child: _isSubmitting
-      ? const SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: Colors.white,
-          ),
-        )
-      : Text(
-          'save'.tr,                          // requires: import 'package:get/get.dart';
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-)
-
-      ),
+    
 
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -997,33 +968,37 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
           // ---- Animal selector (images) ----
           _Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _AnimalTile(
-                      label: 'cow'.tr,
-                      asset: 'assets/images/cow-icon.png',
-                      selected: animal == 'cow',
-                      disabled: !cowEnabled,
-                      onTap: () => _onAnimalChange('cow'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _AnimalTile(
-                      label: 'buffalo'.tr,
-                      asset: 'assets/images/buffalo.png',
-                      selected: animal == 'buffalo',
-                      disabled: !buffaloEnabled,
-                      onTap: () => _onAnimalChange('buffalo'),
-                    ),
-                  ),
-                ],
-              ),
+  child: Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+    child: SizedBox(
+      height: 70, // 👈 makes it smaller
+      child: Row(
+        children: [
+          Expanded(
+            child: _AnimalTile(
+              label: 'cow'.tr,
+              asset: 'assets/images/cow-icon.png',
+              selected: animal == 'cow',
+              disabled: !cowEnabled,
+              onTap: () => _onAnimalChange('cow'),
             ),
           ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _AnimalTile(
+              label: 'buffalo'.tr,
+              asset: 'assets/images/buffalo.png',
+              selected: animal == 'buffalo',
+              disabled: !buffaloEnabled,
+              onTap: () => _onAnimalChange('buffalo'),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+),
+
           const SizedBox(height: 12),
 
           // ---- Entry form ----
@@ -1108,11 +1083,41 @@ void _fillFatSnfRatesForAnimal(String animal) {
                       title: Text('zero'.tr),
                       contentPadding: EdgeInsets.zero,
                     ),
+                    const SizedBox(height: 10),
+                      ElevatedButton(
+            onPressed: _isSubmitting ? null : save,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(52),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: _isSubmitting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(
+                    'save'.tr,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                      ),
+
                   ],
                 ),
               ),
             ),
           ),
+        
           //  if (_recentEntries.isNotEmpty) ...[
           //         const SizedBox(height: 24),
           //         Row(
