@@ -16,12 +16,15 @@ class MilkEntryScreen extends StatefulWidget {
   State<MilkEntryScreen> createState() => _MilkEntryScreenState();
 }
 
+
+
 class _MilkEntryScreenState extends State<MilkEntryScreen> {
   final _formKey = GlobalKey<FormState>();
 @override
 void initState() {
   super.initState();
  _allResultst();
+ 
 }
   // form state
   DateTime date = DateTime.now();
@@ -43,6 +46,9 @@ void initState() {
   bool showFat = false;
   bool showRate = true;
   bool showSnf = false; // 👈 NEW
+
+   List<Map<String, dynamic>> _recentEntries = [];
+   bool _loadingEntries = false;
 
   num get snf => num.tryParse(snfCtrl.text) ?? 0; // 👈 NEW
 void _fillFatSnfRatesForAnimal(String animal) {
@@ -310,7 +316,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
      if (picked != null) {
     print("Initial basis: ${picked['basis']}");
-
+    _loadRecentEntries(picked['id']);
     final basis = _normBasis(picked['basis']);
     showSnf = basis == 'fat_snf';   // use underscore, not fatSnf
     print("After normalization: $basis, showSnf: $showSnf");
@@ -337,6 +343,37 @@ void _fillFatSnfRatesForAnimal(String animal) {
     print("Error fetching initial sellers: $e");
   }
 }
+
+ Future<void> _loadRecentEntries(int customerId) async {
+  print("Loading recent entries for customer $customerId");
+  setState(() => _loadingEntries = true);
+  try {
+    // Pass customer_id as a query parameter
+    final res = await ApiService.post(
+  '/recent-milk-entries',
+  {
+    'limit': 10,
+    'customer_id': customerId,
+  },
+);
+
+    final data = res.data;
+
+    print("Recent entries for customer $customerId: $data");
+
+    if (data['status'] == true && data['data'] is List) {
+      setState(() {
+        _recentEntries = List<Map<String, dynamic>>.from(data['data']);
+      });
+    }
+  } catch (e) {
+    print("Error loading recent entries: $e");
+    setState(() => _recentEntries = []);
+  } finally {
+    setState(() => _loadingEntries = false);
+  }
+}
+
   void _applySellerDefaults(Map<String, dynamic> s) {
     // enabled animals
     final ce = _toBool(s['cowEnabled']);
@@ -427,78 +464,101 @@ void _fillFatSnfRatesForAnimal(String animal) {
     _recompute();
   }
 
-  Future<void> save() async {
-    if (seller == null) {
-          Get.snackbar("Warning", "Please select a customer");
+ Future<void> save() async {
+  if (seller == null) {
+    Get.snackbar("Warning", "Please select a customer");
+    return;
+  }
+  if (!zero) {
+    if (litres <= 0) {
+      Get.snackbar("Warning", "Enter litres");
       return;
     }
-    if (!zero) {
-      if (litres <= 0) {        
-          Get.snackbar("Warning", "Enter litres");
+    if (showRate && (rateCtrl.text.trim().isEmpty || rate <= 0)) {
+      Get.snackbar("Warning", "Enter rate / litre");
       return;
-      }
-      if (showRate && (rateCtrl.text.trim().isEmpty || rate <= 0)) {       
-        Get.snackbar("Warning", "Enter rate / litre");
-          return;
-      }
-      if (showFat && fatCtrl.text.trim().isEmpty) {
-        Get.snackbar("Warning", "Enter fat");
-          return;
-      }
     }
+    if (showFat && fatCtrl.text.trim().isEmpty) {
+      Get.snackbar("Warning", "Enter fat");
+      return;
+    }
+  }
 
-    if (_isSubmitting) return; // 👈 Ignore further taps
-
+  if (_isSubmitting) return;
   setState(() => _isSubmitting = true);
 
-    final payload = {
-      'date': date.toIso8601String().substring(0, 10),
-      'session': session, // AM/PM
-      'customer_id': seller!['id'],
-      'litres': zero ? 0 : litres,
-      'fat': zero ? null : (num.tryParse(fatCtrl.text) ?? null),
-      'rate': zero ? 0 : rate, // derived or manual
-      'snf': zero ? null : (num.tryParse(snfCtrl.text) ?? null), // ✅ fixed
-      'amount': zero ? 0 : amount,
-      'animal': animal, // cow/buffalo
-      'basis': seller!['basis'],
-      'zero': zero,
-    };
+  final payload = {
+    'date': date.toIso8601String().substring(0, 10),
+    'session': session,
+    'customer_id': seller!['id'],
+    'litres': zero ? 0 : litres,
+    'fat': zero ? null : (num.tryParse(fatCtrl.text) ?? null),
+    'rate': zero ? 0 : rate,
+    'snf': zero ? null : (num.tryParse(snfCtrl.text) ?? null),
+    'amount': zero ? 0 : amount,
+    'animal': animal,
+    'basis': seller!['basis'],
+    'zero': zero,
+  };
 
-    // TODO: call your API here
+  try {
+    final response = await ApiService.post('/save/milk-entries', payload);
+    final data = response.data;
 
-    try {
-      // 👇 call backend
-      print(payload);
-      final response = await ApiService.post('/save/milk-entries', payload);
+    // 🧩 If backend detects duplicate
+    if ( data['duplicate'] == true) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text("Duplicate Entry"),
+          content: Text("An entry already exists. Do you want to add anyway?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text("No"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text("Yes"),
+            ),
+          ],
+        ),
+      );
 
-      // print("Response: $response");
-      // success feedback
-      final data = response.data;
+      // 👇 if user confirms, send again with force=true
+      if (confirm == true) {
+         payload['forceSave'] = true;
+        final retry = await ApiService.post('/save/milk-entries', payload);
+        final retryData = retry.data;
 
-      if (data['status'] == true) {
-        Get.snackbar(
-          "Success 🎉",
-          "Milk Added has been saved successfully",
-        );
-      } else {
-        Get.snackbar(
-            "Milk Add Failed", data['message'] ?? "Something went wrong");
+        if (retryData['status'] == true) {
+          Get.snackbar("Success 🎉", "Milk entry saved successfully");
+         
+          Navigator.pop(context, retry);
+        } else {
+          Get.snackbar("Error", retryData['message'] ?? "Something went wrong");
+        }
       }
 
-      // close screen and return the saved object
-      Navigator.pop(context, response);
-    } catch (e) {
-      // error feedback
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(" Error saving customer: $e")),
-      );
+      setState(() => _isSubmitting = false);
+      return;
     }
-     finally {
-    // ✅ Always reset flag, even if there’s an error
+
+    // ✅ Normal success
+    if (data['status'] == true) {
+      Get.snackbar("Success 🎉", "Milk entry saved successfully");
+      Navigator.pop(context, response);
+    } else {
+      Get.snackbar("Milk Add Failed", data['message'] ?? "Something went wrong");
+    }
+
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Error saving milk entry: $e")));
+  } finally {
     if (mounted) setState(() => _isSubmitting = false);
   }
-  }
+}
 
   void _toast(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -742,6 +802,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
                               // When basis = fat/fat_snf → these are ₹ per 1 FAT
                               'cowValue': _toNum(cowValCtrl.text.trim()),
                               'buffaloValue': _toNum(bufValCtrl.text.trim()),
+                             
                               // Only meaningful for fat_snf
                               // 'cowSnfValue': basis == 'fat_snf'
                               //     ? _toNum(cowSnfCtrl.text.trim())
@@ -753,7 +814,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
                             _applySellerDefaults(updated);
                             // Navigator.pop(ctx);
-
+                                 
                             print("Updated customer: $updated");
                             // TODO: persist to API if needed
                             // await ApiService.post('/customers/update', {...});
@@ -761,9 +822,13 @@ void _fillFatSnfRatesForAnimal(String animal) {
                              final response = await ApiService.post(
                                  '/updateCustomer', updated);
                               final data = response.data;
+
                               if(data['status'] == true){
+                                final customerId = data['id'];
+                                print("Customer updated with ID: $customerId");
                                 Get.snackbar("Success 🎉",
                                     "Customer has been updated successfully");
+                                  
                               } else {
                                 Get.snackbar("Update Failed",
                                     data['message'] ?? "Something went wrong");
@@ -1048,9 +1113,311 @@ void _fillFatSnfRatesForAnimal(String animal) {
               ),
             ),
           ),
+          //  if (_recentEntries.isNotEmpty) ...[
+          //         const SizedBox(height: 24),
+          //         Row(
+          //           children: [
+          //             Text(
+          //               'recent_entries'.tr,
+          //               style: theme.textTheme.titleMedium?.copyWith(
+          //                 fontWeight: FontWeight.w600,
+          //               ),
+          //             ),
+          //             const Spacer(),
+          //             IconButton(
+          //               icon: Icon(Icons.refresh, size: 20),
+          //               onPressed: _loadRecentEntries,
+          //               tooltip: 'refresh'.tr,
+          //             ),
+          //           ],
+          //         ),
+          //         const SizedBox(height: 8),
+          //       ],
+
+if (_recentEntries.isNotEmpty)
+  Padding(
+    padding: const EdgeInsets.only(top: 20),
+    child: Container(
+      height: 400, // you can adjust height
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border(
+          top: BorderSide(color: Colors.grey.shade300),
+        ),
+      ),
+      child: ListView(
+        children: [
+          // 🟢 BUY SECTION
+          if (_recentEntries.any((e) => e['note'] == 'Buy')) ...[
+            // Section title
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              color: Colors.green.shade50,
+               alignment: Alignment.center,
+              child: const Text(
+                'Buy Entries',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+              ),
+            ),
+
+            // Table header
+            Container(
+              color: Colors.grey.shade200,
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: const [
+                  Expanded(flex: 2, child: Text('Ac No', style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('Milk', style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('Fat', style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('Rate', style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                ],
+              ),
+            ),
+
+            // Buy entries list
+            ..._recentEntries
+                .where((entry) => entry['note'] == 'Buy')
+                .map((entry) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Row(
+                        children: [
+                          Expanded(flex: 2, child: Text('${entry['Customer']?['code'] ?? ''} ${entry['Customer']?['name'] ?? ''}')),
+                          Expanded(child: Text('${entry['litres'] ?? 0}')),
+                          Expanded(child: Text('${entry['fat'] ?? 0}')),
+                          Expanded(child: Text('${entry['rate'] ?? 0}')),
+                          Expanded(
+                            child: Text(
+                              '${entry['amount'] ?? 0}',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.end,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
+
+            // Buy Total row
+            const Divider(thickness: 1),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  const Expanded(
+                    flex: 2,
+                    child: Text('Total (Buy)', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  Expanded(
+                    child: Text(
+                      _recentEntries
+                          .where((e) => e['note'] == 'Buy')
+                          .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['litres']}') ?? 0))
+                          .toStringAsFixed(2),
+                    ),
+                  ),
+                    // 🧈 Total Fat
+    Expanded(
+      child: Text(
+        _recentEntries
+            .where((e) => e['note'] == 'Buy')
+            .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['fat']}') ?? 0))
+            .toStringAsFixed(2),
+      ),
+    ),
+
+    // 💰 Average Rate
+    Expanded(
+      child: Text(
+        (() {
+          final saleList = _recentEntries.where((e) => e['note'] == 'Buy').toList();
+          if (saleList.isEmpty) return '0.00';
+          final totalRate = saleList.fold<double>(0, (sum, e) => sum + (double.tryParse('${e['rate']}') ?? 0));
+          return (totalRate / saleList.length).toStringAsFixed(2);
+        })(),
+      ),
+    ),
+                  Expanded(
+                    child: Text(
+                      _recentEntries
+                          .where((e) => e['note'] == 'Buy')
+                          .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['amount']}') ?? 0))
+                          .toStringAsFixed(2),
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(thickness: 1),
+          ],
+
+          // 🔴 SALE SECTION
+          if (_recentEntries.any((e) => e['note'] == 'Sale')) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              color: Colors.red.shade50,
+               alignment: Alignment.center,
+              child: const Text(
+                'Sale Entries',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+              ),
+            ),
+
+            // Table header
+            Container(
+              color: Colors.grey.shade200,
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: const [
+                  Expanded(flex: 2, child: Text('Ac No', style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('Milk', style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('Fat', style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('Rate', style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                ],
+              ),
+            ),
+
+            // Sale entries list
+            ..._recentEntries
+                .where((entry) => entry['note'] == 'Sale')
+                .map((entry) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Row(
+                        children: [
+                          Expanded(flex: 2, child: Text('${entry['Customer']?['code'] ?? ''} ${entry['Customer']?['name'] ?? ''}')),
+                          Expanded(child: Text('${entry['litres'] ?? 0}')),
+                          Expanded(child: Text('${entry['fat'] ?? 0}')),
+                          Expanded(child: Text('${entry['rate'] ?? 0}')),
+                          Expanded(
+                            child: Text(
+                              '${entry['amount'] ?? 0}',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.end,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
+
+            // Sale Total row
+            const Divider(thickness: 1),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  const Expanded(
+                    flex: 2,
+                    child: Text('Total (Sale)', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  Expanded(
+                    child: Text(
+                      _recentEntries
+                          .where((e) => e['note'] == 'Sale')
+                          .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['litres']}') ?? 0))
+                          .toStringAsFixed(2),
+                    ),
+                  ),
+                  Expanded(
+      child: Text(
+        _recentEntries
+            .where((e) => e['note'] == 'Sale')
+            .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['fat']}') ?? 0))
+            .toStringAsFixed(2),
+      ),
+    ),
+
+    // 💰 Average Rate
+    Expanded(
+      child: Text(
+        (() {
+          final saleList = _recentEntries.where((e) => e['note'] == 'Sale').toList();
+          if (saleList.isEmpty) return '0.00';
+          final totalRate = saleList.fold<double>(0, (sum, e) => sum + (double.tryParse('${e['rate']}') ?? 0));
+          return (totalRate ).toStringAsFixed(2);
+        })(),
+      ),
+    ),
+                  Expanded(
+                    child: Text(
+                      _recentEntries
+                          .where((e) => e['note'] == 'Sale')
+                          .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['amount']}') ?? 0))
+                          .toStringAsFixed(2),
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(thickness: 1),
+          ],
+        ],
+      ),
+    ),
+  ),
+
+
+
+
+          
         ],
       ),
     );
+if (_recentEntries.isNotEmpty)
+  Padding(
+    padding: const EdgeInsets.only(top: 20),
+    child: Container(
+      height: 200,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border(
+          top: BorderSide(color: Colors.grey.shade300),
+        ),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Text(
+                  'today_entries'.tr,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${_recentEntries.length} entries',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _loadingEntries
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _recentEntries.length,
+                    itemBuilder: (context, index) {
+                      final entry = _recentEntries[index];
+                      return _RecentEntryItem(entry: entry);
+                    },
+                  ),
+          ),
+        ],
+      ),
+    ),
+  );
+
   }
 
   String _fmt(DateTime d) {
@@ -1058,6 +1425,30 @@ void _fillFatSnfRatesForAnimal(String animal) {
         '${_month[d.month]} ${d.year}';
   }
 }
+
+class _RecentEntryItem extends StatelessWidget {
+  final Map<String, dynamic> entry;
+
+  const _RecentEntryItem({required this.entry});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(
+        '${entry['animal']?.toString().toUpperCase() ?? 'N/A'} - ${entry['litres']} L',
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+      subtitle: Text(
+        'Date: ${entry['date']} | Fat: ${entry['fat']} | Rate: ₹${entry['rate']}',
+      ),
+      trailing: Text(
+        '₹${entry['amount']}',
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
 
 const _month = [
   '',
