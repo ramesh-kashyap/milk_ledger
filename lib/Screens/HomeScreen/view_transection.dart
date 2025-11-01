@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 import 'package:get/get.dart';
-
+import 'package:get_storage/get_storage.dart';
 class TransactionPage extends StatefulWidget {
   const TransactionPage({super.key});
 
@@ -22,19 +22,24 @@ class _TransactionPageState extends State<TransactionPage> {
   DateTimeRange? selectedRange;
 
 
-  // final box = GetStorage();
+  final box = GetStorage();
 
   
-  @override
-  void initState() {
-    super.initState();
-    final now = DateTime.now();
-    selectedRange = DateTimeRange(
-      start: now.subtract(const Duration(days: 10)),
-      end: now,
-    );
-    _fetchFirstCustomer();
-  }
+ @override
+void initState() {
+  super.initState();
+  final box = GetStorage();
+  final savedDuration = box.read('duration') ?? 10; // default 10 days
+  final now = DateTime.now();
+
+  selectedRange = DateTimeRange(
+    start: now.subtract(Duration(days: savedDuration)),
+    end: now,
+  );
+
+  _fetchFirstCustomer();
+}
+
 
   Future<void> _fetchCustProList({
     String? code,

@@ -41,8 +41,7 @@ class ContactUsPage extends StatelessWidget {
                         fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 5),
-                  Text(
-                     'get_in_touch'.tr,
+                  Text('get_in_touch'.tr,
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],

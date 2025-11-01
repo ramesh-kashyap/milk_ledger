@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 
 class ReportScreen extends StatefulWidget {
@@ -15,24 +16,61 @@ class _ReportScreenState extends State<ReportScreen> {
   List<Map<String, dynamic>> sellers = [];
   List<Map<String, dynamic>> purchasers = [];
 
+  final box = GetStorage(); // ✅ Access stored duration
+  int durationDays = 5; // default duration
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
+
+    // ✅ Get duration from Settings
+    durationDays = box.read('duration') ?? 5;
+
+    final now = DateTime.now();
+    selectedRange = DateTimeRange(
+      start: now.subtract(Duration(days: durationDays)),
+      end: now,
+    );
+
     _fetchBillReport();
+  }
+
+  // ✅ Re-fetch report if duration changes in Settings
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    int newDuration = box.read('duration') ?? 5;
+    if (newDuration != durationDays) {
+      setState(() {
+        durationDays = newDuration;
+        final now = DateTime.now();
+        selectedRange = DateTimeRange(
+          start: now.subtract(Duration(days: durationDays)),
+          end: now,
+        );
+      });
+      _fetchBillReport();
+    }
   }
 
   // ---------------- FETCH BILL REPORT ----------------
   Future<void> _fetchBillReport() async {
     try {
-      final body = <String, dynamic>{};
+      setState(() => isLoading = true);
 
+      final body = <String, dynamic>{};
       if (selectedRange != null) {
         body["from"] = DateFormat("yyyy-MM-dd").format(selectedRange!.start);
         body["to"] = DateFormat("yyyy-MM-dd").format(selectedRange!.end);
       }
 
+      print("Fetching Bill Report: $body");
+
       final response = await ApiService.post("/billreport", body);
       print("Bill Report Response: ${response.data}");
+
       final data = response.data;
       if (data["success"] == true) {
         setState(() {
@@ -42,10 +80,12 @@ class _ReportScreenState extends State<ReportScreen> {
       }
     } catch (e) {
       print("Error fetching bill report: $e");
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
-  // ---------------- DATE RANGE PICKER ----------------
+  // ---------------- DATE RANGE PICKER (manual change) ----------------
   Future<void> _selectDateRange(BuildContext context) async {
     final DateTimeRange? picked = await showDateRangePicker(
       context: context,
@@ -72,7 +112,7 @@ class _ReportScreenState extends State<ReportScreen> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.green[600],
-        title: Text('bill_report'.tr, style: TextStyle(color: Colors.white)),
+        title: Text('bill_report'.tr, style: const TextStyle(color: Colors.white)),
         actions: [
           IconButton(
             icon: const Icon(Icons.date_range, color: Colors.white),
@@ -84,96 +124,86 @@ class _ReportScreenState extends State<ReportScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ---------------- DATE RANGE SELECTOR ----------------
-            // Center(
-            //   child: GestureDetector(
-            //     onTap: () => _selectDateRange(context),
-            //     child: Container(
-            //       padding:
-            //           const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            //       decoration: BoxDecoration(
-            //         color: Colors.green,
-            //         borderRadius: BorderRadius.circular(6),
-            //       ),
-            //       child: Row(
-            //         mainAxisSize: MainAxisSize.min,
-            //         children: [
-            //           const Icon(Icons.date_range,
-            //               color: Colors.white, size: 18),
-            //           const SizedBox(width: 6),
-            //           Text(
-            //             rangeText,
-            //             style: const TextStyle(
-            //               color: Colors.white,
-            //               fontWeight: FontWeight.bold,
-            //             ),
-            //           ),
-            //         ],
-            //       ),
-            //     ),
-            //   ),
-            // ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: Colors.green))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // ---------------- DATE RANGE DISPLAY ----------------
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.green[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        "Showing last $durationDays days\n($rangeText)",
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            color: Colors.black87, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
 
-            const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-            // ================= SELLER SECTION =================
-            buildTableHeader("seller_report".tr),
-            buildTableRow(
-                 ["account_name".tr, "payment".tr,"due".tr, "product".tr,"total".tr,],
-                isHeader: true),
+                  // ================= SELLER SECTION =================
+                  buildTableHeader("seller_report".tr),
+                  buildTableRow(
+                    ["account_name".tr, "payment".tr, "due".tr, "product".tr, "total".tr],
+                    isHeader: true,
+                  ),
 
-            if (sellers.isEmpty)
-              buildTableRow(["No data", "-", "-", "-", "-"])
-            else
-              ...sellers.map((t) => buildTableRow([
-                    t["account_name"] ?? "-",
-                    "₹${t["payment"]}",
-                    "₹${t["due"]}",
-                    "₹${t["product"]}",
-                    "₹${t["total"]}",
-                  ])),
+                  if (sellers.isEmpty)
+                    buildTableRow(["No data", "-", "-", "-", "-"])
+                  else
+                    ...sellers.map((t) => buildTableRow([
+                          t["account_name"] ?? "-",
+                          "₹${t["payment"]}",
+                          "₹${t["due"]}",
+                          "₹${t["product"]}",
+                          "₹${t["total"]}",
+                        ])),
 
-            if (sellers.isNotEmpty) buildSummaryRow(sellers),
+                  if (sellers.isNotEmpty) buildSummaryRow(sellers),
 
-            const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-            // ================= PURCHASER SECTION =================
-            buildTableHeader('purchaser_report'.tr),
-            buildTableRow(
-                ["account_name".tr, "payment".tr,"due".tr, "product".tr,"total".tr,],
-                isHeader: true),
+                  // ================= PURCHASER SECTION =================
+                  buildTableHeader('purchaser_report'.tr),
+                  buildTableRow(
+                    ["account_name".tr, "payment".tr, "due".tr, "product".tr, "total".tr],
+                    isHeader: true,
+                  ),
 
-            if (purchasers.isEmpty)
-              buildTableRow(["No data", "-", "-", "-", "-"])
-            else
-              ...purchasers.map((t) => buildTableRow([
-                    t["account_name"] ?? "-",
-                    "₹${t["payment"]}",
-                    "₹${t["due"]}",
-                    "₹${t["product"]}",
-                    "₹${t["total"]}",
-                  ])),
+                  if (purchasers.isEmpty)
+                    buildTableRow(["No data", "-", "-", "-", "-"])
+                  else
+                    ...purchasers.map((t) => buildTableRow([
+                          t["account_name"] ?? "-",
+                          "₹${t["payment"]}",
+                          "₹${t["due"]}",
+                          "₹${t["product"]}",
+                          "₹${t["total"]}",
+                        ])),
 
-            if (purchasers.isNotEmpty) buildSummaryRow(purchasers),
+                  if (purchasers.isNotEmpty) buildSummaryRow(purchasers),
 
-            const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-            // ---------------- FOOTER ----------------
-            Center(
-              child: Text(
-                "DoodhBazzar".tr,
-                style: const TextStyle(
-                    color: Colors.green, fontWeight: FontWeight.w600),
+                  Center(
+                    child: Text(
+                      "DoodhBazzar".tr,
+                      style: const TextStyle(
+                          color: Colors.green, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
