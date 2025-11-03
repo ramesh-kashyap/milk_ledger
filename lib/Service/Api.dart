@@ -3,7 +3,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiService {
   // ✅ Constants (moved here from AppConstants)
-  static const String _baseUrl = 'http://192.168.29.223:3002/api/auth'; // <-- Change this!
+  static const String _baseUrl =
+      'https://bot.rkdemolink.live/api/auth'; // <-- Change this!
   static const String _tokenKey = 'authToken';
 
   static final Dio _dio = Dio(BaseOptions(

@@ -58,9 +58,9 @@ class _UserPaymentCodeScreenState extends State<UserPaymentCodeScreen> {
 
   Future<void> logout() async {
     try {
-      final response = await ApiService.get(
+       final response = await ApiService.post(
         '/logout',
-       
+        {}, // if your backend doesn’t need any body
       );
       if (response.data['status'] == true) {
         // Clear local token/session
