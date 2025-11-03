@@ -324,7 +324,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         elevation: 0,
         backgroundColor: Colors.white,
         title: Text(
-          'add_customer'.trParams({'type': widget.customerType}), // 👈 dynamic param
+          'add_customer'.trParams({'type': widget.customerType}), // 👈dynamic param
           style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
         ),
 

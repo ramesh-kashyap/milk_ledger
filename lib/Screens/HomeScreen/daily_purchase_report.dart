@@ -171,7 +171,7 @@ String selectedMilkType = "both";
                           style: const TextStyle(fontWeight: FontWeight.bold))),
                   Expanded(
                       flex: 1,
-                      child: Text("₹ $totalAmount",
+                      child: Text("${totalAmount.toStringAsFixed(2)}",
                           style: const TextStyle(fontWeight: FontWeight.bold))),
                 ],
               ),
