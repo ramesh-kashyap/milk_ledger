@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/add_customer_screen.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/delete_milk_enteries.dart';
 
 class MilkEntryScreen extends StatefulWidget {
   const MilkEntryScreen({super.key});
@@ -24,6 +25,7 @@ class _MilkEntryScreenState extends State<MilkEntryScreen> {
 void initState() {
   super.initState();
  _allResultst();
+ _loadRecentEntries();
  
 }
   // form state
@@ -316,7 +318,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
      if (picked != null) {
     print("Initial basis: ${picked['basis']}");
-    _loadRecentEntries(picked['id']);
+    _loadRecentEntries();
     final basis = _normBasis(picked['basis']);
     showSnf = basis == 'fat_snf';   // use underscore, not fatSnf
     print("After normalization: $basis, showSnf: $showSnf");
@@ -344,8 +346,8 @@ void _fillFatSnfRatesForAnimal(String animal) {
   }
 }
 
- Future<void> _loadRecentEntries(int customerId) async {
-  print("Loading recent entries for customer $customerId");
+ Future<void> _loadRecentEntries() async {
+ 
   setState(() => _loadingEntries = true);
   try {
     // Pass customer_id as a query parameter
@@ -353,14 +355,13 @@ void _fillFatSnfRatesForAnimal(String animal) {
   '/recent-milk-entries',
   {
     'limit': 10,
-    'customer_id': customerId,
+   
   },
 );
 
     final data = res.data;
 
-    print("Recent entries for customer $customerId: $data");
-
+  
     if (data['status'] == true && data['data'] is List) {
       setState(() {
         _recentEntries = List<Map<String, dynamic>>.from(data['data']);
@@ -885,7 +886,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
       // bottom action bar
     
 
-      body: ListView(
+      body: Stack(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           //////////// ---- Summary bar ---- \\\\\\\\\
@@ -1365,6 +1366,26 @@ if (_recentEntries.isNotEmpty)
       ),
     ),
   ),
+
+   Positioned(
+  top: 200, // ⬆️ adjust this value to move it higher/lower
+  right: 20, // distance from right edge
+  child: FloatingActionButton(
+    backgroundColor: Colors.red,
+    elevation: 6,
+    shape: const CircleBorder(), // ensures perfect circle
+    onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DeleteMilkEntriesScreen(), // 👈 your target screen
+      ),
+    );
+  },
+    child: const Icon(Icons.delete, color: Colors.white, size: 28),
+  ),
+),
+
 
 
 

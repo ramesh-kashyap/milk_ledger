@@ -508,17 +508,64 @@ double get totalAmountsProduct {
       body: Column(
         children: [
           // Date selector
-         Padding(
-  padding: const EdgeInsets.all(12),
+//          Padding(
+//   padding: const EdgeInsets.all(12),
+//   child: Row(
+//     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//     children: [
+//      dateBox(DateFormat('dd MMM yyyy').format(_startDate), () => _pickStartDate(context)),
+//       Text("to".tr, style: TextStyle(fontSize: 16)),
+//       dateBox(DateFormat('dd MMM yyyy').format(_endDate), () => _pickEndDate(context)),
+//     ],
+//   ),
+// ),
+
+Padding(
+  padding: const EdgeInsets.symmetric(vertical: 10),
   child: Row(
-    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    mainAxisAlignment: MainAxisAlignment.center,
     children: [
-     dateBox(DateFormat('dd MMM yyyy').format(_startDate), () => _pickStartDate(context)),
-      Text("to".tr, style: TextStyle(fontSize: 16)),
-      dateBox(DateFormat('dd MMM yyyy').format(_endDate), () => _pickEndDate(context)),
+      // Left arrow button
+      IconButton(
+        icon: Icon(Icons.chevron_left, color: Colors.green, size: 26),
+        onPressed: () {
+          // Go to previous date range
+          _pickStartDate(context); // or your own _changeRange(-1)
+        },
+      ),
+
+      // Green rounded box showing date range
+      Container(
+        width: 250, // fixed width like your screenshot
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.green,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Center(
+          child: Text(
+            '${DateFormat('d MMM').format(_startDate)}–${DateFormat('d MMM').format(_endDate)}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+
+      // Right arrow button
+      IconButton(
+        icon: Icon(Icons.chevron_right, color: Colors.green, size: 26),
+        onPressed: () {
+          // Go to next date range
+          _pickEndDate(context); // or your own _changeRange(1)
+        },
+      ),
     ],
   ),
 ),
+
           // Account Info Card
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
