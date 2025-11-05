@@ -14,7 +14,7 @@ class _PayScreenState extends State<PayScreen> {
   // String startDate = "11 Sep 2025";
   // String endDate = "20 Sep 2025";
 
-
+DateTimeRange? selectedRange;
  String accountNo = "";
 String name = "";
   double previousBalance = 5446.82;
@@ -236,6 +236,27 @@ void _pickEndDate(BuildContext context) async {
     await _fetchMilkData(selectedCustomerId);
   }
 }
+
+Future<void> _pickDateRange(BuildContext context) async {
+  final picked = await showDateRangePicker(
+    context: context,
+    firstDate: DateTime(2020),
+    lastDate: DateTime.now(),
+    initialDateRange: selectedRange,
+  );
+
+  if (picked != null) {
+    setState(() {
+      selectedRange = picked;
+      _startDate = picked.start;
+      _endDate = picked.end;
+
+    });
+    await _fetchMilkData(selectedCustomerId);
+  }
+}
+
+
 
 Future<void> _fetchMilkData(int? customerId) async {
   if (customerId == null) return;
@@ -483,6 +504,7 @@ double get totalAmountsProduct {
   if (activeProducts.isEmpty) return 0.0;
   return activeProducts.fold(0.0, (s, i) => s + (i["amount"] ?? 0.0));
 }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -519,52 +541,62 @@ double get totalAmountsProduct {
 //     ],
 //   ),
 // ),
-
 Padding(
   padding: const EdgeInsets.symmetric(vertical: 10),
   child: Row(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
-      // Left arrow button
+      // ⬅️ Move back 10 days
       IconButton(
-        icon: Icon(Icons.chevron_left, color: Colors.green, size: 26),
-        onPressed: () {
-          // Go to previous date range
-          _pickStartDate(context); // or your own _changeRange(-1)
+        icon: const Icon(Icons.chevron_left, color: Colors.green, size: 26),
+        onPressed: () async {
+          setState(() {
+            _startDate = _startDate.subtract(const Duration(days: 10));
+            _endDate = _endDate.subtract(const Duration(days: 10));
+          });
+          await _fetchMilkData(selectedCustomerId);
         },
       ),
 
-      // Green rounded box showing date range
-      Container(
-        width: 250, // fixed width like your screenshot
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.green,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Center(
-          child: Text(
-            '${DateFormat('d MMM').format(_startDate)}–${DateFormat('d MMM').format(_endDate)}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+      // 🟩 Green rounded date range box — tap to pick dates
+      InkWell(
+        onTap: () => _pickDateRange(context),
+        onLongPress: () => _pickEndDate(context),
+        child: Container(
+          width: 250,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.green,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Center(
+            child: Text(
+              '${DateFormat('d MMM').format(_startDate)} – ${DateFormat('d MMM').format(_endDate)}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
       ),
 
-      // Right arrow button
+      // ➡️ Move forward 10 days
       IconButton(
-        icon: Icon(Icons.chevron_right, color: Colors.green, size: 26),
-        onPressed: () {
-          // Go to next date range
-          _pickEndDate(context); // or your own _changeRange(1)
+        icon: const Icon(Icons.chevron_right, color: Colors.green, size: 26),
+        onPressed: () async {
+          setState(() {
+            _startDate = _startDate.add(const Duration(days: 10));
+            _endDate = _endDate.add(const Duration(days: 10));
+          });
+          await _fetchMilkData(selectedCustomerId);
         },
       ),
     ],
   ),
 ),
+
 
           // Account Info Card
           Padding(

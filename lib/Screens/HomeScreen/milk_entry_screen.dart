@@ -351,13 +351,8 @@ void _fillFatSnfRatesForAnimal(String animal) {
   setState(() => _loadingEntries = true);
   try {
     // Pass customer_id as a query parameter
-    final res = await ApiService.post(
-  '/recent-milk-entries',
-  {
-    'limit': 10,
-   
-  },
-);
+    final res = await ApiService.get(
+  '/recent-milk-entries');
 
     final data = res.data;
 
@@ -886,7 +881,9 @@ void _fillFatSnfRatesForAnimal(String animal) {
       // bottom action bar
     
 
-      body: Stack(
+    body: Stack(
+    children: [
+      ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           //////////// ---- Summary bar ---- \\\\\\\\\
@@ -1367,24 +1364,7 @@ if (_recentEntries.isNotEmpty)
     ),
   ),
 
-   Positioned(
-  top: 200, // ⬆️ adjust this value to move it higher/lower
-  right: 20, // distance from right edge
-  child: FloatingActionButton(
-    backgroundColor: Colors.red,
-    elevation: 6,
-    shape: const CircleBorder(), // ensures perfect circle
-    onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DeleteMilkEntriesScreen(), // 👈 your target screen
-      ),
-    );
-  },
-    child: const Icon(Icons.delete, color: Colors.white, size: 28),
-  ),
-),
+  
 
 
 
@@ -1392,7 +1372,34 @@ if (_recentEntries.isNotEmpty)
 
           
         ],
+        
       ),
+
+      // 🔴 Floating delete button (now positioned correctly)
+      Positioned(
+        bottom: 30, // distance from bottom
+        right: 20,  // distance from right
+        child: FloatingActionButton(
+          backgroundColor: Colors.red,
+          elevation: 6,
+          shape: const CircleBorder(),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const DeleteMilkEntriesScreen(),
+              ),
+            );
+          },
+          child: const Icon(Icons.delete, color: Colors.white, size: 28),
+        ),
+      ),
+    ],
+  ),
+      //listview of recent entries
+
+
+      
     );
 if (_recentEntries.isNotEmpty)
   Padding(
