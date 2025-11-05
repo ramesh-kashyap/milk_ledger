@@ -50,11 +50,11 @@ class _BulkEntryScreenState extends State<BulkEntryScreen> {
                   .toList();
             });
           } else {
-            Get.snackbar("No Customers", resData?['message'] ?? "No data found");
+            Get.snackbar("no_customers".tr, resData?['message'] ?? "no_data_found".tr);
           }
         } catch (e) {
           print("❌ Error fetching customers: $e");
-          Get.snackbar("Error", "Failed to load customers: $e");
+          Get.snackbar("error".tr, "failed_to_load_customers".tr);
         }
 
         setState(() {
@@ -78,7 +78,7 @@ class _BulkEntryScreenState extends State<BulkEntryScreen> {
           .toList();
 
       if (selectedData.isEmpty) {
-        Get.snackbar("No Selection", "Please select at least one customer");
+        Get.snackbar("no_selection".tr, "please_select_customer".tr);
         return;
       }
 
@@ -94,10 +94,10 @@ class _BulkEntryScreenState extends State<BulkEntryScreen> {
           }
         }
 
-        Get.snackbar("Success", "Milk entries saved successfully!");
+        Get.snackbar("success".tr, "milk_entries_saved".tr);
       } catch (e) {
         print("❌ Error saving entries: $e");
-        Get.snackbar("Error", "Something went wrong while saving entries");
+        Get.snackbar("error".tr, "something_went_wrong".tr);
       }
     }
 
@@ -107,13 +107,16 @@ class _BulkEntryScreenState extends State<BulkEntryScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAF8),
       appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: const Text('Bulk Entry'),
+        backgroundColor: Colors.green[400],
+        title: Text(
+          'bulk_entry'.tr,
+          style: TextStyle(color: Colors.white), // ✅ white text
+        ),
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : customers.isEmpty
-              ? const Center(child: Text("No customers found"))
+              ?  Center(child: Text("no_customers_found".tr))
               : Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: SingleChildScrollView(
@@ -133,28 +136,28 @@ class _BulkEntryScreenState extends State<BulkEntryScreen> {
                         TableRow(
                           decoration:
                               const BoxDecoration(color: Color(0xFFE0E0E0)),
-                          children: const [
+                          children: [
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text('Select',
+                              child: Text('select'.tr,
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold)),
                             ),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text('S. No.',
+                              child: Text('s_no'.tr,
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold)),
                             ),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text('Name',
+                              child: Text('name'.tr,
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold)),
                             ),
                             Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text('Liter',
+                              child: Text('liter'.tr,
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold)),
                             ),
@@ -205,20 +208,23 @@ class _BulkEntryScreenState extends State<BulkEntryScreen> {
                     ),
                   ),
                 ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-          ),
-          onPressed: _saveData,
-          child: const Text(
-            'SAVE',
-            style: TextStyle(fontSize: 18, color: Colors.white),
-          ),
-        ),
-      ),
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 20), // bottom 20 gives extra space
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  onPressed: _saveData,
+                  child: Text(
+                    'save'.tr,
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+
     );
   }
 }
