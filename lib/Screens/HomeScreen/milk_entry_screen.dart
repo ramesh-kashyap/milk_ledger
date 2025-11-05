@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/add_customer_screen.dart';
 import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/delete_milk_enteries.dart';
+import 'package:digitalwalletpaytmcloneapp/Screens/HomeScreen/bulk_entry_screen.dart';
 
 class MilkEntryScreen extends StatefulWidget {
   const MilkEntryScreen({super.key});
@@ -351,13 +352,8 @@ void _fillFatSnfRatesForAnimal(String animal) {
   setState(() => _loadingEntries = true);
   try {
     // Pass customer_id as a query parameter
-    final res = await ApiService.post(
-  '/recent-milk-entries',
-  {
-    'limit': 10,
-   
-  },
-);
+    final res = await ApiService.get(
+  '/recent-milk-entries');
 
     final data = res.data;
 
@@ -886,7 +882,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
       // bottom action bar
     
 
-      body: Stack(
+      body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           //////////// ---- Summary bar ---- \\\\\\\\\
@@ -1392,7 +1388,11 @@ if (_recentEntries.isNotEmpty)
 
           
         ],
+        
       ),
+
+
+      
     );
 if (_recentEntries.isNotEmpty)
   Padding(
@@ -1760,58 +1760,109 @@ class _SellerPickerState extends State<_SellerPicker> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 12,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-                width: 42,
-                height: 4,
-                decoration: BoxDecoration(
-                    color: Colors.black26,
-                    borderRadius: BorderRadius.circular(12))),
-            const SizedBox(height: 12),
-            TextField(
-              controller: searchCtrl,
-              decoration: InputDecoration(
-                 hintText: 'search_customer'.tr,
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (loading) const LinearProgressIndicator(minHeight: 2),
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: items.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (_, i) {
-                  final it = items[i];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.green.withOpacity(.1),
-                      child: const Icon(Icons.person, color: Colors.green),
-                    ),
-                    title: Text(it['name'] ?? ''),
-                    subtitle: Text('${'code'.tr}: ${it['code'] ?? '-'}'),
-                    onTap: () => Navigator.pop(context, it),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+@override
+Widget build(BuildContext context) {
+  return SafeArea(
+    child: Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 12,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
-    );
-  }
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // small drag handle
+          Container(
+            width: 42,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.black26,
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // 🔹 Customer Search Section
+          TextField(
+            controller: searchCtrl,
+            decoration: InputDecoration(
+              hintText: 'Search Customer',
+              prefixIcon: const Icon(Icons.search),
+              border: const OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // 🔹 Bulk Entry Section (Search-like button)
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BulkEntryScreen(),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              decoration: BoxDecoration(
+                // borderRadius: BorderRadius.circular(12),
+                // border: Border.all(color: Colors.blueAccent),
+                color: Colors.blue.withOpacity(0.05),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.group_add, color: Colors.blue),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      "Bulk Entry Customers",
+                      style: TextStyle(
+                        color: Colors.blue[800],
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.blue),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          if (loading) const LinearProgressIndicator(minHeight: 2),
+
+          // 🔹 Customer List
+          Flexible(
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (_, i) {
+                final it = items[i];
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.green.withOpacity(.1),
+                    child: const Icon(Icons.person, color: Colors.green),
+                  ),
+                  title: Text(it['name'] ?? ''),
+                  subtitle: Text('${'code'.tr}: ${it['code'] ?? '-'}'),
+                  onTap: () => Navigator.pop(context, it),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
 }
