@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
 // CHANGE this import to your actual ApiService path:
 import 'package:digitalwalletpaytmcloneapp/Service/Api.dart';
 import 'package:flutter/services.dart';
@@ -41,6 +42,7 @@ void initState() {
   final fatCtrl1 = TextEditingController();
   final fatSnfCtrl = TextEditingController();
   final fixRateCtrl = TextEditingController();
+  final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
   bool _isSubmitting = false;
   bool zero = false;
   String animal = 'buffalo'; // cow/buffalo
@@ -560,8 +562,9 @@ void _fillFatSnfRatesForAnimal(String animal) {
             final retry = await ApiService.post('/save/milk-entries', payload);
             final retryData = retry.data;
         if (retryData['status'] == true) {
-            Get.snackbar("Success 🎉", "Milk entry saved successfully");         
-            Navigator.pop(context, retry);
+            Get.snackbar("Success 🎉", "Milk entry saved successfully"); 
+            _loadRecentEntries();        
+            // Navigator.pop(context, retry);
         } else {
           Get.snackbar("Error", retryData['message'] ?? "Something went wrong");
         }
@@ -574,7 +577,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
     // ✅ Normal success
     if (data['status'] == true) {
       Get.snackbar("Success 🎉", "Milk entry saved successfully");
-      Navigator.pop(context, response);
+      _loadRecentEntries();  
     } else {
       Get.snackbar("Milk Add Failed", data['message'] ?? "Something went wrong");
     }
@@ -1218,12 +1221,13 @@ if (_recentEntries.isNotEmpty)
 
             // Buy entries list
             ..._recentEntries
-                .where((entry) => entry['note'] == 'Buy')
+                .where((entry) => entry['note'] == 'Buy'  &&
+              entry['date']?.toString().startsWith(today) == true)
                 .map((entry) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       child: Row(
                         children: [
-                          Expanded(flex: 2, child: Text('${entry['Customer']?['code'] ?? ''} ${entry['Customer']?['name'] ?? ''}')),
+                          Expanded(flex: 2, child: Text('${entry['Customer']?['code'] ?? 'Cash'} ${entry['Customer']?['name'] ?? ''}')),
                           Expanded(child: Text('${entry['litres'] ?? 0}')),
                           Expanded(child: Text('${entry['fat'] ?? 0}')),
                           Expanded(child: Text('${entry['rate'] ?? 0}')),
@@ -1295,7 +1299,7 @@ if (_recentEntries.isNotEmpty)
           ],
 
           // 🔴 SALE SECTION
-          if (_recentEntries.any((e) => e['note'] == 'Sale')) ...[
+          if (_recentEntries.any((e) => e['note'] == 'Sale' || e['note'] == 'Cash Sale')) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               color: Colors.red.shade50,
@@ -1323,12 +1327,25 @@ if (_recentEntries.isNotEmpty)
 
             // Sale entries list
             ..._recentEntries
-                .where((entry) => entry['note'] == 'Sale')
+                .where((entry) => (entry['note'] == 'Sale'  || entry['note'] == 'Cash Sale') &&
+        entry['date']?.toString().startsWith(today) == true)
                 .map((entry) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       child: Row(
                         children: [
-                          Expanded(flex: 2, child: Text('${entry['Customer']?['code'] ?? ''} ${entry['Customer']?['name'] ?? ''}')),
+                         Expanded(
+  flex: 2,
+  child: Text(
+    entry['Customer'] != null
+        ? '${entry['Customer']['code']} ${entry['Customer']['name']}'
+        : 'Cash Sale',
+    style: TextStyle(
+      fontWeight: FontWeight.bold,
+      color:  Colors.black,
+    ),
+  ),
+),
+
                           Expanded(child: Text('${entry['litres'] ?? 0}')),
                           Expanded(child: Text('${entry['fat'] ?? 0}')),
                           Expanded(child: Text('${entry['rate'] ?? 0}')),

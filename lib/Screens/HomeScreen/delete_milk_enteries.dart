@@ -64,7 +64,8 @@ class _DeleteMilkEntriesScreenState extends State<DeleteMilkEntriesScreen> {
 
     setState(() {
       _filtered = _allEntries.where((entry) {
-        final entryDate = DateTime.parse(entry['createdAt']);
+        print('Filtering entry: $entry');
+        final entryDate = DateTime.parse(entry['date'].toString());
         final entryDateStr = DateFormat('yyyy-MM-dd').format(entryDate);
 
         final sessionMatch = selectedSession == 'both' ||
@@ -76,7 +77,10 @@ class _DeleteMilkEntriesScreenState extends State<DeleteMilkEntriesScreen> {
                 selectedMilkType.toLowerCase();
 
         return entryDateStr == dateStr && sessionMatch && milkMatch;
-      }).toList();
+      }
+     
+      ).toList();
+      
     });
   }
 
