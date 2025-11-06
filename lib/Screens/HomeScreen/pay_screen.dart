@@ -1035,19 +1035,49 @@ Expanded(
         ),
       );
 
-  Widget tableRow(String date, String milk, String fat, String rate, String amount) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black12))),
-      child: Row(children: [
-        Expanded(child: Center(child: Text(date))),
+ Widget tableRow(String date, String milk, String fat, String rate, String amount) {
+  // Check if 'AM' or 'PM' is present in the date text
+  bool isMorning = date.toUpperCase().contains('AM');
+  bool isEvening = date.toUpperCase().contains('PM');
+
+  // Remove AM/PM text from displayed string
+  String cleanDate = date.replaceAll(RegExp(r'\s?(AM|PM)', caseSensitive: false), '');
+
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    decoration: const BoxDecoration(
+      border: Border(bottom: BorderSide(color: Colors.black12)),
+    ),
+    child: Row(
+      children: [
+        // 🗓 Date + Icon
+        Expanded(
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(cleanDate,
+                    style: const TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(width: 4),
+                if (isMorning)
+                  const Icon(Icons.wb_sunny_rounded,
+                      color: Colors.orangeAccent, size: 18)
+                else if (isEvening)
+                  const Icon(Icons.nights_stay_rounded,
+                      color: Colors.blueGrey, size: 18),
+              ],
+            ),
+          ),
+        ),
         Expanded(child: Center(child: Text(milk))),
         Expanded(child: Center(child: Text(fat))),
         Expanded(child: Center(child: Text(rate))),
         Expanded(child: Center(child: Text(amount))),
-      ]),
-    );
-  }
+      ],
+    ),
+  );
+}
+
   Widget productTableRow(String date, String product, String quantity, String amount) {
   return Container(
     padding: const EdgeInsets.symmetric(vertical: 8),
