@@ -95,6 +95,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
 
   // enabled animals for the selected customer
+  bool isCashSell = false;
   bool cowEnabled = true;
   bool buffaloEnabled = true;
    Map<String, dynamic> allRates = {};
@@ -317,18 +318,46 @@ void _fillFatSnfRatesForAnimal(String animal) {
       builder: (_) => _SellerPicker(fetch: fetchSellers),
     );
 
-     if (picked != null) {
-    print("Initial basis: ${picked['basis']}");
-    _loadRecentEntries();
+  //    if (picked != null) {
+  //   print("Initial basis: ${picked['basis']}");
+  //   _loadRecentEntries();
+  //   final basis = _normBasis(picked['basis']);
+  //   showSnf = basis == 'fat_snf';   // use underscore, not fatSnf
+  //   print("After normalization: $basis, showSnf: $showSnf");
+  //   _applySellerDefaults(picked);
+  //   _fillFatSnfRatesForAnimal(animal);
+  //   setState(() {}); // refresh the UI to show SNF field if needed
+  // } else {
+  //   showSnf = false;
+  // }
+
+
+  if (picked != null) {
+  if (picked['type'] == 'cash_sell') {
+    print("🟢 Cash Sell selected");
+    // Handle your cash sell logic here
+    setState(() {
+      showSnf = false;
+      isCashSell = true;
+       seller = {
+          'id': null,
+          'name': 'Cash',
+          'code': 'CASH',
+          'basis': 'fat'
+        };  // No customer selected
+    });
+  } else {
+    print("Seller selected: ${picked['name']}");
     final basis = _normBasis(picked['basis']);
-    showSnf = basis == 'fat_snf';   // use underscore, not fatSnf
-    print("After normalization: $basis, showSnf: $showSnf");
+    showSnf = basis == 'fat_snf';
     _applySellerDefaults(picked);
     _fillFatSnfRatesForAnimal(animal);
-    setState(() {}); // refresh the UI to show SNF field if needed
-  } else {
-    showSnf = false;
   }
+  setState(() {});
+} else {
+  showSnf = false;
+}
+
   }
 
 
@@ -419,6 +448,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
     _recompute(); // ensure summary matches basis & defaults
   }
 
+
   Future<void> pickDate() async {
     final d = await showDatePicker(
       context: context,
@@ -462,6 +492,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
   }
 
  Future<void> save() async {
+  
   if (seller == null) {
     Get.snackbar("Warning", "Please select a customer");
     return;
@@ -487,7 +518,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
   final payload = {
     'date': date.toIso8601String().substring(0, 10),
     'session': session,
-    'customer_id': seller!['id'],
+    'customer_id': isCashSell ? null : seller?['id'],
     'litres': zero ? 0 : litres,
     'fat': zero ? null : (num.tryParse(fatCtrl.text) ?? null),
     'rate': zero ? 0 : rate,
@@ -496,6 +527,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
     'animal': animal,
     'basis': seller!['basis'],
     'zero': zero,
+    "type": isCashSell ? "cash_sell" : "regular",
   };
 
   try {
@@ -524,14 +556,12 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
       // 👇 if user confirms, send again with force=true
       if (confirm == true) {
-         payload['forceSave'] = true;
-        final retry = await ApiService.post('/save/milk-entries', payload);
-        final retryData = retry.data;
-
+            payload['forceSave'] = true;
+            final retry = await ApiService.post('/save/milk-entries', payload);
+            final retryData = retry.data;
         if (retryData['status'] == true) {
-          Get.snackbar("Success 🎉", "Milk entry saved successfully");
-         
-          Navigator.pop(context, retry);
+            Get.snackbar("Success 🎉", "Milk entry saved successfully");         
+            Navigator.pop(context, retry);
         } else {
           Get.snackbar("Error", retryData['message'] ?? "Something went wrong");
         }
@@ -579,6 +609,12 @@ void _fillFatSnfRatesForAnimal(String animal) {
              title: Text("purchaser".tr),
               onTap: () => Navigator.pop(ctx, "Purchaser"),
             ),
+            const Divider(),
+          ListTile(
+            leading: const Icon(Icons.attach_money, color: Colors.orange),
+            title: const Text("Cash Sell"),
+            onTap: () => Navigator.pop(ctx, "Cash Sell"),
+          ),
           ],
         ),
       ),
@@ -810,8 +846,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
                             };
 
                             _applySellerDefaults(updated);
-                            // Navigator.pop(ctx);
-                                 
+                            // Navigator.pop(ctx);                                 
                             print("Updated customer: $updated");
                             // TODO: persist to API if needed
                             // await ApiService.post('/customers/update', {...});
@@ -823,12 +858,9 @@ void _fillFatSnfRatesForAnimal(String animal) {
                               if(data['status'] == true){
                                 final customerId = data['id'];
                                 print("Customer updated with ID: $customerId");
-                                Get.snackbar("Success 🎉",
-                                    "Customer has been updated successfully");
-                                  
+                                Get.snackbar("Success 🎉", "Customer has been updated successfully");                                  
                               } else {
-                                Get.snackbar("Update Failed",
-                                    data['message'] ?? "Something went wrong");
+                                Get.snackbar("Update Failed", data['message'] ?? "Something went wrong");
                               }
                                 
                             } catch (e) {
@@ -871,9 +903,14 @@ void _fillFatSnfRatesForAnimal(String animal) {
       tooltip: 'Add New',
       onPressed: () async {
     final type = await _selectCustomerType(context);
-    if (type != null) {
-      Get.to(() => AddCustomerScreen(customerType: type));
-    }
+   if (type == "Cash Sell") {
+  setState(() {
+    isCashSell = true;
+    seller = null;
+  });
+} else if (type != null) {
+  Get.to(() => AddCustomerScreen(customerType: type));
+}
   },
     ),
   ],
@@ -967,36 +1004,36 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
           // ---- Animal selector (images) ----
           _Card(
-  child: Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-    child: SizedBox(
-      height: 70, // 👈 makes it smaller
-      child: Row(
-        children: [
-          Expanded(
-            child: _AnimalTile(
-              label: 'cow'.tr,
-              asset: 'assets/images/cow-icon.png',
-              selected: animal == 'cow',
-              disabled: !cowEnabled,
-              onTap: () => _onAnimalChange('cow'),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _AnimalTile(
-              label: 'buffalo'.tr,
-              asset: 'assets/images/buffalo.png',
-              selected: animal == 'buffalo',
-              disabled: !buffaloEnabled,
-              onTap: () => _onAnimalChange('buffalo'),
-            ),
-          ),
-        ],
-      ),
-    ),
-  ),
-),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 4),
+                  child: SizedBox(
+                    height: 60, // 👈 makes it smaller
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _AnimalTile(
+                            // label: 'cow'.tr,
+                            asset: 'assets/images/cow-icon.png',
+                            selected: animal == 'cow',
+                            disabled: !cowEnabled,
+                            onTap: () => _onAnimalChange('cow'),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: _AnimalTile(
+                            // label: 'buffalo'.tr,
+                            asset: 'assets/images/buffalo.png',
+                            selected: animal == 'buffalo',
+                            disabled: !buffaloEnabled,
+                            onTap: () => _onAnimalChange('buffalo'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
 
           const SizedBox(height: 12),
 
@@ -1683,13 +1720,14 @@ class _ReadOnlyField extends StatelessWidget {
 
 /// Animal tile with (optional) disabled state
 class _AnimalTile extends StatelessWidget {
-  final String label;
-  final String asset; // e.g. assets/images/cow-icon.png
+  // final String label;
+  final String asset;
   final bool selected;
   final bool disabled;
   final VoidCallback onTap;
+
   const _AnimalTile({
-    required this.label,
+    // required this.label,
     required this.asset,
     required this.selected,
     required this.disabled,
@@ -1721,22 +1759,16 @@ class _AnimalTile extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              child: Opacity(
-                opacity: disabled ? 0.4 : 1,
-                child: Image.asset(asset, fit: BoxFit.contain),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(label,
-                style:
-                    TextStyle(fontWeight: FontWeight.w600, color: textColor)),
+            Image.asset(asset, height: 40),
+            // const SizedBox(height: 8),
+            // Text(label, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
     );
   }
 }
+
 
 /// Bottom-sheet Seller Picker (searchable)
 class _SellerPicker extends StatefulWidget {
@@ -1843,6 +1875,40 @@ Widget build(BuildContext context) {
           ),
 
           const SizedBox(height: 16),
+
+            InkWell(
+            onTap: () {
+              Navigator.pop(context, {'type': 'cash_sell'});
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.attach_money, color: Colors.green),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      "Cash Sell",
+                      style: TextStyle(
+                        color: Colors.green[800],
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
 
           if (loading) const LinearProgressIndicator(minHeight: 2),
 
