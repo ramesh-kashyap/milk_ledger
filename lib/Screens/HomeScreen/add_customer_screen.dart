@@ -256,6 +256,32 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     }
   }
 
+  bool codeExists = false;
+String codeMessage = "";
+
+void _checkCode(String code) async {
+  if (code.trim().isEmpty) {
+    setState(() {
+      codeExists = false;
+      codeMessage = "";
+    });
+    return;
+  }
+
+  try {
+    final response = await ApiService.get('/checkCustomerCode', query: {'code': code});
+    final data = response.data;
+
+    setState(() {
+      codeExists = data['exists'] ?? false;
+      codeMessage = data['message'] ?? '';
+    });
+  } catch (e) {
+    print("Error checking code: $e");
+  }
+}
+
+
   // ---------- UI ----------
   String _fieldLabel() {
     switch (_basis) {
@@ -367,13 +393,30 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     title: 'customer_details'.tr,
                     child: Column(
                       children: [
-                        TextFormField(
-                          controller: codeCtrl,
-                          decoration: _decor('code'.tr),
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'code_required'.tr
-                              : null,
-                        ),
+                       TextFormField(
+                                controller: codeCtrl,
+                                decoration: _decor('code'.tr).copyWith(
+                                  suffixIcon: codeExists
+                                      ? const Icon(Icons.warning, color: Colors.red)
+                                      : const Icon(Icons.check_circle, color: Colors.green),
+                                ),
+                                onChanged: _checkCode, // 👈 live check while typing
+                                validator: (v) => (v == null || v.trim().isEmpty)
+                                    ? 'code_required'.tr
+                                    : (codeExists ? 'Code already exists' : null),
+                              ),
+                              if (codeMessage.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: Text(
+                                    codeMessage,
+                                    style: TextStyle(
+                                      color: codeExists ? Colors.red : Colors.green,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+
                         spacer,
                         TextFormField(
                           controller: nameCtrl,
