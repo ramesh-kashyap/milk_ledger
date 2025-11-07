@@ -226,6 +226,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
       // Your API: POST /customers/list  (change to GET if needed)
       final res = await ApiService.post('/customers/list', {});
       final data = res.data;
+      print("/customers/list response: $data");
 
       // Adjust this based on your real response shape
       final List list = (data is Map && data['items'] is List)
@@ -248,6 +249,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
           'id': e['id'],
           'name': e['name'],
           'code': (e['code'] ?? e['code'])?.toString(),
+          'customer_type': (e['customerType'] ?? e['customerType'])?.toString(),
           'cowEnabled': _toBool(e['cowEnabled'] ?? e['cowEnabled']),
           'buffaloEnabled': _toBool(e['buffaloEnabled'] ?? e['buffaloEnabled']),
           'cowValue': cowValue,
@@ -366,7 +368,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
    Future<void> _allResultst() async {
   try {
     final res = await ApiService.get('/all-fat-snf-rates');
-    print("/all-fat-snf-rates ${res.data}");
+    // print("/all-fat-snf-rates ${res.data}");
       final data = res.data;
       if(data['status'] == true){
           setState(() {
@@ -823,6 +825,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
                                 borderRadius: BorderRadius.circular(12)),
                           ),
                           onPressed: () async{
+                           
                             final updated = {
                               ...seller!,
                               'name': nameCtrl.text.trim().isEmpty
@@ -831,6 +834,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
                               'code': codeCtrl.text.trim().isEmpty
                                   ? seller!['code']
                                   : codeCtrl.text.trim(),
+                                  
                               'cowEnabled': ce,
                               'buffaloEnabled': be,
                               'basis': basis, // 'rate' | 'fat' | 'fat_snf'
@@ -992,7 +996,14 @@ void _fillFatSnfRatesForAnimal(String animal) {
                   color: theme.colorScheme.primary.withOpacity(.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.person_search, color: Colors.green),
+                 child: Icon(
+        seller?['customer_type'] == 'Seller'
+            ? Icons.storefront          // 👨‍🌾 seller icon
+            : Icons.shopping_cart,          // 🛒 purchaser icon
+        color: seller?['customer_type'] == 'Seller'
+            ? Colors.green
+            : Colors.blue,
+      ),
               ),
               title: Text(seller?['name'] ?? 'select_customer'.tr,
                   style: theme.textTheme.titleMedium),
@@ -1937,10 +1948,18 @@ Widget build(BuildContext context) {
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (_, i) {
                 final it = items[i];
+                print("Customer Type: ${it}");
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundColor: Colors.green.withOpacity(.1),
-                    child: const Icon(Icons.person, color: Colors.green),
+                     child: Icon(
+        it?['customer_type'] == 'Seller'
+            ? Icons.storefront          // 👨‍🌾 seller icon
+            : Icons.shopping_cart,          // 🛒 purchaser icon
+        color: it?['customer_type'] == 'Seller'
+            ? Colors.green
+            : Colors.blue,
+      ),
                   ),
                   title: Text(it['name'] ?? ''),
                   subtitle: Text('${'code'.tr}: ${it['code'] ?? '-'}'),

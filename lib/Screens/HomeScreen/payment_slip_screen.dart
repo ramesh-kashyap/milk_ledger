@@ -119,6 +119,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       final resp =
           await ApiService.get('/paymentslip?page=$page&limit=20'); // 👈 backend pagination
       final data = resp.data;
+      print("Paymentslip response: $resp");
       if (data['status'] == true && data['payments'] != null) {
         final payments = data['payments'] as List<dynamic>;
         final slips = payments.map((p) => PaymentSlip.fromJson(p)).toList();
