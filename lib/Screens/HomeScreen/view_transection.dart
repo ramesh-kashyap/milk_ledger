@@ -412,22 +412,41 @@ List<Map<String, dynamic>> _getCombinedEntries() {
                         style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
                     ),
-                    Expanded(
-                      flex: 3,
-                      child: isProduct
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(entry["product_name"] ?? "",
-                                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                                Text(
-                                  "Qty: ${entry["quantity"] ?? '-'} | Price: ${entry["price"] ?? '-'}",
-                                  style: const TextStyle(fontSize: 12, color: Colors.black54),
-                                ),
-                              ],
-                            )
-                          : Text(entry["remark"] ?? ""),
-                    ),
+Expanded(
+  flex: 3,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // ✅ Label for table source
+      Text(
+        "[${entry["entryType"].toString().capitalizeFirst}]",
+        style: const TextStyle(
+          color: Colors.blueGrey,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+      ),
+
+      const SizedBox(height: 2),
+
+      // ✅ Product detail or remark
+      if (entry["entryType"] == "product") ...[
+        Text(entry["product_name"] ?? "",
+            style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(
+          "Qty: ${entry["quantity"] ?? '-'} | Price: ${entry["price"] ?? '-'}",
+          style: const TextStyle(fontSize: 12, color: Colors.black54),
+        ),
+      ] else ...[
+        Text(
+          entry["remark"] ?? "-",
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+        ),
+      ],
+    ],
+  ),
+),
+
                     Expanded(
                       flex: 2,
                       child: Text(
