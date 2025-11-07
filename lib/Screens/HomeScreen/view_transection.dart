@@ -253,18 +253,29 @@ List<Map<String, dynamic>> _getCombinedEntries() {
                     child: GestureDetector(
                       onTap: _pickDateRange,
                       child: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.grey.shade400),
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Text(
-                          "${DateFormat('yyyy-MM-dd').format(selectedRange!.start)} to ${DateFormat('yyyy-MM-dd').format(selectedRange!.end)}",
+                          "${DateFormat('d MMM').format(selectedRange!.start)} – ${DateFormat('d MMM').format(selectedRange!.end)}",
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
+
                     ),
                   ),
                   const SizedBox(width: 10),
