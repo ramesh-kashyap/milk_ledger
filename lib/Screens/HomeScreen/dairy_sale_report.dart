@@ -63,7 +63,7 @@ class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
 
     // Filter base list (date + milk type)
     List<dynamic> dateFiltered = allEntries.where((entry) {
-      final entryDate = DateTime.parse(entry['createdAt']);
+      final entryDate = DateTime.parse(entry['date']);
       final entryDateStr = DateFormat('yyyy-MM-dd').format(entryDate);
       bool dateMatch = entryDateStr == dateStr;
 

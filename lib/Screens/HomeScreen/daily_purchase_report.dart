@@ -65,7 +65,7 @@ String selectedMilkType = "both";
     final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
 
     List<dynamic> dateFiltered = allEntries.where((entry) {
-      final entryDate = DateTime.parse(entry['createdAt']);
+      final entryDate = DateTime.parse(entry['date']);
       final entryDateStr = DateFormat('yyyy-MM-dd').format(entryDate);
       bool dateMatch = entryDateStr == dateStr;
 

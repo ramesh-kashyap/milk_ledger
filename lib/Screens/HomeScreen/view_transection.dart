@@ -15,11 +15,21 @@ class _TransactionPageState extends State<TransactionPage> {
   List<Map<String, dynamic>> customers = [];
   List<Map<String, dynamic>> transactions = [];
   List<Map<String, dynamic>> productrx = [];
+  List<Map<String, dynamic>> milkEntries = [];
+  List<Map<String, dynamic>> payments = [];
   String? selectedCustomerCode;
   final TextEditingController _codeController = TextEditingController();
 
   bool showAllEntries = false;
   DateTimeRange? selectedRange;
+
+  double totalMilkAmount = 0;
+  double totalProductAmount = 0;
+  double totalPaymentAmount = 0;
+  double totalTransactionAmount = 0;
+  double netAmount = 0;
+  String customerType = "";
+
 
 
   final box = GetStorage();
@@ -41,37 +51,44 @@ void initState() {
 }
 
 
-  Future<void> _fetchCustProList({
-    String? code,
-    bool all = false,
-  }) async {
-    try {
-      final body = {
-        "transactionType": transactionType,
-        "code": code,
-        if (!all && selectedRange != null) ...{
-          "startDate": DateFormat("yyyy-MM-dd").format(selectedRange!.start),
-          "endDate": DateFormat("yyyy-MM-dd").format(selectedRange!.end),
+    Future<void> _fetchCustProList({
+      String? code,
+      bool all = false,
+    }) async {
+      try {
+        final body = {
+          "code": code,
+          "allEntries": all,
+          if (!all && selectedRange != null) ...{
+            "startDate": DateFormat("yyyy-MM-dd").format(selectedRange!.start),
+            "endDate": DateFormat("yyyy-MM-dd").format(selectedRange!.end),
+          }
+        };
+
+        final response = await ApiService.post("/transection", body);
+        final data = response.data;
+
+        if (data["success"] == true) {
+          setState(() {
+            customers = (data["customers"] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            transactions = (data["entries"]["transactionEntries"] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            productrx = (data["entries"]["productEntries"] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            milkEntries = (data["entries"]["milkEntries"] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            payments = (data["entries"]["paymentEntries"] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            // Add these for net summary
+            totalMilkAmount = double.tryParse(data["totals"]["totalMilkAmount"].toString()) ?? 0;
+            totalProductAmount = double.tryParse(data["totals"]["totalProductAmount"].toString()) ?? 0;
+            totalPaymentAmount = double.tryParse(data["totals"]["totalPaymentAmount"].toString()) ?? 0;
+            totalTransactionAmount = double.tryParse(data["totals"]["totalTransactionAmount"].toString()) ?? 0;
+            netAmount = double.tryParse(data["net"].toString()) ?? 0;
+            customerType = data["customerType"] ?? "";
+          });
         }
-      };
-
-      final response = await ApiService.post("/transection", body);
-      final data = response.data;
-
-      // print("Products: ${data["products"]}");
-      // print("Payments: ${data["payments"]}");
-
-      if (data["success"] == true) {
-        setState(() {
-          customers = (data["customers"] as List?)?.cast<Map<String, dynamic>>() ?? [];
-          transactions = (data["payments"] as List?)?.cast<Map<String, dynamic>>() ?? [];
-          productrx = (data["products"] as List?)?.cast<Map<String, dynamic>>() ?? [];
-        });
+      } catch (e) {
+        print("Error fetching data: $e");
       }
-    } catch (e) {
-      print("Error fetching data: $e");
     }
-  }
+
 
   Future<void> _fetchFirstCustomer() async {
     try {
@@ -127,37 +144,74 @@ void initState() {
   /// ✅ Merge product + transaction into one timeline list
  /// ✅ Merge product + transaction into one timeline list and filter by date
 List<Map<String, dynamic>> _getCombinedEntries() {
-  // Step 1: merge
+  // Merge all 4 tables
   List<Map<String, dynamic>> combinedEntries = [
     ...transactions.map((t) => {...t, "entryType": "transaction"}),
     ...productrx.map((p) => {...p, "entryType": "product"}),
+    ...milkEntries.map((m) => {...m, "entryType": "milk"}),
+    ...payments.map((p) => {...p, "entryType": "payment"}),
   ];
 
-  // Step 2: filter by selected date range (only if "All Entries" is false)
+  // Filter by date range
   if (!showAllEntries && selectedRange != null) {
     combinedEntries = combinedEntries.where((entry) {
-      // Determine entry date
-      DateTime? entryDate = DateTime.tryParse(
-        entry["bill_date"] ?? entry["bill"] ?? entry["createdAt"] ?? "",
-      );
-      if (entryDate == null) return false;
+      DateTime? entryDate;
+      switch (entry["entryType"]) {
+        case "milk":
+          entryDate = DateTime.tryParse(entry["date"] ?? "");
+          break;
+        case "payment":
+          entryDate = DateTime.tryParse(entry["date"] ?? "");
+          break;
+        case "product":
+          entryDate = DateTime.tryParse(entry["bill"] ?? "");
+          break;
+        case "transaction":
+          entryDate = DateTime.tryParse(entry["bill_date"] ?? "");
+          break;
+      }
 
-      return entryDate.isAfter(
-                selectedRange!.start.subtract(const Duration(days: 1))) &&
-             entryDate.isBefore(
-                selectedRange!.end.add(const Duration(days: 1)));
+      if (entryDate == null) return false;
+      return entryDate.isAfter(selectedRange!.start.subtract(const Duration(days: 1))) &&
+          entryDate.isBefore(selectedRange!.end.add(const Duration(days: 1)));
     }).toList();
   }
 
-  // Step 3: sort by date
+  // Sort by date ascending
   combinedEntries.sort((a, b) {
-    final dateA = DateTime.tryParse(a["bill_date"] ?? a["bill"] ?? a["createdAt"] ?? "") ?? DateTime(1900);
-    final dateB = DateTime.tryParse(b["bill_date"] ?? b["bill"] ?? b["createdAt"] ?? "") ?? DateTime(1900);
+    DateTime dateA, dateB;
+    switch (a["entryType"]) {
+      case "milk":
+        dateA = DateTime.tryParse(a["date"] ?? "") ?? DateTime(1900);
+        break;
+      case "payment":
+        dateA = DateTime.tryParse(a["date"] ?? "") ?? DateTime(1900);
+        break;
+      case "product":
+        dateA = DateTime.tryParse(a["bill"] ?? "") ?? DateTime(1900);
+        break;
+      default:
+        dateA = DateTime.tryParse(a["bill_date"] ?? "") ?? DateTime(1900);
+    }
+    switch (b["entryType"]) {
+      case "milk":
+        dateB = DateTime.tryParse(b["date"] ?? "") ?? DateTime(1900);
+        break;
+      case "payment":
+        dateB = DateTime.tryParse(b["date"] ?? "") ?? DateTime(1900);
+        break;
+      case "product":
+        dateB = DateTime.tryParse(b["bill"] ?? "") ?? DateTime(1900);
+        break;
+      default:
+        dateB = DateTime.tryParse(b["bill_date"] ?? "") ?? DateTime(1900);
+    }
     return dateA.compareTo(dateB);
   });
 
   return combinedEntries;
 }
+
 
 
   @override
@@ -199,18 +253,29 @@ List<Map<String, dynamic>> _getCombinedEntries() {
                     child: GestureDetector(
                       onTap: _pickDateRange,
                       child: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.grey.shade400),
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Text(
-                          "${DateFormat('yyyy-MM-dd').format(selectedRange!.start)} to ${DateFormat('yyyy-MM-dd').format(selectedRange!.end)}",
+                          "${DateFormat('d MMM').format(selectedRange!.start)} – ${DateFormat('d MMM').format(selectedRange!.end)}",
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
+
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -318,9 +383,30 @@ List<Map<String, dynamic>> _getCombinedEntries() {
             ),
 
             // 🔄 Combined Entries
-            ...combinedEntries.map((entry) {
-              bool isProduct = entry["entryType"] == "product";
-              DateTime? entryDate = DateTime.tryParse(entry["bill_date"] ?? entry["bill"] ?? "");
+...combinedEntries.map((entry) {
+  bool isProduct = entry["entryType"] == "product";
+
+  // ✅ FIXED DATE SELECTION BY ENTRY TYPE
+  DateTime? entryDate;
+  switch (entry["entryType"]) {
+    case "milk":
+      entryDate = DateTime.tryParse(entry["date"] ?? "");
+      break;
+    case "payment":
+      entryDate = DateTime.tryParse(entry["date"] ?? "");
+      break;
+    case "product":
+      entryDate = DateTime.tryParse(entry["bill"] ?? "");
+      break;
+    default:
+      entryDate = DateTime.tryParse(entry["bill_date"] ?? "");
+  }
+
+  // Format the chosen date
+  String formattedDate = entryDate != null
+      ? DateFormat("dd MMM").format(entryDate)
+      : "";
+
 
               return Container(
                 padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
@@ -337,22 +423,41 @@ List<Map<String, dynamic>> _getCombinedEntries() {
                         style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
                     ),
-                    Expanded(
-                      flex: 3,
-                      child: isProduct
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(entry["product_name"] ?? "",
-                                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                                Text(
-                                  "Qty: ${entry["quantity"] ?? '-'} | Price: ${entry["price"] ?? '-'}",
-                                  style: const TextStyle(fontSize: 12, color: Colors.black54),
-                                ),
-                              ],
-                            )
-                          : Text(entry["remark"] ?? ""),
-                    ),
+Expanded(
+  flex: 3,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // ✅ Label for table source
+      Text(
+        "[${entry["entryType"].toString().capitalizeFirst}]",
+        style: const TextStyle(
+          color: Colors.blueGrey,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+      ),
+
+      const SizedBox(height: 2),
+
+      // ✅ Product detail or remark
+      if (entry["entryType"] == "product") ...[
+        Text(entry["product_name"] ?? "",
+            style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(
+          "Qty: ${entry["quantity"] ?? '-'} | Price: ${entry["price"] ?? '-'}",
+          style: const TextStyle(fontSize: 12, color: Colors.black54),
+        ),
+      ] else ...[
+        Text(
+          entry["remark"] ?? "-",
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+        ),
+      ],
+    ],
+  ),
+),
+
                     Expanded(
                       flex: 2,
                       child: Text(
@@ -361,45 +466,105 @@ List<Map<String, dynamic>> _getCombinedEntries() {
                             : "",
                       ),
                     ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        entry["amount"].toString(),
-                        textAlign: TextAlign.right,
-                        style: TextStyle(
-                          color: isProduct
-                              ? Colors.black87
-                              : ((double.tryParse(entry["amount"].toString()) ?? 0) < 0)
-                                  ? Colors.red
-                                  : Colors.green[800],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+Expanded(
+  flex: 2,
+  child: Builder(
+    builder: (context) {
+      final amt = double.tryParse(entry["amount"].toString()) ?? 0;
+      final type = entry["entryType"];
+      final custType = selectedCustomer["customerType"] ?? "Seller";
+
+      bool isPositive = false;
+
+      // ✅ Determine whether this amount is + or -
+      if (custType == "Seller") {
+        // Seller → milk + product + payment - transaction
+        if (type == "milk" || type == "payment" || type == "product") {
+          isPositive = true;
+        } else if (type == "transaction") {
+          isPositive = false;
+        }
+      } else if (custType == "Purchaser") {
+        // Purchaser → -milk - product + payment + transaction
+        if (type == "transaction" || type == "payment") {
+          isPositive = true;
+        } else if (type == "product" || type == "milk") {
+          isPositive = false;
+        }
+      }
+
+      final prefix = isPositive ? "+" : "-";
+      final color = isPositive ? Colors.green[700] : Colors.red[700];
+
+      return Text(
+        "$prefix${amt.toStringAsFixed(2)}",
+        textAlign: TextAlign.right,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
+      );
+    },
+  ),
+),
+
                   ],
                 ),
               );
             }),
 
             // ✅ Total Summary
+            // ✅ Total Summary
             if (combinedEntries.isNotEmpty)
-              Container(
-                color: Colors.green[600],
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Total (${combinedEntries.length})", style: const TextStyle(color: Colors.white)),
-                    Text(
-                      combinedEntries.fold<double>(
-                        0.0,
-                        (sum, e) => sum + (double.tryParse(e["amount"].toString()) ?? 0),
-                      ).toStringAsFixed(2),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
+  Container(
+    color: Colors.green[600],
+    padding: const EdgeInsets.all(8),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text("Total (${combinedEntries.length})",
+            style: const TextStyle(color: Colors.white)),
+
+        Builder(
+          builder: (context) {
+            double total = 0;
+            final customerType = selectedCustomer["customerType"] ?? "Seller"; // 🧠 get current type
+
+            for (var e in combinedEntries) {
+              final amt = double.tryParse(e["amount"].toString()) ?? 0;
+              final type = e["entryType"];
+
+              if (customerType == "Seller") {
+                // Seller → milk + product + payment - transaction
+                if (type == "milk" || type == "payment" || type == "product") {
+                  total += amt;
+                } else if (type == "transaction") {
+                  total -= amt;
+                }
+              } else if (customerType == "Purchaser") {
+                // Purchaser → -milk - product + payment + transaction
+                if (type == "transaction" || type == "payment") {
+                  total += amt;
+                } else if (type == "product" || type == "milk") {
+                  total -= amt;
+                }
+              }
+            }
+
+            return Text(
+              total.toStringAsFixed(2),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
+            );
+          },
+        ),
+      ],
+    ),
+  ),
+
+
           ],
         ),
         ),
