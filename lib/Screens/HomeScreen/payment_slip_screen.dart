@@ -58,8 +58,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
   bool isLoadingMore = false;
   late ScrollController _scrollController;
 
+  List<dynamic> _lastPaymentEntries = []; // 👈 added
+
   /// Group slips into 10-day ranges
-  List<Map<String, dynamic>> groupByTenDays(List<PaymentSlip> slips) {
+  List<Map<String, dynamic>> groupByTenDays(List<PaymentSlip> slips, String customerCode) {
     slips.sort((a, b) => a.date?.compareTo(b.date ?? DateTime.now()) ?? 0);
 
     final grouped = <Map<String, dynamic>>[];
@@ -84,6 +86,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
             'slips': <PaymentSlip>[],
             'sale': 0.0,
             'purchase': 0.0,
+            'pay': 0.0, 
+            'receive': 0.0, 
           };
           grouped.add(newGroup);
           return newGroup;
@@ -95,8 +99,49 @@ class _PaymentScreenState extends State<PaymentScreen> {
       existing['purchase'] += slip.purchase;
     }
 
+   for (var e in _lastPaymentEntries) {
+  final customer = e['Customer']?['code']?.toString() ?? '';
+  if (customer != customerCode) continue; // 👈 skip other customers
+
+  final date = DateTime.tryParse(e['date'] ?? '');
+  if (date == null) continue;
+
+  int startDay = ((date.day - 1) ~/ 10) * 10 + 1;
+  int endDay = startDay + 9;
+  final startDate = DateTime(date.year, date.month, startDay);
+  final endDate = DateTime(date.year, date.month, endDay);
+
+  final group = grouped.firstWhere(
+    (g) => g['start'] == startDate && g['end'] == endDate,
+    orElse: () {
+      final newGroup = {
+        'start': startDate,
+        'end': endDate,
+        'slips': <PaymentSlip>[],
+        'sale': 0.0,
+        'purchase': 0.0,
+        'pay': 0.0,
+        'receive': 0.0,
+      };
+      grouped.add(newGroup);
+      return newGroup;
+    },
+  );
+
+  final type = e['type']?.toString().toLowerCase() ?? '';
+  final amount = double.tryParse(e['amount']?.toString() ?? '0') ?? 0.0;
+
+  if (type == 'pay') group['pay'] += amount;
+  if (type == 'receive') group['receive'] += amount;
+}
+
+
+
+
     return grouped;
   }
+
+   
 
   @override
   void initState() {
@@ -119,12 +164,31 @@ class _PaymentScreenState extends State<PaymentScreen> {
       final resp =
           await ApiService.get('/paymentslip?page=$page&limit=20'); // 👈 backend pagination
       final data = resp.data;
+      print("Paymentslip response: $resp");
       if (data['status'] == true && data['payments'] != null) {
+
+        
+        final paymentEntries = (data['paymentEntries'] ?? []) as List<dynamic>;
         final payments = data['payments'] as List<dynamic>;
         final slips = payments.map((p) => PaymentSlip.fromJson(p)).toList();
-
+         _lastPaymentEntries = paymentEntries; // 👈 store globally
         final grouped = <String, List<PaymentSlip>>{};
         final codeNameMap = <String, String>{};
+
+         double totalPay = 0.0;
+      double totalReceive = 0.0;
+
+      // ✅ 1️⃣ Calculate pay/receive totals from PaymentEntries (has 'type')
+      for (var e in paymentEntries) {
+        final type = e['type']?.toString().toLowerCase() ?? '';
+        final amount = double.tryParse(e['amount']?.toString() ?? '0') ?? 0.0;
+
+        if (type == 'pay') {
+          totalPay += amount;
+        } else if (type == 'receive') {
+          totalReceive += amount;
+        }
+      }
 
         for (var slip in slips) {
           if (slip.name.isEmpty) continue;
@@ -192,11 +256,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     if (showAll || selectedUser == null) {
       userSlips.forEach((code, slips) {
-        finalGroups[code] = groupByTenDays(slips);
+        finalGroups[code] = groupByTenDays(slips,code);
       });
     } else {
       finalGroups[selectedUser!] =
-          groupByTenDays(allSlips.where((s) => s.code == selectedUser).toList());
+          groupByTenDays(allSlips.where((s) => s.code == selectedUser).toList(), selectedUser!);
     }
 
     return Scaffold(
@@ -292,9 +356,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         return groups.map((group) {
                           final sale = group['sale'] as double;
                           final purchase = group['purchase'] as double;
-                          final grandTotal = sale - purchase;
+                           final pay = group['pay'] as double; // 👈 added
+                          final receive = group['receive'] as double; // 👈 added
+                          final  grandTotal = (sale - purchase) + receive - pay;
+                               // 👈 updated
+                         
                           final start = group['start'] as DateTime;
                           final end = group['end'] as DateTime;
+                          print('Sale: $sale');
+print('Purchase: $purchase');
+print('Pay: $pay');
+print('Receive: $receive');
+print('Grand total: ${(sale - purchase) - receive + pay}');
 
                           return Container(
                             margin: const EdgeInsets.symmetric(
