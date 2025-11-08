@@ -5,11 +5,9 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 class TransactionPage extends StatefulWidget {
   const TransactionPage({super.key});
-
   @override
   State<TransactionPage> createState() => _TransactionPageState();
 }
-
 class _TransactionPageState extends State<TransactionPage> {
   String transactionType = "Sale";
   List<Map<String, dynamic>> customers = [];
@@ -30,11 +28,7 @@ class _TransactionPageState extends State<TransactionPage> {
   double netAmount = 0;
   String customerType = "";
 
-
-
-  final box = GetStorage();
-
-  
+  final box = GetStorage();  
  @override
 void initState() {
   super.initState();
@@ -49,8 +43,6 @@ void initState() {
 
   _fetchFirstCustomer();
 }
-
-
     Future<void> _fetchCustProList({
       String? code,
       bool all = false,
@@ -88,8 +80,6 @@ void initState() {
         print("Error fetching data: $e");
       }
     }
-
-
   Future<void> _fetchFirstCustomer() async {
     try {
       final response = await ApiService.post("/transection", {
@@ -458,14 +448,38 @@ Expanded(
   ),
 ),
 
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        entry["createdAt"] != null
-                            ? DateFormat("dd MMM").format(DateTime.parse(entry["createdAt"]))
-                            : "",
-                      ),
-                    ),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  () {
+                    String? createdDate;
+
+                    switch (entry["entryType"]) {
+                      case "milk":
+                        createdDate = entry["date"]; // ✅ milk entry uses "date"
+                        break;
+                      case "payment":
+                        createdDate = entry["createdAt"];
+                        break;
+                      case "product":
+                        createdDate = entry["createdAt"];
+                        break;
+                      case "transaction":
+                        createdDate = entry["createdAt"];
+                        break;
+                    }
+
+                    if (createdDate == null || createdDate.isEmpty) return "";
+
+                    DateTime? parsedDate = DateTime.tryParse(createdDate);
+                    return parsedDate != null
+                        ? DateFormat("dd MMM").format(parsedDate)
+                        : "";
+                  }(),
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+
 Expanded(
   flex: 2,
   child: Builder(
