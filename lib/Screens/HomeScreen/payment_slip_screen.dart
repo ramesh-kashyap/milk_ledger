@@ -12,12 +12,12 @@ class PaymentSlip {
   final double purchase;
 
   PaymentSlip({
-  required this.name,
-  required this.code,
-  this.date,
-  this.item,
-  this.sale = 0.0,
-  this.purchase = 0.0,
+    required this.name,
+    required this.code,
+    this.date,
+    this.item,
+    this.sale = 0.0,
+    this.purchase = 0.0,
   });
 
   factory PaymentSlip.fromJson(Map<String, dynamic> json) {
@@ -48,100 +48,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Map<String, String> codeToName = {};
   List<PaymentSlip> allSlips = [];
 
-  String? selectedUser; // null = show all
+  String? selectedUser;
   bool showAll = true;
   bool loading = true;
 
-  // Pagination states
   int currentPage = 1;
   int totalPages = 1;
   bool isLoadingMore = false;
   late ScrollController _scrollController;
 
-  List<dynamic> _lastPaymentEntries = []; // 👈 added
-
-  /// Group slips into 10-day ranges
-  List<Map<String, dynamic>> groupByTenDays(List<PaymentSlip> slips, String customerCode) {
-    slips.sort((a, b) => a.date?.compareTo(b.date ?? DateTime.now()) ?? 0);
-
-    final grouped = <Map<String, dynamic>>[];
-
-    for (var slip in slips) {
-      if (slip.date == null) continue;
-
-      final start = slip.date!;
-      final day = start.day;
-
-      int startDay = ((day - 1) ~/ 10) * 10 + 1;
-      int endDay = startDay + 9;
-      final startDate = DateTime(start.year, start.month, startDay);
-      final endDate = DateTime(start.year, start.month, endDay);
-
-      final existing = grouped.firstWhere(
-        (g) => g['start'] == startDate && g['end'] == endDate,
-        orElse: () {
-          final newGroup = {
-            'start': startDate,
-            'end': endDate,
-            'slips': <PaymentSlip>[],
-            'sale': 0.0,
-            'purchase': 0.0,
-            'pay': 0.0, 
-            'receive': 0.0, 
-          };
-          grouped.add(newGroup);
-          return newGroup;
-        },
-      );
-
-      existing['slips'].add(slip);
-      existing['sale'] += slip.sale;
-      existing['purchase'] += slip.purchase;
-    }
-
-   for (var e in _lastPaymentEntries) {
-  final customer = e['Customer']?['code']?.toString() ?? '';
-  if (customer != customerCode) continue; // 👈 skip other customers
-
-  final date = DateTime.tryParse(e['date'] ?? '');
-  if (date == null) continue;
-
-  int startDay = ((date.day - 1) ~/ 10) * 10 + 1;
-  int endDay = startDay + 9;
-  final startDate = DateTime(date.year, date.month, startDay);
-  final endDate = DateTime(date.year, date.month, endDay);
-
-  final group = grouped.firstWhere(
-    (g) => g['start'] == startDate && g['end'] == endDate,
-    orElse: () {
-      final newGroup = {
-        'start': startDate,
-        'end': endDate,
-        'slips': <PaymentSlip>[],
-        'sale': 0.0,
-        'purchase': 0.0,
-        'pay': 0.0,
-        'receive': 0.0,
-      };
-      grouped.add(newGroup);
-      return newGroup;
-    },
-  );
-
-  final type = e['type']?.toString().toLowerCase() ?? '';
-  final amount = double.tryParse(e['amount']?.toString() ?? '0') ?? 0.0;
-
-  if (type == 'pay') group['pay'] += amount;
-  if (type == 'receive') group['receive'] += amount;
-}
-
-
-
-
-    return grouped;
-  }
-
-   
+  List<dynamic> _lastPaymentEntries = []; // 👈 All payment entries
 
   @override
   void initState() {
@@ -162,33 +78,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> fetchPayments({int page = 1}) async {
     try {
       final resp =
-          await ApiService.get('/paymentslip?page=$page&limit=20'); // 👈 backend pagination
+          await ApiService.get('/paymentslip?page=$page&limit=20');
       final data = resp.data;
       print("Paymentslip response: $resp");
-      if (data['status'] == true && data['payments'] != null) {
 
-        
+      if (data['status'] == true && data['payments'] != null) {
         final paymentEntries = (data['paymentEntries'] ?? []) as List<dynamic>;
         final payments = data['payments'] as List<dynamic>;
         final slips = payments.map((p) => PaymentSlip.fromJson(p)).toList();
-         _lastPaymentEntries = paymentEntries; // 👈 store globally
+
+        _lastPaymentEntries = paymentEntries; // 👈 store all payments
+
         final grouped = <String, List<PaymentSlip>>{};
         final codeNameMap = <String, String>{};
-
-         double totalPay = 0.0;
-      double totalReceive = 0.0;
-
-      // ✅ 1️⃣ Calculate pay/receive totals from PaymentEntries (has 'type')
-      for (var e in paymentEntries) {
-        final type = e['type']?.toString().toLowerCase() ?? '';
-        final amount = double.tryParse(e['amount']?.toString() ?? '0') ?? 0.0;
-
-        if (type == 'pay') {
-          totalPay += amount;
-        } else if (type == 'receive') {
-          totalReceive += amount;
-        }
-      }
 
         for (var slip in slips) {
           if (slip.name.isEmpty) continue;
@@ -211,10 +113,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
           totalPages = data['totalPages'] ?? 1;
           currentPage = data['currentPage'] ?? page;
 
-           // 👇 Default to first customer instead of all
           if (grouped.isNotEmpty && selectedUser == null) {
             selectedUser = grouped.keys.first;
-            showAll = false; // default: only first user’s data
+            showAll = false;
           }
 
           loading = false;
@@ -251,25 +152,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
     }
 
-    // 👉 Build finalGroups dynamically
-    Map<String, List<Map<String, dynamic>>> finalGroups = {};
-
+    // 🔹 Filter payment entries based on selected user or show all
+    List<dynamic> filteredPayments = [];
     if (showAll || selectedUser == null) {
-      userSlips.forEach((code, slips) {
-        finalGroups[code] = groupByTenDays(slips,code);
-      });
+      filteredPayments = _lastPaymentEntries;
     } else {
-      finalGroups[selectedUser!] =
-          groupByTenDays(allSlips.where((s) => s.code == selectedUser).toList(), selectedUser!);
+      filteredPayments = _lastPaymentEntries
+          .where((e) =>
+              e['Customer']?['code']?.toString() == selectedUser)
+          .toList();
     }
 
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Color(0xFF62C370),
+        backgroundColor: const Color(0xFF62C370),
         title: Text(
           "payment_slips".tr,
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -277,7 +177,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       ),
       body: Column(
         children: [
-          // Filter Section
+          // 🔹 Filter Section
           Container(
             padding: const EdgeInsets.all(12),
             margin: const EdgeInsets.all(10),
@@ -319,7 +219,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
                 const SizedBox(width: 10),
                 Text("all".tr,
-                    style: TextStyle(fontWeight: FontWeight.w600)),
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
                 Switch(
                   activeColor: const Color(0xFF62C370),
                   value: showAll,
@@ -334,128 +234,128 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
           ),
 
-          // Data Section
+          // 🔹 Payment Entries Section
           Expanded(
-            child: finalGroups.isEmpty
+            child: filteredPayments.isEmpty
                 ? Center(
                     child: Text(
                       "no_data".tr,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
                       ),
                     ),
                   )
-                : ListView(
+                : ListView.builder(
                     controller: _scrollController,
-                    children: [
-                      ...finalGroups.entries.expand((entry) {
-                        final code = entry.key;
-                        final groups = entry.value;
+                    itemCount: filteredPayments.length +
+                        (isLoadingMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index >= filteredPayments.length) {
+                        return const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
 
-                        return groups.map((group) {
-                          final sale = group['sale'] as double;
-                          final purchase = group['purchase'] as double;
-                           final pay = group['pay'] as double; // 👈 added
-                          final receive = group['receive'] as double; // 👈 added
-                          final  grandTotal = (sale - purchase) + receive - pay;
-                               // 👈 updated
-                         
-                          final start = group['start'] as DateTime;
-                          final end = group['end'] as DateTime;
-                          print('Sale: $sale');
-print('Purchase: $purchase');
-print('Pay: $pay');
-print('Receive: $receive');
-print('Grand total: ${(sale - purchase) - receive + pay}');
+                      final entry = filteredPayments[index];
+                      final customer =
+                          entry['Customer']?['name'] ?? 'Unknown';
+                      final code =
+                          entry['Customer']?['code'] ?? '—';
+                      final amount =
+                          double.tryParse(entry['amount']?.toString() ?? '0') ?? 0.0;
+                      final type = entry['type']?.toString() ?? '';
+                      final date = entry['date'] != null
+                          ? DateFormat('dd MMM yyyy')
+                              .format(DateTime.parse(entry['date']))
+                          : '';
 
-                          return Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.shade200,
-                                  blurRadius: 6,
-                                  offset: const Offset(2, 2),
-                                ),
-                              ],
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.shade200,
+                              blurRadius: 6,
+                              offset: const Offset(2, 2),
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(14),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "$customer ($code)",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Color(0xFF1A5D1A),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                date,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const Divider(),
+                              const SizedBox(height: 8),
+                              // 🔹 Keep layout same — show only amount in "Received"
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    "${codeToName[code]} ($code)",
-                                    style: const TextStyle(
+                                  const Text("Sale: ₹0.00"),
+                                  const Text("Purchase: ₹0.00"),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text("grand_total",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  const Text(
+                                    "₹0.00",
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: Color(0xFF1A5D1A),
+                                      color: Color(0xFF62C370),
                                     ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    "${DateFormat('dd MMM yyyy').format(start)} → ${DateFormat('dd MMM yyyy').format(end)}",
-                                    style: const TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const Divider(),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("${'sale'.tr}: ₹${sale.toStringAsFixed(2)}"), 
-                                      Text("${'purchase'.tr}: ₹${purchase.toStringAsFixed(2)}"),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("grand_total".tr,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                      Text(
-                                        "₹${grandTotal.toStringAsFixed(2)}",
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF62C370),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("${'received'.tr}: ₹${sale.toStringAsFixed(2)}",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                      Text("${'due'.tr}: ₹0.00",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                    ],
                                   ),
                                 ],
                               ),
-                            ),
-                          );
-                        }).toList();
-                      }),
-                      if (isLoadingMore)
-                        const Padding(
-                          padding: EdgeInsets.all(12),
-                          child:
-                              Center(child: CircularProgressIndicator()),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "${type.capitalizeFirst ?? 'Entry'}: ₹${amount.toStringAsFixed(2)}",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const Text(
+                                    "Due: ₹0.00",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                    ],
+                      );
+                    },
                   ),
           ),
         ],
