@@ -385,6 +385,8 @@ void _fillFatSnfRatesForAnimal(String animal) {
   setState(() => _loadingEntries = true);
   try {
     // Pass customer_id as a query parameter
+    print('Session: ${session}, Date: ${date.toIso8601String().substring(0, 10)}');
+    final formattedDate = date.toIso8601String().substring(0, 10);
     final res = await ApiService.get(
   '/recent-milk-entries');
 
@@ -392,9 +394,22 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
   
     if (data['status'] == true && data['data'] is List) {
+       final allEntries = List<Map<String, dynamic>>.from(data['data']);
+
+      // 🔽 Apply frontend filters
+      final filteredEntries = allEntries.where((entry) {
+        final entrySession = entry['session']?.toString().toUpperCase() ?? '';
+        final entryDate = entry['date']?.toString().substring(0, 10) ?? '';
+
+        return entrySession == session.toUpperCase() &&
+               entryDate == formattedDate;
+      }).toList();
+
       setState(() {
-        _recentEntries = List<Map<String, dynamic>>.from(data['data']);
+        _recentEntries = filteredEntries;
       });
+
+      print('✅ Filtered entries count: ${filteredEntries.length}');
     }
   } catch (e) {
     print("Error loading recent entries: $e");
@@ -461,6 +476,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
       lastDate: DateTime(2100),
     );
     if (d != null) setState(() => date = d);
+    _loadRecentEntries();
   }
 
   // When animal tile tapped
@@ -970,7 +986,12 @@ void _fillFatSnfRatesForAnimal(String animal) {
                     ButtonSegment(value: 'PM', label: Text('pm'.tr)),
                   ],
                   selected: {session},
-                  onSelectionChanged: (s) => setState(() => session = s.first),
+                  onSelectionChanged: (s) {
+      setState(() {
+        session = s.first;
+      });
+      _loadRecentEntries(); // 🔥 reload entries after changing session
+    },
                   style: ButtonStyle(
                     shape: WidgetStatePropertyAll(
                       RoundedRectangleBorder(
@@ -1203,15 +1224,14 @@ if (_recentEntries.isNotEmpty)
       child: ListView(
         children: [
           // 🟢 BUY SECTION
-          if (_recentEntries.any((e) => e['note'] == 'Buy'  &&
-        (e['date']?.toString().startsWith(today) == true))) ...[
+          if (_recentEntries.any((e) => e['note'] == 'Buy')) ...[
             // Section title
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               color: Colors.green.shade50,
                alignment: Alignment.center,
-              child: const Text(
-                'Buy Entries',
+              child: Text(
+                'buy_entries'.tr,
                 style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
               ),
             ),
@@ -1221,20 +1241,19 @@ if (_recentEntries.isNotEmpty)
               color: Colors.grey.shade200,
               padding: const EdgeInsets.all(8),
               child: Row(
-                children: const [
-                  Expanded(flex: 2, child: Text('Ac No', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Milk', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Fat', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Rate', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                children:  [
+                  Expanded(flex: 2, child: Text('account_number'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('milk'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('fat'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('rate'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('amount'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
                 ],
               ),
             ),
 
             // Buy entries list
             ..._recentEntries
-                .where((entry) => entry['note'] == 'Buy'  &&
-              entry['date']?.toString().startsWith(today) == true)
+                .where((entry) => entry['note'] == 'Buy' )
                 .map((entry) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       child: Row(
@@ -1261,14 +1280,14 @@ if (_recentEntries.isNotEmpty)
               padding: const EdgeInsets.all(8),
               child: Row(
                 children: [
-                  const Expanded(
+                 Expanded(
                     flex: 2,
-                    child: Text('Total (Buy)', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text('total_buy'.tr, style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                   Expanded(
                     child: Text(
                       _recentEntries
-                          .where((e) => e['note'] == 'Buy' && (e['date']?.toString().startsWith(today) == true))
+                          .where((e) => e['note'] == 'Buy' )
                           .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['litres']}') ?? 0))
                           .toStringAsFixed(2),
                     ),
@@ -1278,7 +1297,7 @@ if (_recentEntries.isNotEmpty)
   child: Text(
     (() {
       // Filter only 'Buy' entries
-      final buyList = _recentEntries.where((e) => e['note'] == 'Buy' && (e['date']?.toString().startsWith(today) == true)).toList();
+      final buyList = _recentEntries.where((e) => e['note'] == 'Buy' ).toList();
       if (buyList.isEmpty) return '0.00';
 
       // Sum up all fat values
@@ -1302,7 +1321,7 @@ if (_recentEntries.isNotEmpty)
   child: Text(
     (() {
       // 🔹 Filter only entries with note == 'Buy'
-      final buyList = _recentEntries.where((e) => e['note'] == 'Buy' && (e['date']?.toString().startsWith(today) == true)).toList();
+      final buyList = _recentEntries.where((e) => e['note'] == 'Buy' ).toList();
       
       if (buyList.isEmpty) return '0.00'; // no entries = 0.00
       
@@ -1323,7 +1342,7 @@ if (_recentEntries.isNotEmpty)
                   Expanded(
                     child: Text(
                       _recentEntries
-                          .where((e) => e['note'] == 'Buy' && (e['date']?.toString().startsWith(today) == true))
+                          .where((e) => e['note'] == 'Buy' )
                           .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['amount']}') ?? 0))
                           .toStringAsFixed(2),
                       textAlign: TextAlign.end,
@@ -1337,14 +1356,13 @@ if (_recentEntries.isNotEmpty)
           ],
 
           // 🔴 SALE SECTION
-          if (_recentEntries.any((e) => (e['note'] == 'Sale' || e['note'] == 'Cash Sale') &&
-        (e['date']?.toString().startsWith(today) == true))) ...[
+          if (_recentEntries.any((e) => (e['note'] == 'Sale' || e['note'] == 'Cash Sale'))) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               color: Colors.red.shade50,
                alignment: Alignment.center,
-              child: const Text(
-                'Sale Entries',
+              child: Text(
+                'sale_entries'.tr,
                 style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
               ),
             ),
@@ -1354,20 +1372,19 @@ if (_recentEntries.isNotEmpty)
               color: Colors.grey.shade200,
               padding: const EdgeInsets.all(8),
               child: Row(
-                children: const [
-                  Expanded(flex: 2, child: Text('Ac No', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Milk', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Fat', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Rate', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                children: [
+                  Expanded(flex: 2, child: Text('account_number'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('milk'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('fat'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('rate'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('amount'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
                 ],
               ),
             ),
 
             // Sale entries list
             ..._recentEntries
-                .where((entry) => (entry['note'] == 'Sale'  || entry['note'] == 'Cash Sale') &&
-        entry['date']?.toString().startsWith(today) == true)
+                .where((entry) => (entry['note'] == 'Sale'  || entry['note'] == 'Cash Sale') )
                 .map((entry) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       child: Row(
@@ -1404,15 +1421,14 @@ if (_recentEntries.isNotEmpty)
               padding: const EdgeInsets.all(8),
               child: Row(
                 children: [
-                  const Expanded(
+                   Expanded(
                     flex: 2,
-                    child: Text('Total (Sale)', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text('total_sale'.tr, style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                   Expanded(
                     child: Text(
                       _recentEntries
-                          .where((e) => (e['note'] == 'Sale'  || e['note'] == 'Cash Sale')  &&
-       (e['date']?.toString().startsWith(today) == true))
+                          .where((e) => (e['note'] == 'Sale'  || e['note'] == 'Cash Sale') )
                           .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['litres']}') ?? 0))
                           .toStringAsFixed(2),
                     ),
@@ -1422,8 +1438,7 @@ if (_recentEntries.isNotEmpty)
     (() {
       // 🔹 Filter today’s Sale and Cash Sale entries
       final saleList = _recentEntries.where((e) =>
-          (e['note'] == 'Sale' || e['note'] == 'Cash Sale') &&
-          (e['date']?.toString().startsWith(today) == true)).toList();
+          (e['note'] == 'Sale' || e['note'] == 'Cash Sale') ).toList();
 
       if (saleList.isEmpty) return '0.00';
 
@@ -1449,8 +1464,7 @@ if (_recentEntries.isNotEmpty)
     (() {
       // 🔹 Filter today's Sale or Cash Sale entries
       final saleList = _recentEntries.where((e) =>
-          (e['note'] == 'Sale' || e['note'] == 'Cash Sale') &&
-          (e['date']?.toString().startsWith(today) == true)).toList();
+          (e['note'] == 'Sale' || e['note'] == 'Cash Sale')).toList();
 
       if (saleList.isEmpty) return '0.00';
 
@@ -1472,8 +1486,7 @@ if (_recentEntries.isNotEmpty)
                   Expanded(
                     child: Text(
                       _recentEntries
-                          .where((e) => (e['note'] == 'Sale' || e['note'] == 'Cash Sale') &&
-        (e['date']?.toString().startsWith(today) == true))
+                          .where((e) => (e['note'] == 'Sale' || e['note'] == 'Cash Sale') )
                           .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['amount']}') ?? 0))
                           .toStringAsFixed(2),
                       textAlign: TextAlign.end,
