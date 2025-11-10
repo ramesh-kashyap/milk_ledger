@@ -480,47 +480,47 @@ Expanded(
                 ),
               ),
 
-Expanded(
-  flex: 2,
-  child: Builder(
-    builder: (context) {
-      final amt = double.tryParse(entry["amount"].toString()) ?? 0;
-      final type = entry["entryType"];
-      final custType = selectedCustomer["customerType"] ?? "Seller";
+              Expanded(
+                flex: 2,
+                child: Builder(
+                  builder: (context) {
+                    final amt = double.tryParse(entry["amount"].toString()) ?? 0;
+                    final type = entry["entryType"];
+                    final custType = selectedCustomer["customerType"] ?? "Seller";
 
-      bool isPositive = false;
+                    bool isPositive = false;
 
-      // ✅ Determine whether this amount is + or -
-      if (custType == "Seller") {
-        // Seller → milk + product + payment - transaction
-        if (type == "milk" || type == "payment" || type == "product") {
-          isPositive = true;
-        } else if (type == "transaction") {
-          isPositive = false;
-        }
-      } else if (custType == "Purchaser") {
-        // Purchaser → -milk - product + payment + transaction
-        if (type == "transaction" || type == "payment") {
-          isPositive = true;
-        } else if (type == "product" || type == "milk") {
-          isPositive = false;
-        }
-      }
+                    // ✅ Determine whether this amount is + or -
+                    if (custType == "Seller") {
+                      // Seller → milk + product + payment - transaction
+                      if (type == "milk" || type == "payment" || type == "product") {
+                        isPositive = true;
+                      } else if (type == "transaction") {
+                        isPositive = false;
+                      }
+                    } else if (custType == "Purchaser") {
+                      // Purchaser → -milk - product + payment + transaction
+                      if (type == "transaction" || type == "payment") {
+                        isPositive = true;
+                      } else if (type == "product" || type == "milk") {
+                        isPositive = false;
+                      }
+                    }
 
-      final prefix = isPositive ? "+" : "-";
-      final color = isPositive ? Colors.green[700] : Colors.red[700];
+                    final prefix = isPositive ? "+" : "-";
+                    final color = isPositive ? Colors.green[700] : Colors.red[700];
 
-      return Text(
-        "$prefix${amt.toStringAsFixed(2)}",
-        textAlign: TextAlign.right,
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
-      );
-    },
-  ),
-),
+                    return Text(
+                      "$prefix${amt.toStringAsFixed(2)}",
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    );
+                  },
+                ),
+              ),
 
                   ],
                 ),
