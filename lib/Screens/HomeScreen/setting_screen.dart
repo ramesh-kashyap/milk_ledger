@@ -100,11 +100,11 @@ class _SettingsPageState extends State<SettingsPage> {
         int? selectedDuration = box.read('duration');
 
         Get.defaultDialog(
-          title: "Select Duration",
+          title: "select_duration".tr,
           content: Column(
             children: durations.map((days) {
               return RadioListTile<int>(
-                title: Text("$days days"),
+                title: Text("$days ${'days'.tr}"),
                 value: days,
                 groupValue: selectedDuration,
                 onChanged: (val) {
@@ -114,8 +114,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   });
                   Get.back();
                   Get.snackbar(
-                    "Updated",
-                    "Duration set to $val days",
+                    "updated".tr, // 🌐 "Updated" translated
+                    "${'duration_set_to'.tr} $val ${'days'.tr}", // 🌐 message translated
                     snackPosition: SnackPosition.BOTTOM,
                   );
                 },

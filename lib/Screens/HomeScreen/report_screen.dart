@@ -140,7 +140,10 @@ class _ReportScreenState extends State<ReportScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        "Showing last $durationDays days\n($rangeText)",
+                        'last_days_range'.trParams({
+                          'days': durationDays.toString(),
+                          'range': rangeText,
+                        }),
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                             color: Colors.black87, fontWeight: FontWeight.w600),
