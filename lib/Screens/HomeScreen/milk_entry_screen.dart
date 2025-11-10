@@ -511,6 +511,8 @@ void _fillFatSnfRatesForAnimal(String animal) {
     _recompute();
   }
 
+
+
  Future<void> save() async {
   
   if (seller == null) {
@@ -581,7 +583,11 @@ void _fillFatSnfRatesForAnimal(String animal) {
             final retryData = retry.data;
         if (retryData['status'] == true) {
             Get.snackbar("Success 🎉", "Milk entry saved successfully"); 
-            _loadRecentEntries();        
+            _loadRecentEntries();   
+             Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) => const MilkEntryScreen()),
+  );
             // Navigator.pop(context, retry);
         } else {
           Get.snackbar("Error", retryData['message'] ?? "Something went wrong");
@@ -595,7 +601,12 @@ void _fillFatSnfRatesForAnimal(String animal) {
     // ✅ Normal success
     if (data['status'] == true) {
       Get.snackbar("Success 🎉", "Milk entry saved successfully");
+        
       _loadRecentEntries();  
+       Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) => const MilkEntryScreen()),
+  );
     } else {
       Get.snackbar("Milk Add Failed", data['message'] ?? "Something went wrong");
     }
