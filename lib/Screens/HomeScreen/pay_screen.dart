@@ -77,6 +77,11 @@ void didChangeDependencies() {
 
 
 
+double get balanceGrantTotal {
+  // total milk amount minus payments received
+
+  return   balanceProMilk;
+}
  final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _acNoCtrl = TextEditingController();
@@ -153,8 +158,12 @@ String _formatSessionDate(String dateStr, String session) {
     return '$dateStr $session';
   }
 }
+  
+
 
 Future<void> _createPayment(String type) async {
+ 
+
   if (selectedCustomerId == null || _amountController.text.isEmpty) {       
     Get.snackbar("Warning","Select a customer and enter an amount",);
     return;
@@ -167,11 +176,14 @@ Future<void> _createPayment(String type) async {
     return;
   }
 
+ 
   try {
+    print('Sending payment request: amount=$amount, type=$type, customerId=$selectedCustomerId, balanceGrantTotal=$balanceGrantTotal');
     final response = await ApiService.post('/create-payment', {
       'amount': amount,
       'type': type, // use the determined type
       'customerId': selectedCustomerId,
+       'balanceGrantTotal': balanceGrantTotal,
     });
 
     if (response.data['success'] == true) {
@@ -461,11 +473,6 @@ double get balanceProMilk {
 }
 
 
-double get balanceGrantTotal {
-  // total milk amount minus payments received
-
-  return   balanceProMilk;
-}
 
 
  double get totalMilk =>
