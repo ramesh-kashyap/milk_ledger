@@ -264,7 +264,7 @@ class _MilkRateSettingsScreenState extends State<MilkRateSettingsScreen> {
             },
           ),
           const SizedBox(height: 18),
-          Text('milk_rate_tip',
+          Text('milk_rate_tip'.tr,
             style: theme.textTheme.bodyMedium,
           ),
         ],

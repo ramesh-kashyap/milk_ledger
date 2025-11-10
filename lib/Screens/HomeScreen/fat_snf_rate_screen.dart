@@ -57,9 +57,9 @@ void initState() {
   }
 
   String? _numRequired(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Required';
+    if (v == null || v.trim().isEmpty) return 'required_field'.tr;
     final n = double.tryParse(v);
-    if (n == null || n < 0) return 'Enter a valid number';
+    if (n == null || n < 0) return 'valid_number'.tr;
     return null;
   }
 
@@ -90,12 +90,12 @@ void initState() {
     final data = response.data;
 
     if (data['status'] == true) {
-        Get.snackbar("Rates Saved ✅", "Milk rates have been updated successfully",
+        Get.snackbar( "rates_saved".tr,"milk_rate_updated".tr,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.green.shade100);
         Navigator.pop(context, payload);
       } else {
-        Get.snackbar("Save Failed ❌", data['message'] ?? "Could not save milk rates",
+        Get.snackbar( "save_failed".tr, data['message'] ?? "save_failed_msg".tr,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red.shade100);
       }
@@ -111,7 +111,7 @@ void initState() {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Rate chart')),
+      appBar: AppBar(title: Text('rate_chart'.tr)),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: ElevatedButton(
@@ -125,7 +125,7 @@ void initState() {
             ),
           ),
           child:
-              const Text('Save', style: TextStyle(fontWeight: FontWeight.w600)),
+              Text('save'.tr, style: TextStyle(fontWeight: FontWeight.w600)),
         ),
       ),
       body: Form(
@@ -133,57 +133,57 @@ void initState() {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           children: [
-            Text('Make rate',
+            Text('make_rate'.tr,
                 style:
                     theme.textTheme.titleMedium?.copyWith(color: Colors.green)),
             const SizedBox(height: 12),
 
             // ---- Buffalo ----
-            Text('Buffalo Milk',
+            Text('buffalo_milk'.tr,
                 style:
                     theme.textTheme.titleMedium?.copyWith(color: Colors.green)),
             const SizedBox(height: 8),
             _Tile(
-              title: 'STD FAT',
-              subtitle: '₹ per fat unit',
+              title: 'std_fat'.tr,
+              subtitle: 'fat_unit'.tr,
               child: _NumInput(controller: _bmFatCtrl, validator: _numRequired),
             ),
 
             const SizedBox(height: 10),
             _Tile(
-              title: 'STD SNF',
-              subtitle: '₹ per SNF kg',
+              title: 'std_snf'.tr,
+              subtitle: 'snf_kg'.tr,
               child: _NumInput(controller: _bmSnfCtrl, validator: _numRequired),
             ),
              const SizedBox(height: 8),
             _Tile(
-              title: 'RATE',
-              subtitle: 'Fixed Rate Per Litre',
+              title: 'rate'.tr,
+              subtitle: 'fixed_rate_per_litre'.tr,
               child: _NumInput(controller: _bmRateCtrl, validator: _numRequired),
             ),
 
             const Divider(height: 32),
 
             // ---- Cow ----
-            Text('Cow Rate',
+            Text('cow_rate'.tr,
                 style:
                     theme.textTheme.titleMedium?.copyWith(color: Colors.green)),
             const SizedBox(height: 8),
             _Tile(
-              title: 'STD FAT',
-              subtitle: '₹ per fat unit',
+              title: 'std_fat'.tr,
+              subtitle: 'fat_unit'.tr,
               child: _NumInput(controller: _cmFatCtrl, validator: _numRequired),
             ),
             const SizedBox(height: 10),
             _Tile(
-              title: 'STD SNF',
-              subtitle: '₹ per SNF kg',
+              title: 'std_snf'.tr,
+              subtitle: 'snf_kg'.tr,
               child: _NumInput(controller: _cmSnfCtrl, validator: _numRequired),
             ),
              const SizedBox(height: 8),
             _Tile(
-              title: 'RATE',
-              subtitle: 'Fixed Rate Per Litre',
+              title: 'rate'.tr,
+              subtitle: 'fixed_rate_per_litre'.tr,
               child: _NumInput(controller: _cmRateCtrl, validator: _numRequired),
             ),
           ],

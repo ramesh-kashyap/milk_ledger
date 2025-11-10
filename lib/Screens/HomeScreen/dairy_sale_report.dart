@@ -154,9 +154,9 @@ class _DailySaleReportScreenState extends State<DailySaleReportScreen> {
               child: Row(
                 children: [
                   Expanded(flex: 1, child: Text("total".tr, style: const TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(flex: 1, child: Text("$totalLitres")),
-                  Expanded(flex: 1, child: Text("$totalFat")),
-                  Expanded(flex: 1, child: Text("$totalRate")),
+                  Expanded(flex: 1, child: Text("${totalLitres.toStringAsFixed(2)}")),
+                  Expanded(flex: 1, child: Text("${totalFat.toStringAsFixed(2)}")),
+                  Expanded(flex: 1, child: Text("${totalRate.toStringAsFixed(2)}")),
                   Expanded(flex: 1, child: Text("${totalAmount.toStringAsFixed(2)}")),
                 ],
               ),
