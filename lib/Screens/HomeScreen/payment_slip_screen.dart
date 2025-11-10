@@ -80,7 +80,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
       final resp =
           await ApiService.get('/paymentslip?page=$page&limit=20');
       final data = resp.data;
-      print("Paymentslip response: $resp");
 
       if (data['status'] == true && data['payments'] != null) {
         final paymentEntries = (data['paymentEntries'] ?? []) as List<dynamic>;
@@ -314,9 +313,9 @@ final due = grandTotal - amount;
                                 const SizedBox(height: 8),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: const [
-                                    Text("Sale: ₹0.00"),
-                                    Text("Purchase: ₹0.00"),
+                                  children:  [
+                                    Text("${'sale'.tr}: ₹0.00"),
+                                    Text("${'purchase'.tr}: ₹0.00"),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
@@ -324,8 +323,8 @@ final due = grandTotal - amount;
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text(
-                                      "Grand Total",
+                                    Text(
+                                      "grand_total".tr,
                                       style: TextStyle(fontWeight: FontWeight.bold),
                                     ),
                                     Text(
@@ -343,15 +342,15 @@ final due = grandTotal - amount;
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      "${type.capitalizeFirst ?? 'Entry'}: ₹${amount.toStringAsFixed(2)}",
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      "Due: ₹${due.toStringAsFixed(2)}",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.redAccent,
+                                        "${'receive'.tr}: ₹${amount.toStringAsFixed(2)}",
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
                                       ),
+                                    Text(
+                                        "${'due'.tr}: ₹${due.toStringAsFixed(2)}",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.redAccent,
+                                        ),
                                     ),
                                   ],
                                 ),

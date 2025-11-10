@@ -419,14 +419,28 @@ Expanded(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       // ✅ Label for table source
-      Text(
-        "[${entry["entryType"].toString().capitalizeFirst}]",
-        style: const TextStyle(
-          color: Colors.blueGrey,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
+        Text(
+          () {
+            switch (entry["entryType"]) {
+              case "milk":
+                return "milk_entry".tr;
+              case "product":
+                return "product".tr;
+              case "payment":
+                return "payment".tr;
+              case "transaction":
+                return "transaction_entry".tr;
+              default:
+                return entry["entryType"].toString().capitalizeFirst ?? "";
+            }
+          }(),
+          style: const TextStyle(
+            color: Colors.blueGrey,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
         ),
-      ),
+
 
       const SizedBox(height: 2),
 
