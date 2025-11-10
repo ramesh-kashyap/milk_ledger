@@ -1230,8 +1230,8 @@ if (_recentEntries.isNotEmpty)
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               color: Colors.green.shade50,
                alignment: Alignment.center,
-              child: const Text(
-                'Buy Entries',
+              child: Text(
+                'buy_entries'.tr,
                 style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
               ),
             ),
@@ -1241,12 +1241,12 @@ if (_recentEntries.isNotEmpty)
               color: Colors.grey.shade200,
               padding: const EdgeInsets.all(8),
               child: Row(
-                children: const [
-                  Expanded(flex: 2, child: Text('Ac No', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Milk', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Fat', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Rate', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                children:  [
+                  Expanded(flex: 2, child: Text('account_number'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('milk'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('fat'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('rate'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('amount'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
                 ],
               ),
             ),
@@ -1280,9 +1280,9 @@ if (_recentEntries.isNotEmpty)
               padding: const EdgeInsets.all(8),
               child: Row(
                 children: [
-                  const Expanded(
+                 Expanded(
                     flex: 2,
-                    child: Text('Total (Buy)', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text('total_buy'.tr, style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                   Expanded(
                     child: Text(
@@ -1361,8 +1361,8 @@ if (_recentEntries.isNotEmpty)
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               color: Colors.red.shade50,
                alignment: Alignment.center,
-              child: const Text(
-                'Sale Entries',
+              child: Text(
+                'sale_entries'.tr,
                 style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
               ),
             ),
@@ -1372,12 +1372,12 @@ if (_recentEntries.isNotEmpty)
               color: Colors.grey.shade200,
               padding: const EdgeInsets.all(8),
               child: Row(
-                children: const [
-                  Expanded(flex: 2, child: Text('Ac No', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Milk', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Fat', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Rate', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(child: Text('Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                children: [
+                  Expanded(flex: 2, child: Text('account_number'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('milk'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('fat'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('rate'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
+                  Expanded(child: Text('amount'.tr, style: TextStyle(fontWeight: FontWeight.bold))),
                 ],
               ),
             ),
@@ -1421,9 +1421,9 @@ if (_recentEntries.isNotEmpty)
               padding: const EdgeInsets.all(8),
               child: Row(
                 children: [
-                  const Expanded(
+                   Expanded(
                     flex: 2,
-                    child: Text('Total (Sale)', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text('total_sale'.tr, style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                   Expanded(
                     child: Text(
