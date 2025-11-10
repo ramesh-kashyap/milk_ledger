@@ -765,6 +765,7 @@ onChanged: (int? value) async {
             color: Colors.white,
             padding: const EdgeInsets.all(8),
             child: Column(
+               mainAxisSize: MainAxisSize.min, 
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,   children: [
     Text("balance_amount".tr,
@@ -812,6 +813,7 @@ onChanged: (int? value) async {
               ],
             ),
           ),
+
         ],
       ),
     );

@@ -1203,7 +1203,8 @@ if (_recentEntries.isNotEmpty)
       child: ListView(
         children: [
           // 🟢 BUY SECTION
-          if (_recentEntries.any((e) => e['note'] == 'Buy')) ...[
+          if (_recentEntries.any((e) => e['note'] == 'Buy'  &&
+        (e['date']?.toString().startsWith(today) == true))) ...[
             // Section title
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -1267,36 +1268,62 @@ if (_recentEntries.isNotEmpty)
                   Expanded(
                     child: Text(
                       _recentEntries
-                          .where((e) => e['note'] == 'Buy')
+                          .where((e) => e['note'] == 'Buy' && (e['date']?.toString().startsWith(today) == true))
                           .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['litres']}') ?? 0))
                           .toStringAsFixed(2),
                     ),
                   ),
                     // 🧈 Total Fat
     Expanded(
-      child: Text(
-        _recentEntries
-            .where((e) => e['note'] == 'Buy')
-            .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['fat']}') ?? 0))
-            .toStringAsFixed(2),
-      ),
-    ),
+  child: Text(
+    (() {
+      // Filter only 'Buy' entries
+      final buyList = _recentEntries.where((e) => e['note'] == 'Buy' && (e['date']?.toString().startsWith(today) == true)).toList();
+      if (buyList.isEmpty) return '0.00';
+
+      // Sum up all fat values
+      final totalFat = buyList.fold<double>(
+        0,
+        (sum, e) => sum + (double.tryParse(e['fat']?.toString() ?? '0') ?? 0),
+      );
+
+      // Calculate average fat
+      final averageFat = totalFat / buyList.length;
+
+      return averageFat.toStringAsFixed(2);
+    })(),
+    style: const TextStyle(fontWeight: FontWeight.bold),
+  ),
+),
+
 
     // 💰 Average Rate
-    Expanded(
-      child: Text(
-        (() {
-          final saleList = _recentEntries.where((e) => e['note'] == 'Buy').toList();
-          if (saleList.isEmpty) return '0.00';
-          final totalRate = saleList.fold<double>(0, (sum, e) => sum + (double.tryParse('${e['rate']}') ?? 0));
-          return (totalRate / saleList.length).toStringAsFixed(2);
-        })(),
-      ),
-    ),
+   Expanded(
+  child: Text(
+    (() {
+      // 🔹 Filter only entries with note == 'Buy'
+      final buyList = _recentEntries.where((e) => e['note'] == 'Buy' && (e['date']?.toString().startsWith(today) == true)).toList();
+      
+      if (buyList.isEmpty) return '0.00'; // no entries = 0.00
+      
+      // 🔹 Sum up all rates safely
+      final totalRate = buyList.fold<double>(
+        0,
+        (sum, e) => sum + (double.tryParse(e['rate']?.toString() ?? '0') ?? 0),
+      );
+      
+      // 🔹 Calculate average
+      final averageRate = totalRate / buyList.length;
+      
+      return averageRate.toStringAsFixed(2);
+    })(),
+    style: const TextStyle(fontWeight: FontWeight.bold),
+  ),
+),
                   Expanded(
                     child: Text(
                       _recentEntries
-                          .where((e) => e['note'] == 'Buy')
+                          .where((e) => e['note'] == 'Buy' && (e['date']?.toString().startsWith(today) == true))
                           .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['amount']}') ?? 0))
                           .toStringAsFixed(2),
                       textAlign: TextAlign.end,
@@ -1310,7 +1337,8 @@ if (_recentEntries.isNotEmpty)
           ],
 
           // 🔴 SALE SECTION
-          if (_recentEntries.any((e) => e['note'] == 'Sale' || e['note'] == 'Cash Sale')) ...[
+          if (_recentEntries.any((e) => (e['note'] == 'Sale' || e['note'] == 'Cash Sale') &&
+        (e['date']?.toString().startsWith(today) == true))) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               color: Colors.red.shade50,
@@ -1371,8 +1399,6 @@ if (_recentEntries.isNotEmpty)
                       ),
                     ))
                 .toList(),
-
-            // Sale Total row
             const Divider(thickness: 1),
             Padding(
               padding: const EdgeInsets.all(8),
@@ -1385,35 +1411,69 @@ if (_recentEntries.isNotEmpty)
                   Expanded(
                     child: Text(
                       _recentEntries
-                          .where((e) => e['note'] == 'Sale')
+                          .where((e) => (e['note'] == 'Sale'  || e['note'] == 'Cash Sale')  &&
+       (e['date']?.toString().startsWith(today) == true))
                           .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['litres']}') ?? 0))
                           .toStringAsFixed(2),
                     ),
                   ),
                   Expanded(
-      child: Text(
-        _recentEntries
-            .where((e) => e['note'] == 'Sale')
-            .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['fat']}') ?? 0))
-            .toStringAsFixed(2),
-      ),
-    ),
+  child: Text(
+    (() {
+      // 🔹 Filter today’s Sale and Cash Sale entries
+      final saleList = _recentEntries.where((e) =>
+          (e['note'] == 'Sale' || e['note'] == 'Cash Sale') &&
+          (e['date']?.toString().startsWith(today) == true)).toList();
+
+      if (saleList.isEmpty) return '0.00';
+
+      // 🔹 Sum the fat values
+      final totalFat = saleList.fold<double>(
+        0,
+        (sum, e) => sum + (double.tryParse(e['fat']?.toString() ?? '0') ?? 0),
+      );
+
+      // 🔹 Calculate average fat
+      final averageFat = totalFat / saleList.length;
+
+      return averageFat.toStringAsFixed(2);
+    })(),
+    style: const TextStyle(fontWeight: FontWeight.bold),
+  ),
+),
+
 
     // 💰 Average Rate
-    Expanded(
-      child: Text(
-        (() {
-          final saleList = _recentEntries.where((e) => e['note'] == 'Sale').toList();
-          if (saleList.isEmpty) return '0.00';
-          final totalRate = saleList.fold<double>(0, (sum, e) => sum + (double.tryParse('${e['rate']}') ?? 0));
-          return (totalRate ).toStringAsFixed(2);
-        })(),
-      ),
-    ),
+   Expanded(
+  child: Text(
+    (() {
+      // 🔹 Filter today's Sale or Cash Sale entries
+      final saleList = _recentEntries.where((e) =>
+          (e['note'] == 'Sale' || e['note'] == 'Cash Sale') &&
+          (e['date']?.toString().startsWith(today) == true)).toList();
+
+      if (saleList.isEmpty) return '0.00';
+
+      // 🔹 Sum up the rates
+      final totalRate = saleList.fold<double>(
+        0,
+        (sum, e) => sum + (double.tryParse(e['rate']?.toString() ?? '0') ?? 0),
+      );
+
+      // 🔹 Calculate average
+      final averageRate = totalRate / saleList.length;
+
+      return averageRate.toStringAsFixed(2);
+    })(),
+    style: const TextStyle(fontWeight: FontWeight.bold),
+  ),
+),
+
                   Expanded(
                     child: Text(
                       _recentEntries
-                          .where((e) => e['note'] == 'Sale')
+                          .where((e) => (e['note'] == 'Sale' || e['note'] == 'Cash Sale') &&
+        (e['date']?.toString().startsWith(today) == true))
                           .fold<double>(0, (sum, e) => sum + (double.tryParse('${e['amount']}') ?? 0))
                           .toStringAsFixed(2),
                       textAlign: TextAlign.end,
