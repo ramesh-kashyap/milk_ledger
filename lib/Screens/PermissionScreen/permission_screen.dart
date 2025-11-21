@@ -31,7 +31,7 @@ class PermissionScreen extends StatelessWidget {
         if (Get.isBottomSheetOpen ?? false) Get.back();
 
         // go to OTP screen (adjust route/screen to your project)
-        Get.to(() => OtpScreen(phone: phone));
+        Get.to(() => OtpScreen(phone: phone ,isRegistered: response.data['isRegistered']?? false,));
       } else {
         Get.snackbar('Error', response.data['message'] ?? 'Failed to send OTP');
       }

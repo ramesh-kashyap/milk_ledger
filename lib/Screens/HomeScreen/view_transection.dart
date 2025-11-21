@@ -86,7 +86,7 @@ void initState() {
         "transactionType": transactionType,
       });
       final data = response.data;
-
+     
       if (data["success"] == true) {
         final custs = (data["customers"] as List).cast<Map<String, dynamic>>();
         if (custs.isNotEmpty) {
@@ -294,16 +294,35 @@ List<Map<String, dynamic>> _getCombinedEntries() {
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  const Icon(Icons.shopping_cart),
-                  const SizedBox(width: 8),
+                 
+                  
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: selectedCustomerCode,
                       hint: Text("select_customer".tr),
+                      isExpanded: true, 
                       items: customers.map<DropdownMenuItem<String>>((c) {
                         return DropdownMenuItem<String>(
                           value: c["code"].toString(),
-                          child: Text("${c['name']} (${c['code']})"),
+                          child: Row(
+              children: [
+                Icon(
+                  c['customerType'] == 'Purchaser'
+                      ? Icons.shopping_cart  // 🛒 Purchaser
+                      : Icons.store,          // 🏪 Seller
+                  color: c['customerType'] == 'Purchaser'
+                      ? Colors.blue
+                      : Colors.green,
+                  size: 18,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  "${c['name'] ?? '-'}${c['code'] != null && c['code'].toString().isNotEmpty ? " (${c['code']})" : ""}",
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
+
                         );
                       }).toList(),
                       onChanged: (value) {

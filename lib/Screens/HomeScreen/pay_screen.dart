@@ -161,47 +161,6 @@ String _formatSessionDate(String dateStr, String session) {
   
 
 
-Future<void> _createPayment(String type) async {
- 
-
-  if (selectedCustomerId == null || _amountController.text.isEmpty) {       
-    Get.snackbar("Warning","Select a customer and enter an amount",);
-    return;
-  }
-  print('Creating payment of type: $type for customer ID: $selectedCustomerId');
-
-  final double? amount = double.tryParse(_amountController.text);
-  if (amount == null) {
-    Get.snackbar("Warning","Enter a valid amount",);
-    return;
-  }
-
- 
-  try {
-    print('Sending payment request: amount=$amount, type=$type, customerId=$selectedCustomerId, balanceGrantTotal=$balanceGrantTotal');
-    final response = await ApiService.post('/create-payment', {
-      'amount': amount,
-      'type': type, // use the determined type
-      'customerId': selectedCustomerId,
-       'balanceGrantTotal': balanceGrantTotal,
-    });
-
-    if (response.data['success'] == true) {
-      Get.snackbar("Success 🎉", response.data["message"] ?? "Payment recorded successfully");
-
-      // Clear input after success
-      _amountController.clear();
-
-      // Refresh milk data if needed
-      await _fetchMilkData(selectedCustomerId);
-    } else {
-      Get.snackbar("Warning ⚠️",
-      response.data["message"] ?? "Payment failed",);
-    }
-  } catch (e) {
-    Get.snackbar("Error", "Server Error: $e",);
-  }
-}
 
 
 
@@ -290,7 +249,7 @@ Future<void> _fetchMilkData(int? customerId) async {
     final List<dynamic> customerList = response.data['customer'] ?? [];
     final List<dynamic> paymentList = response.data['payment'] ?? [];
     final List<dynamic> productList = response.data['productTransactions'] ?? [];
-
+   print('Fetched Payment Data: $paymentList');
     // Update customer info
     if (customerList.isNotEmpty) {
       final customer = customerList[0];
@@ -337,11 +296,31 @@ final end = DateTime(_endDate.year, _endDate.month, _endDate.day, 23, 59, 59);
       "t_type": entry['t_type']?.toString() ?? 'inactive',
     }).toList();
 
+    final filteredPayments = paymentList.where((entry) {
+  DateTime entryDate = DateTime.parse(entry['date']).toLocal();
+
+  // Compare only date part
+  entryDate = DateTime(entryDate.year, entryDate.month, entryDate.day);
+
+  return entry['customer_id'] == customerId &&
+         !entryDate.isBefore(start) &&
+         !entryDate.isAfter(end);
+}).map((entry) => {
+  "id": entry["id"],
+  "date": entry["date"],
+  "type": entry["type"],
+  "mode": entry["mode"],
+  "amount": double.tryParse(entry["amount"]?.toString() ?? "0") ?? 0.0,
+  "grand_total": double.tryParse(entry["grand_total"]?.toString() ?? "0") ?? 0.0,
+  "note": entry["note"] ?? "",
+}).toList();
+
+      print('Filtered Milk Data: $filteredMilk');
     // Update state
     setState(() {
       milkData = filteredMilk;
       productTransactions = filteredProducts;
-      payments = List<Map<String, dynamic>>.from(paymentList);
+      payments = filteredPayments;
     });
   } catch (e) {
     setState(() {
@@ -351,6 +330,53 @@ final end = DateTime(_endDate.year, _endDate.month, _endDate.day, 23, 59, 59);
     });
   }
 }
+
+
+Future<void> _createPayment(String type) async {
+ 
+
+  if (selectedCustomerId == null || _amountController.text.isEmpty) {       
+    Get.snackbar("Warning","Select a customer and enter an amount",);
+    return;
+  }
+  print('Creating payment of type: $type for customer ID: $selectedCustomerId');
+
+  final double? amount = double.tryParse(_amountController.text);
+  if (amount == null) {
+    Get.snackbar("Warning","Enter a valid amount",);
+    return;
+  }
+
+ 
+  try {
+    print('Sending payment request: amount=$amount, type=$type, customerId=$selectedCustomerId, balanceGrantTotal=$balanceGrantTotal');
+    final start = DateTime(_startDate.year, _startDate.month, _startDate.day);
+    print('Start Date for payment: ${start.toIso8601String().split("T")[0]}');
+    final response = await ApiService.post('/create-payment', {
+      'amount': amount,
+      'type': type, // use the determined type
+      'customerId': selectedCustomerId,
+       'balanceGrantTotal': balanceGrantTotal,
+      'startDate': start.toIso8601String().split("T")[0], // send only date part
+    });
+
+    if (response.data['success'] == true) {
+      Get.snackbar("Success 🎉", response.data["message"] ?? "Payment recorded successfully");
+
+      // Clear input after success
+      _amountController.clear();
+
+      // Refresh milk data if needed
+      await _fetchMilkData(selectedCustomerId);
+    } else {
+      Get.snackbar("Warning ⚠️",
+      response.data["message"] ?? "Payment failed",);
+    }
+  } catch (e) {
+    Get.snackbar("Error", "Server Error: $e",);
+  }
+}
+
 
 
 
@@ -477,40 +503,72 @@ double get balanceProMilk {
 
  double get totalMilk =>
     milkData
-        .where((item) => item["status"] == "active")
         .fold(0.0, (sum, item) => sum + (item["milk"] ?? 0.0));
 
 double get totalAmounts => 
     milkData
-        .where((item) => item["status"] == "active")
         .fold(0.0, (sum, item) => sum + (item["amount"] ?? 0.0));
+// double get avgFat {
+//   final activeMilk = milkData.where((i) => i["status"] == "active").toList();
+//   if (activeMilk.isEmpty) return 0.0;
+//   final totalFat = activeMilk.fold(0.0, (s, i) => s + (i["fat"] ?? 0.0));
+//   return totalFat / activeMilk.length;
+// }
 double get avgFat {
-  final activeMilk = milkData.where((i) => i["status"] == "active").toList();
-  if (activeMilk.isEmpty) return 0.0;
-  final totalFat = activeMilk.fold(0.0, (s, i) => s + (i["fat"] ?? 0.0));
-  return totalFat / activeMilk.length;
+  if (milkData.isEmpty) return 0.0;
+
+  final totalFat =
+      milkData.fold(0.0, (sum, item) => sum + (item["fat"] ?? 0.0));
+
+  return totalFat / milkData.length;
 }
+
+// double get avgRate {
+//   final activeMilk = milkData.where((i) => i["status"] == "active").toList();
+//   if (activeMilk.isEmpty) return 0.0;
+//   final totalRate = activeMilk.fold(0.0, (s, i) => s + (i["rate"] ?? 0.0));
+//   return totalRate / activeMilk.length;
+// }
 
 double get avgRate {
-  final activeMilk = milkData.where((i) => i["status"] == "active").toList();
-  if (activeMilk.isEmpty) return 0.0;
-  final totalRate = activeMilk.fold(0.0, (s, i) => s + (i["rate"] ?? 0.0));
-  return totalRate / activeMilk.length;
+  if (milkData.isEmpty) return 0.0;
+
+  final totalRate =
+      milkData.fold(0.0, (sum, item) => sum + (item["rate"] ?? 0.0));
+
+  return totalRate / milkData.length;
 }
 
-  double get totalQuantity {
-  final activeProducts =
-      productTransactions.where((i) => i["status"] == "active").toList();
-  if (activeProducts.isEmpty) return 0.0;
-  return activeProducts.fold(0.0, (s, i) => s + (i["quantity"] ?? 0.0));
-}
 
-double get totalAmountsProduct {
-  final activeProducts =
-      productTransactions.where((i) => i["status"] == "active").toList();
-  if (activeProducts.isEmpty) return 0.0;
-  return activeProducts.fold(0.0, (s, i) => s + (i["amount"] ?? 0.0));
-}
+//   double get totalQuantity {
+//   final activeProducts =
+//       productTransactions.where((i) => i["status"] == "active").toList();
+//   if (activeProducts.isEmpty) return 0.0;
+//   return activeProducts.fold(0.0, (s, i) => s + (i["quantity"] ?? 0.0));
+// }
+
+double get totalQuantity =>
+    productTransactions.fold(
+      0.0,
+      (sum, item) => sum + (item["quantity"] ?? 0.0),
+    );
+
+
+// double get totalAmountsProduct {
+//   final activeProducts =
+//       productTransactions.where((i) => i["status"] == "active").toList();
+//   if (activeProducts.isEmpty) return 0.0;
+//   return activeProducts.fold(0.0, (s, i) => s + (i["amount"] ?? 0.0));
+// }
+
+double get totalAmountsProduct =>
+    productTransactions.fold(
+      0.0,
+      (sum, item) => sum + (item["amount"] ?? 0.0),
+    );
+  
+  double get grandTotal =>
+    totalAmounts + totalAmountsProduct;
 
   @override
   Widget build(BuildContext context) {
@@ -621,15 +679,30 @@ Padding(
     /// Left side (icon + dropdown)
     Row(
       children: [
-        const Icon(Icons.person, size: 20),
-        const SizedBox(width: 5),
-
-      DropdownButton<int?>(
+       DropdownButton<int?>(
   value: selectedCustomerId,
+ 
   items: customers.map((customer) {
     return DropdownMenuItem<int>(
       value: customer['id'],  // int id
-      child: Text('${customer['name']} (${customer['code']})'),
+      child: Row(
+    children: [
+      Icon(
+        customer['customerType'] == 'Seller'
+            ? Icons.storefront  // 🛒 Seller
+            : Icons.shopping_cart,  // 🛍️ Buyer (purchase)
+        color: customer['customerType'] == 'Seller'
+            ? Colors.green
+            : Colors.blue,
+        size: 18,
+      ),
+      const SizedBox(width: 6),
+      Text(
+        '${customer['name'] ?? '-'}${customer['code'] != null && customer['code'].toString().isNotEmpty ? " (${customer['code']})" : ""}',
+        style: const TextStyle(fontSize: 14),
+      ),
+    ],
+  ),
     );
   }).toList(),
 onChanged: (int? value) async {
@@ -669,7 +742,7 @@ onChanged: (int? value) async {
 
     /// Right side (input box)
     SizedBox(
-      width: 120,
+      width: 80,
       child: TextField(
         controller: _codeCtrl,
         keyboardType: TextInputType.number,
@@ -752,11 +825,11 @@ onChanged: (int? value) async {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               children: [
-              if (milkData.any((row) => row["status"] == "active")) 
+              if (milkData.isNotEmpty) 
                 buildMilkTable(),
                 // buildBillDetail(),
               
-                 if (productTransactions.any((row) => row["status"] == "active"))
+                if (productTransactions.isNotEmpty)
                 buildProductTable(),
                 const SizedBox(height: 12),
                 // const SizedBox(height: 12),
@@ -849,16 +922,21 @@ onChanged: (int? value) async {
         ),
 
         // Rows
-       ...milkData
-    .where((row) => row["status"] == "active") // only active rows
-    .map((row) => tableRow(
-          row["date"],
-          row["milk"].toString(),
-          row["fat"].toString(),
-          row["rate"].toString(),
-          row["amount"].toString(),
-        )),
-
+      ...milkData.map((row) {
+  final isActive = row["status"] == "active";
+   print("COUNT: ${milkData.length}");
+  return Opacity(
+    opacity: isActive ? 1.0 : 0.4, // fade effect for inactive
+    child: tableRow(
+      row["date"],
+      row["milk"].toString(),
+      row["fat"].toString(),
+      row["rate"].toString(),
+      row["amount"].toString(),
+      dateColor: isActive ? Colors.black : Colors.grey, // 👈 fade date only
+    ),
+  );
+}),
         // Footer
         Container(
           decoration: const BoxDecoration(
@@ -898,16 +976,19 @@ onChanged: (int? value) async {
         ),
 
         // Rows
-       ...productTransactions
-    .where((row) => row["status"] == "active") // only active rows
-    .map((row) => productTableRow(
-          row["date"],
-          row["product"].toString(),
-          row["quantity"].toString(),
-          
-        
-          row["amount"].toString(),
-        )),
+      ...productTransactions.map((row) {
+  final isActive = row["status"] == "active";
+
+  return Opacity(
+    opacity: isActive ? 1.0 : 0.4, // fade inactive rows
+    child: productTableRow(
+      row["date"],
+      row["product"].toString(),
+      row["quantity"].toString(),
+      row["amount"].toString(),
+    ),
+  );
+}),
 
         // Footer
         Container(
@@ -1011,7 +1092,7 @@ Expanded(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text("grant_total".tr, style: boldText),
-          Text("₹${balanceGrantTotal.toStringAsFixed(2)}", style: boldText),
+          Text("₹${(grandTotal).toStringAsFixed(2)}", style: boldText),
         ],
       ),
       const Divider(),
@@ -1020,7 +1101,7 @@ Expanded(
         children: [
           Text("total_due".tr, style: boldText),
           Text(
-            "₹${(balanceGrantTotal).toStringAsFixed(2)}",
+            "₹${(balanceProMilk).toStringAsFixed(2)}",
             style: boldText,
           ),
         ],
@@ -1044,7 +1125,7 @@ Expanded(
         ),
       );
 
- Widget tableRow(String date, String milk, String fat, String rate, String amount) {
+ Widget tableRow(String date, String milk, String fat, String rate, String amount, {bool isActive = true, Color dateColor = Colors.black}) {
   // Check if 'AM' or 'PM' is present in the date text
   bool isMorning = date.toUpperCase().contains('AM');
   bool isEvening = date.toUpperCase().contains('PM');

@@ -22,7 +22,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   final codeCtrl = TextEditingController();
   final nameCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
-
+  final defaultRateCtrl = TextEditingController();
+  
   // Visible value fields (one per animal, auto-filled from defaults based on basis)
   final _bmCtrl = TextEditingController(); // buffalo visible value
   final _cmCtrl = TextEditingController(); // cow visible value
@@ -85,7 +86,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   ];
   // Holds the API defaults so we can autofill repeatedly on toggles / basis change
   Map<String, dynamic> _defaults = {};
-
+  
+  
   @override
   void initState() {
     super.initState();
@@ -211,6 +213,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   void _save() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final bool isPurchaser = widget.customerType.toLowerCase() == 'purchaser';
+  final double? defaultValue = isPurchaser && defaultRateCtrl.text.isNotEmpty
+      ? double.tryParse(defaultRateCtrl.text)
+      : null;
+
+      print("Is Purchaser: ${widget.customerType.toLowerCase()}");
+    print("Default Value: $defaultValue");
+    print("Is Purchaser: $isPurchaser");
     final payload = {
       "customerType": widget.customerType, // Seller or Purchaser
       "code": codeCtrl.text.trim(),
@@ -226,8 +236,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         "enabled": cowEnabled,
         "value": cowEnabled ? _cmCtrl.text.trim() : null,
       },
+       "default_value": defaultValue,
       "alertMethod": alertMethod,
       "printSlip": printSlip,
+      
     };
 
     try {
@@ -236,6 +248,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       // print("Response: $response");
       // success feedback
       final data = response.data;
+      print("Data: $data");
       if (data['status'] == true) {
         Get.snackbar(
           "Success 🎉",
@@ -431,6 +444,15 @@ void _checkCode(String code) async {
                           decoration: _decor('phone_optional'.tr),
                           keyboardType: TextInputType.phone,
                         ),
+
+                        if (widget.customerType.toLowerCase() == 'purchaser') ...[
+  spacer,
+  TextFormField(
+    controller: defaultRateCtrl,
+    decoration: _decor('default_milk'.tr),
+    keyboardType: TextInputType.number,
+  ),
+],
                       ],
                     ),
                   ),

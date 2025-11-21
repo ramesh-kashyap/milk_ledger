@@ -7,6 +7,7 @@ class PaymentSlip {
   final String name;
   final String code;
   final DateTime? date;
+  final String customerType;
   final String? item;
   final double sale;
   final double purchase;
@@ -14,6 +15,7 @@ class PaymentSlip {
   PaymentSlip({
     required this.name,
     required this.code,
+    required this.customerType,
     this.date,
     this.item,
     this.sale = 0.0,
@@ -24,6 +26,7 @@ class PaymentSlip {
     return PaymentSlip(
       name: json['Customer']?['name'] ?? "",
       code: json['Customer']?['code'] ?? "",
+      customerType: json['Customer']?['customer_type'] ?? "",
       date: json['date'] != null ? DateTime.tryParse(json['date']) : null,
       item: json['note'],
       sale: json['note'] == "Sale"
@@ -80,7 +83,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       final resp =
           await ApiService.get('/paymentslip?page=$page&limit=20');
       final data = resp.data;
-
+      print("Payment Slip Data: $data");
       if (data['status'] == true && data['payments'] != null) {
         final paymentEntries = (data['paymentEntries'] ?? []) as List<dynamic>;
         final payments = data['payments'] as List<dynamic>;
@@ -203,9 +206,34 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         color: Color(0xFF62C370)),
                     items: userSlips.keys.map((code) {
                       final name = codeToName[code] ?? "";
+                      final slips = userSlips[code] ?? [];
+                      final type = slips != null && slips.isNotEmpty ? slips.first.customerType : "";
+                      IconData icon;
+                      Color iconColor = Colors.grey;// 👈 add color variable
+      if (type.toLowerCase() == 'purchaser' || type.toLowerCase() == 'buyer') {
+        icon = Icons.shopping_cart; // 🛒 Purchaser icon
+        iconColor = Colors.blue;
+      } else if (type.toLowerCase() == 'seller') {
+        icon = Icons.store; // 🏪 Seller icon
+        iconColor = const Color(0xFF62C370); 
+      } else {
+        icon = Icons.person; // 👤 Default icon
+      }
+
                       return DropdownMenuItem(
                         value: code,
-                        child: Text("$name ($code)"),
+                       child: Row(
+          children: [
+            Icon(icon, color: iconColor), // 👈 added icon here
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                "$name ($code)",
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
                       );
                     }).toList(),
                     onChanged: (val) {
@@ -314,8 +342,8 @@ final due = grandTotal - amount;
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children:  [
-                                    Text("${'sale'.tr}: ₹0.00"),
-                                    Text("${'purchase'.tr}: ₹0.00"),
+                                    Text("${'sale'.tr}: 0.00"),
+                                    Text("${'purchase'.tr}: 0.00"),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
@@ -328,7 +356,7 @@ final due = grandTotal - amount;
                                       style: TextStyle(fontWeight: FontWeight.bold),
                                     ),
                                     Text(
-                                      "₹${grandTotal.toStringAsFixed(2)}",
+                                      "${grandTotal.toStringAsFixed(2)}",
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Color(0xFF62C370),
@@ -342,11 +370,11 @@ final due = grandTotal - amount;
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                        "${'receive'.tr}: ₹${amount.toStringAsFixed(2)}",
+                                        "${'receive'.tr}: ${amount.toStringAsFixed(2)}",
                                         style: const TextStyle(fontWeight: FontWeight.bold),
                                       ),
                                     Text(
-                                        "${'due'.tr}: ₹${due.toStringAsFixed(2)}",
+                                        "${'due'.tr}: ${due.toStringAsFixed(2)}",
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.redAccent,

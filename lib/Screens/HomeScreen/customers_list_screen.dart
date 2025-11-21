@@ -164,7 +164,16 @@ class _CustomersListScreenState extends State<CustomersListScreen>
         title: Text('all_customers'.tr),
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _load),
-          IconButton(icon: const Icon(Icons.print), onPressed: () {}),
+          IconButton(
+  icon: const Icon(Icons.add),
+  onPressed: () async {
+    final type = await _selectCustomerType(context);
+    if (type != null) {
+      Get.to(() => AddCustomerScreen(customerType: type));
+    }
+  },
+),
+
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -275,6 +284,31 @@ class _CustomersListScreenState extends State<CustomersListScreen>
     );
   }
 }
+
+
+ Future<String?> _selectCustomerType(BuildContext context) async {
+    return await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("select_customer_type".tr),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.green),
+              title: Text("seller".tr),
+              onTap: () => Navigator.pop(ctx, "Seller"),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.blue),
+             title: Text("purchaser".tr),
+              onTap: () => Navigator.pop(ctx, "Purchaser"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
 /// Compact badge tab label
 class _TabWithBadge extends StatelessWidget {

@@ -16,7 +16,8 @@ import 'package:pinput/pinput.dart';
 
 class OtpScreen extends StatefulWidget {
   final String phone;
-  OtpScreen({super.key, required this.phone});
+   final bool isRegistered;
+  OtpScreen({super.key, required this.phone,  required this.isRegistered});
 
   @override
   _OtpScreenState createState() => _OtpScreenState();
@@ -60,14 +61,20 @@ class _OtpScreenState extends State<OtpScreen> {
         // handle success -> save token, navigate to home
         await ApiService.saveToken(res.data['token']); // <<— ensure this runs
         if (user['name'] == null || user['address'] == null) {
-          Get.bottomSheet(
+          if(!widget.isRegistered){
+           Get.bottomSheet(
             CompleteProfileScreen(userId: user['id']),
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
           );
+          }else{
+            // ✅ Registered but profile incomplete → go to home
+            Get.offAll(() => HomeScreen());
+          }
+          
         } else {
           // ✅ Profile complete → go to home
-          Get.offAll(() => HomeScreen());
+         
         }
       } else {
         Get.snackbar('Error', res.data['message'] ?? 'Invalid OTP');

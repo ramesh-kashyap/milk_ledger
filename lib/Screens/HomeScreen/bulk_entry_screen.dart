@@ -32,7 +32,7 @@ class _BulkEntryScreenState extends State<BulkEntryScreen> {
 
           // ✅ Use response.data to access the JSON body
           final resData = response.data;
-
+          print("📦 Parsed Response Data: $resData");
           if (resData != null &&
               resData['success'] == true &&
               resData['customers'] != null) {
@@ -43,7 +43,7 @@ class _BulkEntryScreenState extends State<BulkEntryScreen> {
                   .map((c) => {
                         'sno': c['code'] ?? '',
                         'name': c['name'] ?? '',
-                        'liter': '0',
+                        'liter': c['default_value'] ?? '',
                         'selected': false,
                         'note': c['customer_type'] ?? '',
                       })
@@ -86,7 +86,7 @@ class _BulkEntryScreenState extends State<BulkEntryScreen> {
         for (var entry in selectedData) {
           final response = await ApiService.post("/bulkEntry", entry);
           final resData = response.data;
-
+           
           if (resData['success'] == true) {
             print("✅ Saved entry for ${entry['name']}");
           } else {
@@ -191,14 +191,14 @@ class _BulkEntryScreenState extends State<BulkEntryScreen> {
                                       const TextInputType.numberWithOptions(
                                           decimal: true),
                                   onChanged: (val) {
-                                    customers[i]['liter'] = val;
+                                    customers[i]['liter'] = double.tryParse(val) ?? 0;
                                   },
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
                                   ),
                                   textAlign: TextAlign.center,
                                   controller: TextEditingController(
-                                    text: customers[i]['liter'],
+                                    text: customers[i]['liter']?.toString() ?? '',
                                   ),
                                 ),
                               ),

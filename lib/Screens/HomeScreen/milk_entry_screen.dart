@@ -28,11 +28,10 @@ void initState() {
   super.initState();
  _allResultst();
  _loadRecentEntries();
- 
 }
   // form state
   DateTime date = DateTime.now();
-  String session = 'PM'; // AM / PM
+  String session = DateTime.now().hour < 12 ? 'AM' : 'PM'; // AM / PM
   Map<String, dynamic>? seller; // current selected
   final litresCtrl = TextEditingController();
   final fatCtrl = TextEditingController();
@@ -120,6 +119,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
 
   @override
   void dispose() {
+     fatCtrl.removeListener(_recompute); 
     litresCtrl.dispose();
     fatCtrl.dispose();
     snfCtrl.dispose(); // 👈 NEW
@@ -127,6 +127,46 @@ void _fillFatSnfRatesForAnimal(String animal) {
     noteCtrl.dispose();
     super.dispose();
   }
+
+void _resetForm() {
+  // 1️⃣ Remove formatter temporarily
+  fatCtrl.value = const TextEditingValue(text: '');
+  fatCtrl.clearComposing();
+  fatCtrl.selection = const TextSelection.collapsed(offset: 0);
+
+  setState(() {
+    // 2️⃣ Remove listeners & formatters BEFORE clearing
+    fatCtrl.removeListener(_recompute);
+
+    // 3️⃣ Clear safely (formatter NOT running now)
+    fatCtrl.value = const TextEditingValue(
+      text: '',
+      selection: TextSelection.collapsed(offset: 0),
+    );
+
+    litresCtrl.clear();
+    rateCtrl.clear();
+    snfCtrl.clear();
+    noteCtrl.clear();
+    fatCtrl1.clear();
+    fatSnfCtrl.clear();
+    fixRateCtrl.clear();
+
+    zero = false;
+    animal = 'buffalo';
+
+    // 4️⃣ DO NOT call form reset → this triggers formatter again ❌
+    // _formKey.currentState?.reset();  <-- REMOVE THIS LINE
+  });
+
+  // 5️⃣ Add listener again
+  fatCtrl.addListener(_recompute);
+
+  // 6️⃣ Recompute after reset
+  _recompute();
+
+  print("FINAL FAT VALUE = '${fatCtrl.text}'");
+}
 
   // ---------- helpers ----------
   static bool _toBool(dynamic v) {
@@ -356,6 +396,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
     showSnf = basis == 'fat_snf';
     _applySellerDefaults(picked);
     _fillFatSnfRatesForAnimal(animal);
+    
   }
   setState(() {});
 } else {
@@ -561,16 +602,16 @@ void _fillFatSnfRatesForAnimal(String animal) {
       final confirm = await showDialog<bool>(
         context: context,
         builder: (_) => AlertDialog(
-          title: Text("Duplicate Entry"),
-          content: Text("An entry already exists. Do you want to add anyway?"),
+          title: Text("duplicate_entry_title".tr),
+          content: Text("entry_exists_message".tr),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text("No"),
+              child: Text("cancel".tr),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text("Yes"),
+              child: Text("save".tr),
             ),
           ],
         ),
@@ -584,10 +625,11 @@ void _fillFatSnfRatesForAnimal(String animal) {
         if (retryData['status'] == true) {
             Get.snackbar("Success 🎉", "Milk entry saved successfully"); 
             _loadRecentEntries();   
-             Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (context) => const MilkEntryScreen()),
-  );
+             _resetForm();
+  //            Navigator.pushReplacement(
+  //   context,
+  //   MaterialPageRoute(builder: (context) => const MilkEntryScreen()),
+  // );
             // Navigator.pop(context, retry);
         } else {
           Get.snackbar("Error", retryData['message'] ?? "Something went wrong");
@@ -603,10 +645,11 @@ void _fillFatSnfRatesForAnimal(String animal) {
       Get.snackbar("Success 🎉", "Milk entry saved successfully");
         
       _loadRecentEntries();  
-       Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (context) => const MilkEntryScreen()),
-  );
+        //      Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => const MilkEntryScreen()),
+        // );
+        _resetForm();
     } else {
       Get.snackbar("Milk Add Failed", data['message'] ?? "Something went wrong");
     }
@@ -950,8 +993,7 @@ void _fillFatSnfRatesForAnimal(String animal) {
   ],
 ),
 
-      // bottom action bar
-    
+     
 
     body: Stack(
     children: [
@@ -968,11 +1010,11 @@ void _fillFatSnfRatesForAnimal(String animal) {
             ),
             child: Row(
               children: [
-                Text('amount'.tr, style: TextStyle(color: Colors.green.shade700)),
+                Text('amount'.tr + ' : ', style: TextStyle(color: Colors.green.shade700)),
                 Text(zero ? '0.00' : amount.toStringAsFixed(2),
                     style: const TextStyle(fontWeight: FontWeight.w600)),
                 const Spacer(),
-                Text('per_litre'.tr,
+                Text('per_litre'.tr + ' : ',
                     style: TextStyle(color: Colors.green.shade700)),
                 Text(rate.toStringAsFixed(2),
                     style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -1225,14 +1267,14 @@ if (_recentEntries.isNotEmpty)
   Padding(
     padding: const EdgeInsets.only(top: 20),
     child: Container(
-      height: 400, // you can adjust height
+      // height: 400, // you can adjust height
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
           top: BorderSide(color: Colors.grey.shade300),
         ),
       ),
-      child: ListView(
+      child: Column(
         children: [
           // 🟢 BUY SECTION
           if (_recentEntries.any((e) => e['note'] == 'Buy')) ...[
@@ -1738,24 +1780,72 @@ final _numFormatter = <TextInputFormatter>[
   FilteringTextInputFormatter.allow(RegExp(r'^\d{0,2}(\.\d{0,2})?$')),
 ];
 
+// final List<TextInputFormatter> fatAutoDotFormatter = [
+//   TextInputFormatter.withFunction((oldValue, newValue) {
+//     final oldText = oldValue.text;
+//     var text = newValue.text;
+
+//     // Allow full clear any time
+//     if (text.isEmpty) return newValue;
+
+//     final isDeletion = newValue.text.length < oldText.length;
+
+//     // If user deleted the dot from "7." -> clear all
+//     if (isDeletion &&
+//         oldText.endsWith('.') &&
+//         text == oldText.substring(0, oldText.length - 1)) {
+//       return const TextEditingValue(text: '');
+//     }
+
+//     // On insertion: auto add dot after the first digit (only if not present)
+//     if (!isDeletion && text.length == 1 && !text.contains('.')) {
+//       text = '$text.';
+//       return TextEditingValue(
+//         text: text,
+//         selection: TextSelection.collapsed(offset: text.length),
+//       );
+//     }
+
+//     // Validate: 1–2 digits before dot, optional dot, up to 2 digits after dot
+//     final valid = RegExp(r'^\d{1,2}(\.\d{0,2})?$');
+//     if (valid.hasMatch(text)) {
+//       return TextEditingValue(
+//         text: text,
+//         selection: TextSelection.collapsed(offset: text.length),
+//       );
+//     }
+
+//     // Reject invalid change
+//     return oldValue;
+//   }),
+// ];
+
 final List<TextInputFormatter> fatAutoDotFormatter = [
   TextInputFormatter.withFunction((oldValue, newValue) {
     final oldText = oldValue.text;
     var text = newValue.text;
 
-    // Allow full clear any time
-    if (text.isEmpty) return newValue;
+    // ⭐ ALLOW EMPTY FIELD (IMPORTANT FOR RESET)
+    if (text.isEmpty) {
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
 
-    final isDeletion = newValue.text.length < oldText.length;
+    final isDeletion = text.length < oldText.length;
 
-    // If user deleted the dot from "7." -> clear all
+    // ⭐ If user deletes dot from "7." → clear fully
     if (isDeletion &&
         oldText.endsWith('.') &&
         text == oldText.substring(0, oldText.length - 1)) {
-      return const TextEditingValue(text: '');
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
     }
 
-    // On insertion: auto add dot after the first digit (only if not present)
+    // ⭐ Auto-insert dot only when typing first digit
     if (!isDeletion && text.length == 1 && !text.contains('.')) {
       text = '$text.';
       return TextEditingValue(
@@ -1764,7 +1854,7 @@ final List<TextInputFormatter> fatAutoDotFormatter = [
       );
     }
 
-    // Validate: 1–2 digits before dot, optional dot, up to 2 digits after dot
+    // ⭐ Valid: 1–2 digits before dot + 0–2 after dot
     final valid = RegExp(r'^\d{1,2}(\.\d{0,2})?$');
     if (valid.hasMatch(text)) {
       return TextEditingValue(
@@ -1773,10 +1863,19 @@ final List<TextInputFormatter> fatAutoDotFormatter = [
       );
     }
 
-    // Reject invalid change
+    // ⭐ Instead of rejecting change for deletion, allow going to empty
+    if (isDeletion) {
+      return TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
+    }
+
+    // ❌ Reject only truly invalid insert
     return oldValue;
   }),
 ];
+
 // Holds the API defaults so we can autofill repeatedly on toggles / basis change
 
 class _NumFieldFat extends StatelessWidget {

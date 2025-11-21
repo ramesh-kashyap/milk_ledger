@@ -164,11 +164,11 @@ class _ReportScreenState extends State<ReportScreen> {
                     buildTableRow(["No data", "-", "-", "-", "-"])
                   else
                     ...sellers.map((t) => buildTableRow([
-                          t["account_name"] ?? "-",
-                          "₹${t["payment"]}",
-                          "₹${t["due"]}",
-                          "₹${t["product"]}",
-                          "₹${t["total"]}",
+                          "${t["account_name"] ?? "-"}${t["code"] != null && t["code"].toString().isNotEmpty ? " (${t["code"]})" : ""}",
+                          "${t["payment"]}",
+                          "${t["due"]}",
+                          "${t["product"]}",
+                          "${t["total"]}",
                         ])),
 
                   if (sellers.isNotEmpty) buildSummaryRow(sellers),
@@ -186,11 +186,11 @@ class _ReportScreenState extends State<ReportScreen> {
                     buildTableRow(["No data", "-", "-", "-", "-"])
                   else
                     ...purchasers.map((t) => buildTableRow([
-                          t["account_name"] ?? "-",
-                          "₹${t["payment"]}",
-                          "₹${t["due"]}",
-                          "₹${t["product"]}",
-                          "₹${t["total"]}",
+                          "${t["account_name"] ?? "-"}${t["code"] != null && t["code"].toString().isNotEmpty ? " (${t["code"]})" : ""}",
+                          "${t["payment"]}",
+                          "${t["due"]}",
+                          "${t["product"]}",
+                          "${t["total"]}",
                         ])),
 
                   if (purchasers.isNotEmpty) buildSummaryRow(purchasers),
@@ -275,10 +275,10 @@ class _ReportScreenState extends State<ReportScreen> {
 
     return buildTableRow([
       "Total (${list.length})",
-      "₹${totalPayment.toStringAsFixed(2)}",
-      "₹${totalDue.toStringAsFixed(2)}",
-      "₹${totalProduct.toStringAsFixed(2)}",
-      "₹${totalAmount.toStringAsFixed(2)}",
+      "${totalPayment.toStringAsFixed(2)}",
+      "${totalDue.toStringAsFixed(2)}",
+      "${totalProduct.toStringAsFixed(2)}",
+      "${totalAmount.toStringAsFixed(2)}",
     ], highlight: true);
   }
 }

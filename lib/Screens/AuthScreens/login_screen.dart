@@ -136,25 +136,42 @@ class _LogInScreenState extends State<LogInScreen> {
   Widget build(BuildContext context) {
     print("@@@${Get.height}");
     return Scaffold(
-      backgroundColor: whiteF9F,
-      body: Padding(
-        padding: EdgeInsets.only(top: 60, bottom: 20, left: 22, right: 22),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// Top Widget View
-            TopWidgetView(),
+  backgroundColor: whiteF9F,
+  resizeToAvoidBottomInset: true,
+  body: SafeArea(
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 40),
 
-            /// TextField Widget View
-            TextFieldWidgetView(),
-            Spacer(),
+                  TopWidgetView(),
+                  SizedBox(height: 20),
 
-            /// BottomText Widget View
-            BottomTextWidgetView(),
-          ],
-        ),
-      ),
-    );
+                  TextFieldWidgetView(),
+                  SizedBox(height: 300),
+
+                  BottomTextWidgetView(),
+
+                  SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    ),
+  ),
+);
+
   }
 
   /// Top Widget View

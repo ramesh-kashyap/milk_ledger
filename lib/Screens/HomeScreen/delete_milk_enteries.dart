@@ -28,6 +28,9 @@ class _DeleteMilkEntriesScreenState extends State<DeleteMilkEntriesScreen> {
     super.initState();
     fetchAllEntries();
   }
+  
+
+ 
 
  Future<void> fetchAllEntries() async {
   setState(() => loading = true);
@@ -260,7 +263,7 @@ class _DeleteMilkEntriesScreenState extends State<DeleteMilkEntriesScreen> {
 
                             return Dismissible(
                               key: ValueKey(id + i.toString()),
-                              direction: DismissDirection.endToStart,
+                              direction: DismissDirection.startToEnd,
                               background: Container(
                                 alignment: Alignment.centerRight,
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -327,81 +330,91 @@ class _DeleteMilkEntriesScreenState extends State<DeleteMilkEntriesScreen> {
   trailing: PopupMenuButton<String>(
   tooltip: 'Options',
   onSelected: (v) async {
-    if (v == 'delete') {
-      await _deleteEntry(e);
-    } else if (v == 'share') {
-        final phone = e['Customer']['phone']?.toString() ?? '';
-      final name = e['Customer']['name']?.toString() ?? 'Unknown';
-      final litres = e['litres']?.toString() ?? '0';
-      final amount = e['amount']?.toString() ?? '0';
-      final session = e['session']?.toString().toUpperCase() ?? '';
-      final animal = e['animal']?.toString().toUpperCase() ?? '';
+    final phone = e['Customer']['phone']?.toString() ?? '';
+    final name = e['Customer']['name']?.toString() ?? 'Unknown';
+    final litres = e['litres']?.toString() ?? '0';
+    final amount = e['amount']?.toString() ?? '0';
+    final session = e['session']?.toString().toUpperCase() ?? '';
+    final animal = e['animal']?.toString().toUpperCase() ?? '';
+     final entryDate = DateFormat("dd MMM yyyy").format(
+    DateTime.parse(e['date'].toString())
+);
 
-      
-    if (phone.isNotEmpty) {
-        // ✅ Create the WhatsApp message
-        final message = Uri.encodeComponent('''
+    final message = Uri.encodeComponent('''
 Hello $name 👋,
 
- Animal: $animal
- Session: $session
- Litres: $litres L
- Amount: ₹$amount
+Animal: $animal
+Session: $session
+Litres: $litres L
+Amount: ₹$amount
+Date: $entryDate
 
 Thank you!
 ''');
 
-        // ✅ Format WhatsApp URL (include country code)
-        // ✅ Try both schemes for Android + iOS
-        final Uri whatsapp = Uri.parse("whatsapp://send?phone=91$phone&text=$message");
-        
-            try {
-      // Try WhatsApp first
-      await launchUrl(whatsapp, mode: LaunchMode.externalApplication);
-    } catch (e) {
-      // ⚠️ If WhatsApp not available, fallback to SMS
-      final Uri sms = Uri.parse("sms:91$phone?body=$message");
+final plainMessage = '''
+Hello $name 👋,
 
+Animal: $animal
+Session: $session
+Litres: $litres L
+Amount: ₹$amount
+Date: $entryDate
+
+Thank you!
+''';
+
+
+
+    if (v == 'delete') {
+      await _deleteEntry(e);
+    } 
+    else if (v == 'whatsapp') {
+      if (phone.isEmpty || phone == "null") {
+    // ❌ No phone → Share message instead
+    Share.share(plainMessage);
+
+   
+    return;
+  }
+      final Uri sms = Uri.parse("sms:91$phone?body=$message");
       try {
         await launchUrl(sms, mode: LaunchMode.externalApplication);
-      } catch (e2) {
+      } catch (e) {
         Get.snackbar(
           'Error',
-          'Could not open WhatsApp or SMS app.',
+          'SMS app not available.',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.shade50,
           colorText: Colors.red.shade900,
         );
       }
-    }
-       
-       
-      }
-    }
+    } 
+    
   },
   itemBuilder: (_) {
     final phone = e['Customer']['phone']?.toString();
 
-    // build popup items dynamically
     List<PopupMenuEntry<String>> items = [];
 
-    // show share only if phone exists
-    if (phone != null && phone.isNotEmpty) {
-      items.add(
+    // ✅ Add WhatsApp and Message only if phone exists
+    
+      items.addAll([
         const PopupMenuItem(
-          value: 'share',
+          value: 'whatsapp',
           child: Row(
             children: [
-              Icon(Icons.share, color: Colors.blue, size: 20),
+              Icon(Icons.share, color: Colors.green, size: 20),
               SizedBox(width: 8),
               Text('Share'),
             ],
           ),
         ),
-      );
-    }
+       
+      ]);
+    
 
-    // always show delete
+    // Always show delete option
     items.add(
       const PopupMenuItem(
         value: 'delete',
@@ -419,6 +432,7 @@ Thank you!
   },
   icon: const Icon(Icons.more_vert),
 ),
+
 
 
   ),
